@@ -94,7 +94,7 @@ export const DestinationSyncModeData: Record<
   },
 };
 
-const STATES = ["draft", "ready"] as const;
+const STATES = ["draft", "ready", "deleted"] as const;
 const STATE_TRANSITIONS = [
   {
     from: "draft",
@@ -103,6 +103,11 @@ const STATE_TRANSITIONS = [
   },
   { from: "draft", to: "deleted", checks: [] },
   { from: "ready", to: "deleted", checks: [] },
+  {
+    from: "deleted",
+    to: "ready",
+    checks: [(instance: Destination) => instance.validateOptions()],
+  },
 ];
 
 @DefaultScope(() => ({
@@ -532,7 +537,7 @@ export class Destination extends LoggedModel<Destination> {
       where: { destinationId: id },
     });
     const destinationGroupMemberships = Object.fromEntries(
-      dgm.map((dgm) => [dgm.groupId, dgm.remoteKey])
+      dgm.map((dgm) => [dgm.remoteKey, dgm.groupId])
     );
 
     return {

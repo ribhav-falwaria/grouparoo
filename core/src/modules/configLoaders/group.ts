@@ -20,34 +20,57 @@ export async function loadGroup(
   validateConfigObjectKeys(Group, configObject);
 
   let group = await Group.scope(null).findOne({
-    where: { id: configObject.id, locked: getCodeConfigLockKey() },
+    where: {
+      id: configObject.id,
+      [Op.or]: {
+        locked: getCodeConfigLockKey(),
+        state: "deleted",
+      },
+    },
   });
   if (!group) {
     isNew = true;
     group = await Group.create({
       id: configObject.id,
-      locked: ConfigWriter.getLockKey(configObject),
       name: configObject.name,
       type: configObject.type,
     });
   }
 
-  await group.update({ type: configObject.type, name: configObject.name });
+  await group.update({
+    type: configObject.type,
+    name: configObject.name,
+    locked: ConfigWriter.getLockKey(configObject),
+  });
+
+  const previousState = group.state;
+  await group.update({ state: "ready" });
 
   if (configObject.rules) {
     const rules = [...configObject.rules];
+    const calculatesWithDate = ["lte", "gt", "lt", "gte", "eq", "ne"];
     for (const i in rules) {
       if (rules[i]["propertyId"]) {
         const property = await Property.findById(rules[i]["propertyId"]);
         delete rules[i]["propertyId"];
         rules[i].key = property.key;
       }
+
+      //parses to epoch time if calculated date rule
+      if (
+        calculatesWithDate.indexOf(rules[i]["operation"]["op"]) >= 0 &&
+        rules[i]["type"] === "date"
+      ) {
+        rules[i]["match"] = Date.parse(rules[i]["match"].toString());
+      }
     }
 
     await group.setRules(group.fromConvenientRules(configObject.rules));
   }
 
-  await group.update({ state: "ready" });
+  if (previousState === "deleted") {
+    await group.run();
+  }
 
   logModel(group, validate ? "validated" : isNew ? "created" : "updated");
 
