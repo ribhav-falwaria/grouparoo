@@ -469,7 +469,7 @@ export default class Form extends Component {
           registry={registry}
           disabled={disabled}
         />
-        <View style={styles.buttonContainer}>
+        <View style={styles.buttonContainer} >
           {children}
         </View>
       </FormTag>
@@ -530,7 +530,6 @@ if (process.env.NODE_ENV !== "production") {
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'flex-end'
   }
 })

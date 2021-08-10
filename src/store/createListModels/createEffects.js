@@ -63,8 +63,8 @@ export default (
     }) {
       try {
         const response = await api.create(data)
-        onSuccess(response)
         ownDispatch.writeById(response)
+        onSuccess(response)
         if (updateList) {
           await ownDispatch.getAsync({ listName })
         }

@@ -7,6 +7,10 @@ const loanApplications = {
   extensions: {
     state: [],
     selectors: {
+      getApplicationById: select => (rootState, { id }) => {
+        const loanApplication = select.loanApplications.getById(rootState, id)
+        return loanApplication
+      },
       getActiveLoanApplications: select => rootState => {
         return select.loanApplications
           .list(rootState)

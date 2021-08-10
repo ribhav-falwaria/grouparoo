@@ -44,6 +44,11 @@ let todos = [
         'coborrowerRelation'
       ],
       properties: {
+        isPrimaryPhoneVerified: {
+          enum: ['yes', 'no'],
+          type: 'string',
+          title: ''
+        },
         numberOfDependents: {
           title: 'Indicate number of dependents',
           type: 'number'
@@ -319,6 +324,9 @@ let todos = [
       formDocId: '15',
       formName: 'customerOnboarding2',
       values: {
+        isPrimaryPhoneVerified: {
+          'ui:widget': 'OtpWidget'
+        },
         hasGSTN: {
           'ui:widget': 'radio'
         },
@@ -339,6 +347,7 @@ let todos = [
           'primaryPhone',
           'whatsappPermission',
           'email',
+          'isPrimaryPhoneVerified',
           'loanAmount',
           'pan',
           'birthDate',
@@ -402,7 +411,12 @@ let todos = [
           ]
         },
         '2': {
-          stepName: 'OTP'
+          stepName: 'OTP',
+          stepTitle: 'OTP',
+          stepDescription: 'Verify Mobile Number',
+          stepFields: [
+            'isPrimaryPhoneVerified'
+          ]
         },
         '3': {
           stepTitle: 'Company Details',

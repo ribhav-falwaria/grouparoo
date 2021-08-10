@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View } from 'react-native'
+import { View, StyleSheet } from 'react-native'
 
 class Event {
   preventDefault () {}
@@ -10,7 +10,7 @@ global.CustomEvent = global.CustomEvent || Event
 
 export class MockHTMLForm extends Component {
   render () {
-    return <View>{this.props.children}</View>
+    return <View style={styles.formContainer}>{this.props.children}</View>
   }
 
   dispatchEvent (e) {
@@ -18,3 +18,8 @@ export class MockHTMLForm extends Component {
     this.props.onSubmit(e)
   }
 }
+const styles = StyleSheet.create({
+  formContainer: {
+    justifyContent: 'flex-start'
+  }
+})

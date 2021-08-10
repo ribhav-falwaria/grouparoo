@@ -15,6 +15,7 @@ import AmountWidget from './AmountWidget'
 import MobileWidget from './MobileWidget'
 import SelectWidget from './SelectWidget'
 import AutoCompleteWidget from './AutoCompleteWidget'
+import OtpWidget from './OtpWidget'
 export const Widgets = {
   TextWidget,
   EmailWidget,
@@ -32,5 +33,6 @@ export const Widgets = {
   PincodeWidget,
   AmountWidget,
   MobileWidget,
-  AutoCompleteWidget
+  AutoCompleteWidget,
+  OtpWidget
 }

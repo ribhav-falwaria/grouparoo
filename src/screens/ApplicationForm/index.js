@@ -9,7 +9,7 @@ import JsonSchemaMultiStepForm from '../components/JsonSchemaForm/JsonSchemaMult
 import styleConstants from '../styleConstants'
 
 const loadApplicationForm = async (dispatch, loanType) => {
-  console.log("Getting loan App")
+  console.log('Getting loan App')
   return dispatch.applicationForms.getByIdAsync({
     id: loanType.formName,
     params: loanType
@@ -19,7 +19,12 @@ const createLoanApplication = async (
   dispatch,
   { formData, customer, loanType, onSuccess }
 ) => {
-  return dispatch.loanApplications.createAsync({ formData, customer, loanType, onSuccess})
+  const data = {
+    formData,
+    customer,
+    loanType
+  }
+  return dispatch.loanApplications.createAsync({ data, onSuccess })
 }
 const updateLoanApplication = async (
   dispatch,
@@ -45,7 +50,7 @@ const ApplicationForm = ({ navigation, route }) => {
     defaultLoanType: models.loanTypes.getDefaultLoanType,
     customer: models.customer.getCustomer,
     loanType: models.loanTypes.getLoanTypeForApplicationId,
-    loanApplication: models.loanApplications.getById
+    loanApplication: models.loanApplications.getApplicationById
   }))
   const { defaultLoanType, customer, loanType, loanApplication } = selection(
     state,
@@ -68,28 +73,34 @@ const ApplicationForm = ({ navigation, route }) => {
   const updateLoanApplicationRequest = useRequest(updateLoanApplication, {
     manual: true
   })
-
   const onError = () => {}
   const onSubmit = async (formData, step) => {
+    formData.stepName = step.stepName
     if (loanApplication && !isEmpty(loanApplication)) {
       // existing form
-      const onSuccess = ({ id }) => setLoanApplicationId(id)
       await updateLoanApplicationRequest.run(dispatch, {
         formData,
         loanApplicationId,
         customer,
-        loanType,
-        onSuccess
+        loanType: currentLoanType
       })
     } else {
-      await createLoanApplicationRequest.run(dispatch, {
+      const onSuccess = ({ id }) => {
+        setLoanApplicationId(id)
+      }
+      createLoanApplicationRequest.run(dispatch, {
         formData,
         customer,
-        loanType
+        loanType: currentLoanType,
+        onSuccess
       })
     }
   }
-  if (loading || createLoanApplicationRequest.loading || updateLoanApplicationRequest.loading) {
+  if (
+    loading ||
+    createLoanApplicationRequest.loading ||
+    updateLoanApplicationRequest.loading
+  ) {
     return <LoadingSpinner />
   }
   const {
@@ -97,9 +108,9 @@ const ApplicationForm = ({ navigation, route }) => {
     uiSchema: { values },
     schemaSteps: { steps }
   } = applicationForm
-  const formData = loanApplication ? loanApplication.values : {}
+  const formData = loanApplication ? loanApplication.formData : {}
   const errors = loanApplication ? loanApplication.errors : {}
-  console.log("INDEX")
+  console.log('INDEX')
   console.log(formData)
   return (
     <View style={styles.container}>
@@ -118,6 +129,8 @@ const ApplicationForm = ({ navigation, route }) => {
 
 const themedStyles = StyleService.create({
   container: {
+    flex: 1,
+    justifyContent: 'flex-start',
     ...styleConstants.container,
     marginHorizontal: 16
   }

@@ -8,10 +8,7 @@ const endpoints = {
     'https://dev-codeapp.novopay.in/novocode/getActionFormByName?formName={formName}&formDocId={_id}'
 }
 
-const updateLoanApplication = async (
-  customerId,
-  { formData, formName }
-) => {
+const updateLoanApplication = async (customerId, { formData, formName }) => {
   try {
     const response = await fetch(endpoints.saveFormDataById, {
       method: 'POST',
@@ -25,9 +22,9 @@ const updateLoanApplication = async (
     if (data.status.toLowerCase() === 'success') {
       if (data.actionForm) {
         return {
-          id: data.actionForm._id,
+          id: data.actionForm.values.id,
           data: {
-            formData: data.actionForm.formData,
+            values: data.actionForm.formData,
             errors: data.actionForm.errors || {},
             formName
           }

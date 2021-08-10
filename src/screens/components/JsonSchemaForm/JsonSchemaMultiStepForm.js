@@ -21,21 +21,32 @@ const JsonSchemaMultiStepForm = ({
   const styles = useStyleSheet(themeStyles)
   let thisFormRef
   const { translations } = useContext(LocalizationContext)
-  const [currentStep, setCurrentStep] = useState(FIRST_STEP_INDEX)
+  let thisStep = FIRST_STEP_INDEX
+  if (!isEmpty(formData)) {
+    Object.keys(steps).forEach(key => {
+      if (steps[key].stepName === formData.stepName) {
+        thisStep = parseInt(key) + 1
+      }
+    })
+    if (!isEmpty(errorSchema)) {
+      thisStep = thisStep - 1
+    }
+  }
+  const [currentStep, setCurrentStep] = useState(thisStep)
   const [isSubmit, setIsSubmit] = useState(false)
   const [newErrorSchema, setNewErrorSchema] = useState(errorSchema)
   const [loading, setLoading] = useState(false)
   const totalSteps = Object.keys(steps).length
   const step = steps[currentStep.toString()]
   step.liveValidate = isSubmit
-  const onSubmit = async (form, stepIndex) => {
+  const onSubmit = (form, stepIndex) => {
     const { errors, errorSchema, formData } = form
     if (errors.length > 0) {
       return
     }
     setLoading(true)
     setIsSubmit(true)
-    await onFormSubmit(formData, steps[stepIndex.toString()])
+    onFormSubmit(formData, steps[stepIndex.toString()])
     if (isEmpty(errors)) {
       // If all well, move to next step
       setLoading(false)
@@ -81,7 +92,7 @@ const JsonSchemaMultiStepForm = ({
           errorSchema={newErrorSchema}
           liveValidate={step.liveValidate}
         >
-          <>
+          <View style={styles.buttonContainer}>
             <Button
               style={styles.buttonStyle}
               onPress={onPrevious}
@@ -109,7 +120,7 @@ const JsonSchemaMultiStepForm = ({
                 {translations['form.submit']}
               </SpinnerButton>
             )}
-          </>
+          </View>
         </JSonSchemaForm>
       </View>
     </>
@@ -117,16 +128,16 @@ const JsonSchemaMultiStepForm = ({
 }
 
 const themeStyles = StyleService.create({
-  buttonsContainer: {
-    flexDirection: 'row'
-    // alignItems: 'center',
-    // justifyContent: 'space-between',
-  },
   buttonStyle: {
     width: '40%'
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
   container: {
-    ...styleConstants.contentContainer
+    ...styleConstants.contentContainer,
+    alignSelf: 'stretch'
   }
 })
 
