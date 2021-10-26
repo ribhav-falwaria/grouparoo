@@ -34,6 +34,7 @@ local.properties
 node_modules/
 npm-debug.log
 yarn-error.log
+android/java_pid11113.hprof
 
 # BUCK
 buck-out/
