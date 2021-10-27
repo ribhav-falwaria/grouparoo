@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-community/async-storage'
 const MAPPING_KEY = 'mapping'
 const THEME_KEY = 'theme'
+const CLIENT_JWT = 'clientJwt'
 
 export class AppStorage {
   static getMapping (fallback) {
@@ -8,7 +9,14 @@ export class AppStorage {
       return mapping || fallback
     })
   }
-
+  static getClientJwt(fallback) {
+    return AsyncStorage.getItem(CLIENT_JWT).then(jwtToken => {
+      return jwtToken || fallback
+    })
+  }
+  static setClientJwt(jwtToken) {
+    return AsyncStorage.setItem(CLIENT_JWT, jwtToken)
+  }
   static getTheme (fallback) {
     return AsyncStorage.getItem(THEME_KEY).then(theme => {
       return theme || fallback

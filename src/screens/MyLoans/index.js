@@ -29,7 +29,7 @@ const MyLoans = props => {
   const { loans, customer } = selection(state)
   // If only one Loan
   if (loans.length === 1) {
-    return <MyLoan {...props} loanId={loans[0]._id} />
+    return <MyLoan {...props} loanId={loans[0].id} />
   }
   if (loans.length === 0) {
     // Apply for new Loan

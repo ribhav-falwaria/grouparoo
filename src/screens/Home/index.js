@@ -81,7 +81,7 @@ const HomeScreen = ({ navigation, route }) => {
         return loans.map((loan, ix) => (
           <Component
             key={`myloanscard-${ix}`}
-            loanId={loan._id}
+            loanId={loan.id}
             Icon={AllIcons[item.icon]}
             onPress={() => item.onPress(item)}
             heading={item.heading}
@@ -93,7 +93,7 @@ const HomeScreen = ({ navigation, route }) => {
         return loanApplications.map((loanApplication, ix) => (
           <Component
             key={`pendingapplication-${ix}`}
-            loanApplicationId={loanApplication._id}
+            loanApplicationId={loanApplication.id}
             Icon={AllIcons[item.icon]}
             onPress={() => item.onPress(item)}
             heading={item.heading}
@@ -104,7 +104,7 @@ const HomeScreen = ({ navigation, route }) => {
       if (loans.length > 0) {
         return loans.map((loan, ix) => (
           <Component
-            loanId={loan._id}
+            loanId={loan.id}
             key={`repayment-${ix}`}
             onPress={() => item.onPress(item, loan)}
             onPaymentPress={() => processPayment(item)}

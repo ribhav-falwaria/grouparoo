@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "261707014142",
+    "project_id": "lendr-6b17d",
+    "storage_bucket": "lendr-6b17d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261707014142:android:fccea6d67be5a205096aaf",
+        "android_client_info": {
+          "package_name": "com.novoloan.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "261707014142-n9qvada2u0su8ggdrup4crleo4qo4oon.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.novoloan.customerapp",
+            "certificate_hash": "4913049a34676efd837a25af7da3dffd5acb07da"
+          }
+        },
+        {
+          "client_id": "261707014142-c60kvi3381463eo73lvfi59qm2k2g455.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaF8QBxRCqM6oDKx6hHZVxBDSqlA8akio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "261707014142-c60kvi3381463eo73lvfi59qm2k2g455.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

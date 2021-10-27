@@ -32,7 +32,7 @@ const updateLoanApplication = async (customerId, { formData, formName }) => {
       } else {
         // dummy
         return {
-          id: formData._id || nanoid(),
+          id: formData.id || nanoid(),
           data: {
             formData,
             formName,
@@ -49,7 +49,7 @@ const updateLoanApplication = async (customerId, { formData, formName }) => {
 const getLoanApplication = async (id, { formName }) => {
   try {
     const response = await fetch(
-      format(endpoints.getFormDataByName, { _id: id, formName })
+      format(endpoints.getFormDataByName, { id: id, formName })
     )
     const data = await response.json()
     if (data.status.toLowerCase() === 'success') {

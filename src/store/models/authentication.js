@@ -1,8 +1,9 @@
+import { AppStorage } from '../../services/app-storage.service'
 const authentication = {
   name: 'authentication',
   state: {
     isLoggedIn: false, // FIXME: Made this true for things to work
-    _id: '',
+    id: '',
     userName: '',
     token: ''
   },
@@ -20,7 +21,12 @@ const authentication = {
     }
   },
   effects: dispatch => ({
-    async loginRequest (payload, rootState) {},
+    async checkAndAuthenticateUser (payload, rootState) {
+      const jwtToken = await AppStorage.getClientJwt('clientToken', 'default')
+      if (jwtToken === 'default') {
+        // check if there is a firebase token provided
+      }
+    },
     async Logout (paylod, rootState) {}
   })
 }
