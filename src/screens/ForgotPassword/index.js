@@ -5,20 +5,19 @@ import { EmailIcon } from './extra/icons'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
-
-export default ({ navigation }) => {
+import ScreenTitle from '../components/ScreenTitle'
+export default ({ navigation, route }) => {
   const [email, setEmail] = React.useState()
   const styles = useStyleSheet(themedStyles)
   const onResetPasswordButtonPress = () => {
     navigation && navigation.goBack()
   }
   const { translations } = useContext(LocalizationContext)
+  const title = route.params?.title || translations['auth.forgotPassword']
   return (
     <KeyboardAwareScrollView>
       <View style={styles.container}>
-        <Text style={styles.enterEmailLabel}>
-          {translations['auth.forgotPassword.enterEmail']}
-        </Text>
+        <ScreenTitle title={title} description={translations['auth.forgotPassword.enterEmail']} />
         <View style={styles.formContainer}>
           <Input
             status='basic'
@@ -42,8 +41,7 @@ export default ({ navigation }) => {
 const themedStyles = StyleService.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 24
+    paddingHorizontal: 16
   },
   formContainer: {
     flex: 1,
@@ -55,11 +53,8 @@ const themedStyles = StyleService.create({
     alignSelf: 'center',
     marginTop: 24
   },
-  enterEmailLabel: {
-    zIndex: 1,
-    alignSelf: 'center',
-    marginTop: 64,
-    ...styleConstants.subHeading
+  content: {
+    ...styleConstants.content
   },
   buttonContanier: {
     paddingVertical: 24

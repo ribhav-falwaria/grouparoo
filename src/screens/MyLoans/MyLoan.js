@@ -20,7 +20,7 @@ import {
 import styleConstants from '../styleConstants'
 import { LocalizationContext } from '../../components/Translation'
 import { rupeeFormatter } from '../../utils'
-import { CheckIcon, CancelIcon } from '../components/ThemedIcons'
+import { CheckIconSmall, CancelIcon } from '../components/ThemedIcons'
 const MyLoan = ({ navigation, loanId }) => {
   const [viewMore, { toggle }] = useToggle(false)
   const store = useStore()
@@ -257,7 +257,7 @@ const MyLoan = ({ navigation, loanId }) => {
         style={styles.listContainer}
         title={`${item.repaymentDate} ${translations['repayment.installment']}`}
         description={translations[item.description]}
-        accessoryLeft={item.isFullyPaid ? CheckIcon : CancelIcon}
+        accessoryLeft={item.isFullyPaid ? CheckIconSmall : CancelIcon}
         accessoryRight={renderAmount}
       />
     )
@@ -339,7 +339,7 @@ const themedStyles = StyleService.create({
     paddingVertical: 8
   },
   container: {
-    backgroundColor: 'background-basic-color-4'
+    backgroundColor: 'background-basic-color-2'
   },
   footerContainer: {
     paddingHorizontal: 16

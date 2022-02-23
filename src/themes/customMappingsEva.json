@@ -1,13 +1,25 @@
 {
   "strict": {
-    "text-font-family": "opensans-regular"
+    "text-font-family": "Roboto-Regular",
+    "text-heading-1-font-family": "NovoSans-Light",
+    "text-heading-2-font-family": "NovoSans-Light",
+    "text-heading-3-font-family": "NovoSans-Black",
+    "text-heading-4-font-family": "NovoSans-Black",
+    "text-heading-5-font-family": "NovoSans-Black",
+    "text-heading-6-font-family": "NovoSans-Black",
+    "text-subtitle-1-font-family": "Roboto-Medium",
+    "text-subtitle-2-font-family": "Roboto-Medium",
+    "text-paragraph-1-font-family": "$text-font-family",
+    "text-paragraph-2-font-family": "$text-font-family",
+    "text-caption-1-font-family": "Roboto-Medium",
+    "text-caption-2-font-family": "$text-font-family"
   },
   "components": {
     "TopNavigation": {
       "appearances": {
         "default": {
           "mapping": {
-            "backgroundColor": "background-basic-color-4"
+            "backgroundColor": "background-basic-color-2"
           }
         }
       }
@@ -16,7 +28,7 @@
       "appearances": {
         "default": {
           "mapping": {
-            "backgroundColor": "background-basic-color-4"
+            "backgroundColor": "background-basic-color-2"
           }
         }
       }
@@ -34,7 +46,7 @@
       "appearances": {
         "default": {
           "mapping": {
-            "backgroundColor": "background-basic-color-1"
+            "backgroundColor": "background-basic-color-3"
           }
         }
       }
@@ -98,10 +110,10 @@
           "variantGroups": {
             "position": {
               "top": {
-                "backgroundColor": "background-basic-color-4"
+                "backgroundColor": "background-basic-color-2"
               },
               "bottom": {
-                "backgroundColor": "background-basic-color-4"
+                "backgroundColor": "background-basic-color-3"
               }
             }
           }

@@ -1,0 +1,10 @@
+1. Refactor the jsonschema form code
+2. Bank statement and itr upload widgets are copy paste. They should derive out of a common FileUploadWidget with validation function
+3. Pan upload, selfie upload all have to derive from imageUpload component. Image upload like file upload should support multiple uploads if needed using the multiple key
+4. Sweta to provide adhaar consent text and consent text for Adhhar data
+5. On Finally to be used in useRequest for repetetive code in onSuccess and onFailure
+6. What is this appId / tempId
+7. SelfieWidget to be rehashed like other ImageUploadWidgets
+8. Currently all imageUpload and docupload is using files stored in state. We need to pick up these files from the server using docid and display.
+10. Image upload need animation to ease jerking
+11. Range widget is a generiv widget. need to have loan Amount widget that derives from range widget.

@@ -19,18 +19,15 @@ const HomeListComponents = {
   PendingLoanApplications,
   MyLoansCard
 }
-const getHomeData = async (dispatch, { customer }) => {
-  return Promise.all([
-    dispatch.loans.getAsync(customer),
-    dispatch.loanApplications.getAsync(customer)
-  ])
+const getHomeData = async (dispatch) => {
+  await dispatch.loans.getAllLoans()
 }
 
 const HomeScreen = ({ navigation, route }) => {
   const store = useStore()
   const dispatch = useDispatch()
   const state = useSelector(state => state)
-  const { loading } = useRequest(() => getHomeData(dispatch, state))
+  const { loading } = useRequest(() => getHomeData(dispatch))
   const selection = store.select(models => ({
     customer: models.customer.getCustomer,
     loans: models.loans.getActiveLoans,
@@ -81,7 +78,7 @@ const HomeScreen = ({ navigation, route }) => {
         return loans.map((loan, ix) => (
           <Component
             key={`myloanscard-${ix}`}
-            loanId={loan.id}
+            loanId={loan.loanApplicationId}
             Icon={AllIcons[item.icon]}
             onPress={() => item.onPress(item)}
             heading={item.heading}
@@ -93,7 +90,7 @@ const HomeScreen = ({ navigation, route }) => {
         return loanApplications.map((loanApplication, ix) => (
           <Component
             key={`pendingapplication-${ix}`}
-            loanApplicationId={loanApplication.id}
+            loanApplicationId={loanApplication.loanApplicationId}
             Icon={AllIcons[item.icon]}
             onPress={() => item.onPress(item)}
             heading={item.heading}
@@ -104,7 +101,7 @@ const HomeScreen = ({ navigation, route }) => {
       if (loans.length > 0) {
         return loans.map((loan, ix) => (
           <Component
-            loanId={loan.id}
+            loanId={loan.loanApplicationId}
             key={`repayment-${ix}`}
             onPress={() => item.onPress(item, loan)}
             onPaymentPress={() => processPayment(item)}

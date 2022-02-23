@@ -5,7 +5,7 @@ import { TrainingsListScreen } from './traininig-list.component'
 
 const TrainingsTabBar = ({ navigation, state }) => {
   const onTabSelect = index => {
-    navigation.navigate(state.routeNames[index])
+    navigation.navigate(state.routeNames[index], {})
   }
 
   const renderTab = route => <Tab key={route} title={route.toUpperCase()} />

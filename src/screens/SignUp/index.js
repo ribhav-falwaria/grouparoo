@@ -1,56 +1,110 @@
-import React, { useContext } from 'react'
-import { View } from 'react-native'
+import React, { useContext, useState } from 'react'
+import { View, Linking } from 'react-native'
+import isEmpty from 'lodash.isempty'
+import isUndefined from 'lodash.isundefined'
 import { useRequest } from 'ahooks'
+import { mask, unMask } from 'react-native-mask-text'
 import apiServices from '../../apiService'
 
 import {
   Button,
   CheckBox,
-  Divider,
   Input,
   StyleService,
   Text,
   useStyleSheet,
   Spinner
 } from '@ui-kitten/components'
-import { FacebookIcon, GoogleIcon } from './extra/icons'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import FormLabel from '../components/FormLabel'
+import { FormIcons } from '../components/ThemedIcons'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
-const writeFormLabel = content => <FormLabel content={content} />
+import ScreenTitle from '../components/ScreenTitle'
+import { validateFormData } from './validations'
+import { config } from '../../config'
+const MOBILE_MASK = '99999 99999'
 
-const SignUp = ({ navigation }) => {
-  const [name, setName] = React.useState()
-  const [email, setEmail] = React.useState()
-  const [primaryPhone, setPrimaryPhone] = React.useState()
-  const [termsAccepted, setTermsAccepted] = React.useState(false)
-  const [whatsappAccepted, setWhatsappAccepted] = React.useState(true)
+const SignUp = ({ navigation, route }) => {
+  const [liveValidate, setLiveValidate] = useState(false)
   const { translations } = useContext(LocalizationContext)
+  const title = route.params?.title || translations['auth.signUp']
+  const [formData, setFormData] = useState(route.params?.formData || {
+    fullName: '',
+    email: '',
+    primaryPhone: '',
+    whatsappPermission: true
+  })
+  const [error, setError] = useState({})
   const styles = useStyleSheet(themedStyles)
   const { loading, run } = useRequest(apiServices.sendOtp, { manual: true })
-  const onSignUpButtonPress = async () => {
-    await run(primaryPhone)
-    navigation &&
-      navigation.navigate('Otp', {
-        name,
-        email,
-        primaryPhone,
-        termsAccepted,
-        whatsappAccepted
+  const onDataChange = (key, value) => {
+    formData[key] = value
+    if (key === 'primaryPhone') {
+      formData.primaryPhone = mask(value, MOBILE_MASK)
+    } else {
+      formData[key] = value
+    }
+    if (liveValidate) {
+      const errors = validateFormData({
+        fullName: formData.fullName,
+        email: formData.email,
+        primaryPhone: unMask(formData.primaryPhone)
       })
+      setError(errors)
+    }
+    setFormData(Object.assign({}, formData))
   }
-
+  const onSignUpButtonPress = async () => {
+    const unmaskedPhone = formData.primaryPhone && unMask(formData.primaryPhone)
+    const errors = validateFormData({
+      fullName: formData.fullName,
+      email: formData.email,
+      primaryPhone: unmaskedPhone
+    })
+    if (isUndefined(formData.termsAccepted) || formData.termsAccepted === false) {
+      errors.termsAccepted = true
+    }
+    if (isEmpty(errors)) {
+      await run(unmaskedPhone)
+      formData.primaryPhone = unmaskedPhone
+      navigation.navigate('Otp', { formData })
+    } else {
+      setLiveValidate(true)
+      setError(errors)
+    }
+  }
   const onSignInButtonPress = () => {
-    navigation && navigation.navigate('SignIn')
+    navigation.navigate('SignIn', { formData })
   }
 
   const renderTermsLabel = React.useCallback(
-    evaProps => (
-      <Text {...evaProps} style={styles.termsCheckBoxText}>
-        {translations['auth.tnc']}
-      </Text>
-    ),
+    evaProps => {
+      // in order to have multiple colored text
+      const modifiedProps = JSON.parse(JSON.stringify(evaProps))
+      delete modifiedProps.style.color
+      return (
+        <Text {...evaProps} category='p1' appearance='hint'>
+          {`${translations['auth.tnc']} `}
+          <Text
+            {...modifiedProps}
+            category='p1'
+            status='info'
+            onPress={() => Linking.openURL(config.termsUrl)}
+          >
+            {translations['auth.tnc.terms']}
+          </Text>
+          {' & '}
+          <Text
+            {...modifiedProps}
+            status='info'
+            category='p1'
+            onPress={() => Linking.openURL(config.ppUrl)}
+          >
+            {translations['auth.tnc.privacy']}
+          </Text>
+        </Text>
+      )
+    },
     []
   )
   const renderWhatsappLabel = React.useCallback(
@@ -62,105 +116,91 @@ const SignUp = ({ navigation }) => {
     []
   )
   const loadingIndicator = props => {
-    if (loading) {
+    if (!loading) {
       return null
     }
     return (
       <View style={[props.style, styles.indicator]}>
-        <Spinner size='small' />
+        <Spinner size='small' status='basic' />
       </View>
     )
   }
   return (
-    <KeyboardAwareScrollView style={styles.container}>
-      <Text style={styles.content} category='p1'>
-        {translations['auth.signup.excited']}
-      </Text>
-      <View style={styles.socialAuthContainer}>
-        <Text style={styles.socialAuthHintText} category='h6'>
-          {translations['auth.socialMediaSignIn']}
-        </Text>
-        <View style={styles.socialAuthButtonsContainer}>
-          <Button
-            appearance='ghost'
-            size='giant'
-            status='info'
-            accessoryLeft={GoogleIcon}
+    <KeyboardAwareScrollView
+      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
+      style={styles.container}
+    >
+      <ScreenTitle
+        title={title}
+        description={translations['auth.signup.excited']}
+      />
+      <View style={styles.formContainer}>
+        <View>
+          <Input
+            placeholder={translations['form.placeholder.name']}
+            label={translations['form.name']}
+            autoCapitalize='words'
+            value={formData.fullName}
+            status={error.fullName && 'danger'}
+            onChangeText={(v) => onDataChange('fullName', v)}
+            caption={() => (<Text appearance='hint' category='label'>{translations['form.asOnPan']}</Text>)}
+            accessoryRight={FormIcons.FormNameIcon}
           />
-          <Button
-            appearance='ghost'
-            size='giant'
-            status='info'
-            accessoryLeft={FacebookIcon}
+          <Input
+            style={styles.formInput}
+            placeholder=''
+            label={translations['form.email']}
+            status={error.email && 'danger'}
+            value={formData.email}
+            keyboardType='email-address'
+            onChangeText={(v) => onDataChange('email', v)}
+            accessoryRight={FormIcons.FormEmailIcon}
           />
+          <Input
+            style={styles.formInput}
+            label={translations['form.mobileNumber']}
+            placeholder={translations['form.mobileNumber']}
+            value={formData.primaryPhone}
+            keyboardType='numeric'
+            status={error.primaryPhone && 'danger'}
+            onChangeText={(v) => onDataChange('primaryPhone', v)}
+            accessoryLeft={() => (<Text appearance='hint'>+91 </Text>)}
+            accessoryRight={FormIcons.FormMobileIcon}
+          />
+          <CheckBox
+            style={styles.termsCheckBox}
+            checked={formData.whatsappPermission}
+            onChange={checked => onDataChange('whatsappPermission', checked)}
+          >
+            {renderWhatsappLabel}
+          </CheckBox>
+          <CheckBox
+            style={styles.termsCheckBox}
+            checked={formData.termsAccepted}
+            status={error.termsAccepted && 'danger'}
+            onChange={checked => onDataChange('termsAccepted', checked)}
+          >
+            {renderTermsLabel}
+          </CheckBox>
         </View>
-      </View>
-      <View style={styles.orContainer}>
-        <Divider style={styles.divider} />
-        <Text style={styles.orLabel} category='h5'>
-          OR
-        </Text>
-        <Divider style={styles.divider} />
-      </View>
-      <Text style={styles.emailSignLabel} category='h6'>
-        {translations['auth.signUpWithEmail']}
-      </Text>
-      <View style={[styles.container, styles.formContainer]}>
-        <Input
-          placeholder={translations['form.placeholder.name']}
-          label={writeFormLabel(translations['form.firstName'])}
-          autoCapitalize='words'
-          value={name}
-          size='large'
-          onChangeText={setName}
-        />
-        <Input
-          style={styles.formInput}
-          placeholder='rajesh.kumar@gmail.com'
-          label={writeFormLabel(translations['form.email'])}
-          value={email}
-          size='large'
-          onChangeText={setEmail}
-        />
-        <Input
-          style={styles.formInput}
-          label={writeFormLabel(translations['form.mobileNumber'])}
-          placeholder={translations['form.mobileNumber']}
-          value={primaryPhone}
-          size='large'
-          onChangeText={setPrimaryPhone}
-        />
-        <CheckBox
-          style={styles.termsCheckBox}
-          checked={whatsappAccepted}
-          onChange={checked => setWhatsappAccepted(checked)}
-        >
-          {renderWhatsappLabel}
-        </CheckBox>
-        <CheckBox
-          style={styles.termsCheckBox}
-          checked={termsAccepted}
-          onChange={checked => setTermsAccepted(checked)}
-        >
-          {renderTermsLabel}
-        </CheckBox>
-      </View>
-      <View style={styles.bottomButtonContainer}>
-        <Button
-          style={styles.signUpButton}
-          onPress={onSignUpButtonPress}
-          accessoryRight={loadingIndicator}
-        >
-          {translations['auth.signUp']}
-        </Button>
-        <Button
-          style={styles.signInButton}
-          appearance='ghost'
-          status='primary'
-          onPress={onSignInButtonPress}
-        >
-          {translations['auth.signInReminder']}
-        </Button>
+        <View style={styles.buttonContainer}>
+          <Button
+            style={styles.signUpButton}
+            onPress={onSignUpButtonPress}
+            accessoryRight={loadingIndicator}
+          >
+            {translations['auth.signUp'].toUpperCase()}
+          </Button>
+          <Button
+            style={styles.signInButton}
+            appearance='ghost'
+            status='primary'
+            onPress={onSignInButtonPress}
+          >
+            {translations['auth.signInReminder']}
+          </Button>
+        </View>
       </View>
     </KeyboardAwareScrollView>
   )
@@ -169,42 +209,16 @@ const SignUp = ({ navigation }) => {
 const themedStyles = StyleService.create({
   container: {
     flex: 1,
-    flexDirection: 'column'
+    flexDirection: 'column',
+    paddingHorizontal: 16
   },
-  headerContainer: {
-    minHeight: 216,
-    paddingHorizontal: 16,
-    paddingTop: 24,
-    paddingBottom: 44
-  },
-  signUpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 32
-  },
-  socialAuthContainer: {
-    marginTop: 24
-  },
-  socialAuthButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center'
-  },
-  socialAuthHintText: {
-    alignSelf: 'center',
-    marginBottom: 0,
-    ...styleConstants.subHeading
+  buttonContainer: {
+    justifyContent: 'flex-end',
+    marginTop: 'auto'
   },
   formContainer: {
     marginTop: 32,
-    paddingHorizontal: 16
-  },
-  evaButton: {
-    maxWidth: 72,
-    paddingHorizontal: 0
-  },
-  signInLabel: {
-    flex: 1
+    justifyContent: 'space-between'
   },
   signInButton: {
     flexDirection: 'row-reverse',
@@ -212,32 +226,10 @@ const themedStyles = StyleService.create({
   },
   signUpButton: {
     marginTop: 16,
-    marginBottom: 0,
-    marginHorizontal: 16
-  },
-  socialAuthIcon: {
-    tintColor: 'text-basic-color'
-  },
-  orContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 16,
-    marginTop: 8
-  },
-  divider: {
-    flex: 1
+    marginBottom: 0
   },
   content: {
     ...styleConstants.content
-  },
-  orLabel: {
-    marginHorizontal: 8,
-    ...styleConstants.content
-  },
-  emailSignLabel: {
-    alignSelf: 'center',
-    marginTop: 8,
-    ...styleConstants.subHeading
   },
   formInput: {
     marginTop: 16
@@ -245,18 +237,7 @@ const themedStyles = StyleService.create({
   termsCheckBox: {
     marginTop: 20
   },
-  termsCheckBoxText: {
-    fontSize: 11,
-    lineHeight: 14,
-    color: 'text-hint-color',
-    marginLeft: 10
-  },
-  bottomButtonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start'
-  },
   indicator: {
-    justifyContent: 'center',
     alignItems: 'center'
   }
 })

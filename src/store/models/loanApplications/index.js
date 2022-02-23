@@ -1,63 +1,131 @@
 import dayjs from 'dayjs'
-import createListModels from '../../createListModels'
-import { api } from './api'
+import isEmpty from 'lodash.isempty'
+import isUndefined from 'lodash.isundefined'
+import apiService from '../../../apiService'
+
+const addLoanApplications = (state, { loanApplications }) => {
+  if (!isEmpty(loanApplications)) {
+    const activeLoanApplicationIds = []
+    if (!isUndefined(loanApplications)) {
+      loanApplications.forEach(la => {
+        state.applications[la.loanApplicationId] = la
+        if (la.status === 'ACTIVE') {
+          activeLoanApplicationIds.push(la.loanApplicationId)
+        }
+      })
+      if (loanApplications.length === 1) {
+        state.currentLoanApplicationId = loanApplications[0].loanApplicationId
+      }
+      state.activeLoanApplicationIds = activeLoanApplicationIds
+      return state
+    }
+    return state
+  }
+  return state
+}
 const loanApplications = {
   name: 'loanApplications',
-  api,
-  extensions: {
-    state: [],
-    selectors: {
-      getApplicationById: select => (rootState, { id }) => {
-        const loanApplication = select.loanApplications.getById(rootState, id)
+  state: {
+    activeLoanApplicationIds: [],
+    currentLoanApplicationId: undefined,
+    applications: {}
+  },
+  selectors: {
+    getCurrentLoanApplication: select => (rootState) => {
+      const loanApplications = rootState.loanApplications
+      if (!isUndefined(loanApplications.currentLoanApplicationId)) {
+        const loanApplication = loanApplications.applications[loanApplications.currentLoanApplicationId]
         return loanApplication
-      },
-      getActiveLoanApplications: select => rootState => {
-        return select.loanApplications
-          .list(rootState)
-          .filter(la => la.applicationStatus === 'active')
-      },
-      getLoanAmount: select => (rootState, { loanApplicationId }) => {
-        const loanApplication = select.loanApplications.getById(
-          rootState,
-          loanApplicationId
-        )
-        return loanApplication.currentLoanOffer.loanAmount
-      },
-      getStartDate: select => (rootState, { loanApplicationId }) => {
-        const loanApplication = select.loanApplications.getById(
-          rootState,
-          loanApplicationId
-        )
-        return dayjs(loanApplication.createdAt).format('DD-MMM-YYYY')
       }
     },
-    reducers: {},
-    effects: (dispatch, baseEffects) => ({
-      async create (payload, rootState) {
-        const { data } = payload
-        return baseEffects.createAsync(data)
-      },
-      async update (payload, rootState) {
-        const { id, data } = payload
-        baseEffects.updateAsync(id, data)
-      },
-      async remove (payload, rootState) {
-        const { id } = payload
-        baseEffects.removeAsync(id)
-      },
-      async get (payload, rootState) {
-        const { id } = payload
-        baseEffects.getAsync(id)
-      },
-      async getById (payload, rootState) {
-        const { id, params } = payload
-        return baseEffects.getByIdAsync(id, params)
+    hasAnyLoanApplication: select => (rootState) => {
+      return !isEmpty(rootState.loanApplications.applications)
+    },
+    getApplicationById: select => (rootState, { id }) => {
+      const loanApplication = rootState.loanApplications.applications[id]
+      return loanApplication
+    },
+    getActiveLoanApplications: select => rootState => {
+      const activeLoanApplicationIds = rootState.loanApplications.activeLoanApplicationIds
+      return activeLoanApplicationIds.map(aid => rootState.loanApplications.applications[aid])
+    },
+    getAllLoanApplications: select => rootState => {
+      return Object.keys(rootState.loanApplications.applications).map(ky => rootState.loanApplications.applications[ky])
+    },
+    getLoanAmount: select => (rootState, { loanApplicationId }) => {
+      return rootState.loanApplications.applications[loanApplicationId].loanAmount
+    },
+    getStartDate: select => (rootState, { loanApplicationId }) => {
+      const createdAt = rootState.loanApplications.applications[loanApplicationId].createdOn
+      return dayjs(createdAt).format('DD-MMM-YYYY')
+    },
+    getLoanDetailsForApplication: select => (rootState, { loanApplicationId }) => {
+      const loanApplication = rootState.loanApplications.application[loanApplicationId]
+      const loan = select.loans.getLoanById({
+        loanId: loanApplication.loanId
+      })
+      return loan
+    }
+  },
+  reducers: {
+    // Called only while registering or signing in. Server has the true data
+    'customer/setCustomer': addLoanApplications,
+    addLoanApplication: (state, { loanApplication }) => {
+      if (loanApplication.status === 'active') {
+        state.activeLoanApplicationIds = [loanApplication.loanApplicationId, ...state.activeLoanApplicationIds]
+        if (isEmpty(state.applications)) {
+          // This is the first application
+          state.currentLoanApplicationId = loanApplication.loanApplicationId
+        }
       }
-    })
-  }
+      state.applications[loanApplication.loanApplicationId] = loanApplication
+      return state
+    },
+    setCurrentLoanApplication: (state, loanApplicationId) => {
+      state.currentLoanApplicationId = loanApplicationId
+      const newState = Object.assign({}, state)
+      return newState
+    },
+    'loans/addAllLoans': (state, { allLoans }) => {
+      if (isUndefined(allLoans)) {
+        return state
+      }
+      allLoans.forEach(al => {
+        const loanApp = state.applications[al.loanApplicationId]
+        if (loanApp) {
+          loanApp.loanId = al.externalLoanId
+        }
+      })
+      return state
+    }
+  },
+  effects: (dispatch) => ({
+    async createLoanApplication ({ loanApplicationId }, rootState) {
+      const { id, customerDetails } = rootState.customer
+      const formData = {
+        primaryName: customerDetails.fullName,
+        // primaryEmail: customerDetails.primaryEmail,
+        primaryPhone: customerDetails.primaryPhone,
+        isPrimaryPhoneVerified: 'yes',
+        loanApplicationId,
+        status: 'ACTIVE',
+        customerId: customerDetails.$id
+      }
+      try {
+        const loanApplication = await apiService.appApi.loanApplication.create(formData, id)
+        dispatch.loanApplications.addLoanApplication({ loanApplication })
+      } catch (e) {
+        console.log(e)
+        throw new Error('CANNOT_CREATE_LOAN_APPLICATION')
+      }
+    },
+    async removeLoanApplication ({ loanApplicationId }, rootState) {
+      const loanApplication = rootState.loanApplications[loanApplicationId]
+      if (!isUndefined(loanApplication)) {
+        await apiService.appApi.loans.deleteLoanApplication(rootState)
+        dispatch.loanApplications.deleteLoanApplication({ loanApplicationId })
+      }
+    }
+  })
 }
-export default createListModels(
-  loanApplications.name,
-  loanApplications.api,
-  loanApplications.extensions
-)
+export default loanApplications

@@ -11,7 +11,6 @@ pdf view
 UI flows
 https://dribbble.com/wlitz/projects/1407520-Financr
 
-https://github.com/zo0r/react-native-push-notification
 
 
 Translations and settings page
@@ -31,3 +30,8 @@ https://www.npmjs.com/package/react-native-bundle-visualizer
 
 
 Need to errorboundary and handle error
+https://github.com/carloscuesta/react-native-error-boundary
+
+
+1. Replace Axios usage to fetch.
+  

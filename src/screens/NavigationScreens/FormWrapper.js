@@ -5,10 +5,11 @@ import {
 } from '@ui-kitten/components'
 import styleConstants from '../styleConstants'
 import SafeAreaLayout from '../../components/SafeAreaLayout.component'
+
 const FormWrapper = props => {
   const styles = useStyleSheet(themedStyles)
   return (
-    <SafeAreaLayout style={styles.safeArea} insets='top' level='4'>
+    <SafeAreaLayout style={styles.safeArea} insets='top' level='1'>
       {props.children}
     </SafeAreaLayout>
   )

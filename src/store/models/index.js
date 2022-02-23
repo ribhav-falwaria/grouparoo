@@ -9,6 +9,12 @@ import homeListItems from './homeListItems'
 import loanTypes from './loanTypes'
 import settings from './settings'
 import applicationForms from './applicationForms/'
+import permissionsHelp from './permissionsHelp'
+import appStates from './appStates'
+import loanProducts from './loanProducts'
+import formDetails from '../../screens/components/React-json-schema-form/store/formDetails'
+import cache from '../../screens/components/React-json-schema-form/store/cachedData'
+import borrowingEntities from './borrowingEntities'
 export default {
   customer,
   loanApplications,
@@ -20,5 +26,11 @@ export default {
   homeListItems,
   loanTypes,
   settings,
-  applicationForms
+  applicationForms,
+  permissionsHelp,
+  appStates,
+  loanProducts,
+  formDetails,
+  cache,
+  borrowingEntities
 }

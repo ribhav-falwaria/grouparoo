@@ -16,7 +16,7 @@ const ScreenWrapper = props => {
   const renderDrawerAction = () => (
     <TopNavigationAction
       icon={(imageProps) => <MenuIcon {...imageProps} fill={theme['color-primary-500']} />}
-      onPress={props.navigation.toggleDrawer}
+      onPress={() => props.navigation.toggleDrawer}
     />
   )
   const renderRightActions = () => (
@@ -26,7 +26,7 @@ const ScreenWrapper = props => {
     </>
   )
   return (
-    <SafeAreaLayout style={alternateScreen ? styles.safeAreaAlternate : styles.safeArea} insets='top' level={'4'}>
+    <SafeAreaLayout style={alternateScreen ? styles.safeAreaAlternate : styles.safeArea} insets='top' level='2'>
       <TopNavigation
         style={alternateScreen ? styles.topNavigationStyle : {}}
         accessoryLeft={renderDrawerAction}

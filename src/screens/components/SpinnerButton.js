@@ -3,17 +3,13 @@ import { View } from 'react-native'
 import { Button, Spinner, StyleService, useStyleSheet } from '@ui-kitten/components'
 const SpinnerButton = props => {
   const styles = useStyleSheet(themedStyles)
-  const loadingIndicator = props => {
-    if (!props.loading) {
+  const buttonIcon = (item) => {
+    if (props.Icon && !props.loading) {
+      return (<props.Icon {...item} />)
+    } else {
       return null
     }
-    return (
-      <View style={[props.style, styles.indicator]}>
-        <Spinner size={props.size || 'medium'} />
-      </View>
-    )
   }
-
   return (
     <Button
       style={props.style}
@@ -21,17 +17,25 @@ const SpinnerButton = props => {
       disabled={props.disabled}
       status={props.status || 'primary'}
       size={props.size || 'medium'}
-      accessoryRight={loadingIndicator}
+      accessoryRight={buttonIcon}
       onPress={props.onPress}
     >
-      {props.children}
+      {props.loading && (
+        <View style={[styles.indicator, props.style]}>
+          {props.loading && (
+            <Spinner size={props.size || 'tiny'} status={props.status || 'basic'} />
+          )}
+        </View>)}
+      {!props.loading && props.children}
     </Button>
   )
 }
 const themedStyles = StyleService.create({
   indicator: {
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'column'
   }
 })
 export default SpinnerButton

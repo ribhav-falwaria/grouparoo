@@ -42,6 +42,7 @@ const HomeTabsNavigator = () => {
 
 const HomeNavigator = () => {
   const { drawerNavigations, initialRouteName } = HomeDrawerNavigationScreens({})
+  // Just show the dummy screen for permissions.
   drawerNavigations.unshift({
     name: 'Home',
     title: 'home.title',

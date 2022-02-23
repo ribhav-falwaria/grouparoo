@@ -14,7 +14,7 @@ buildscript {
     }
     dependencies {
         classpath("com.android.tools.build:gradle:4.1.0")
-        classpath('com.google.gms:google-services:4.3.10')
+        classpath('com.google.gms:google-services:4.3.10')  
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -31,10 +31,21 @@ allprojects {
         maven {
             // Android JSC is installed from npm
             url("$rootDir/../node_modules/jsc-android/dist")
+            url "$rootDir/../node_modules/@notifee/react-native/android/libs"
         }
-
+        // maven {
+        //     url "s3://risk-manager-android-sdk/artifacts"
+        //     credentials(AwsCredentials) {
+        //         accessKey = "<ACCESS_KEY>"
+        //         secretKey = "<SECRET_KEY>"
+        //     }
+        //     content {
+        //         includeGroup("in.finbox")
+        //     }
+        // }
         google()
         jcenter()
         maven { url 'https://www.jitpack.io' }
     }
 }
+

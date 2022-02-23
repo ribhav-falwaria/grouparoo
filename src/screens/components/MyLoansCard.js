@@ -5,8 +5,7 @@ import {
   Card,
   Text,
   StyleService,
-  useStyleSheet,
-  Button
+  useStyleSheet
 } from '@ui-kitten/components'
 import {
   Placeholder,

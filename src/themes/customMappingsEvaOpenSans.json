@@ -1,0 +1,124 @@
+{
+  "strict": {
+    "text-font-family": "OpenSans-regular",
+    "text-heading-1-font-family": "OpenSans-Light",
+    "text-heading-2-font-family": "OpenSans-Light",
+    "text-heading-3-font-family": "OpenSans-Light",
+    "text-heading-4-font-family": "OpenSans-ExtraBold",
+    "text-heading-5-font-family": "OpenSans-ExtraBold",
+    "text-heading-6-font-family": "OpenSans-ExtraBold",
+    "text-subtitle-1-font-family": "OpenSans-SemiBold",
+    "text-subtitle-2-font-family": "OpenSans-SemiBold",
+    "text-paragraph-1-font-family": "$text-font-family",
+    "text-paragraph-2-font-family": "$text-font-family",
+    "text-caption-1-font-family": "OpenSans-SemiBold",
+    "text-caption-2-font-family": "$text-font-family"
+  },
+  "components": {
+    "TopNavigation": {
+      "appearances": {
+        "default": {
+          "mapping": {
+            "backgroundColor": "background-basic-color-2"
+          }
+        }
+      }
+    },
+    "List": {
+      "appearances": {
+        "default": {
+          "mapping": {
+            "backgroundColor": "background-basic-color-2"
+          }
+        }
+      }
+    },
+    "Card": {
+      "appearances": {
+        "outline": {
+          "mapping": {
+            "borderRadius": 12
+          }
+        }
+      }
+    },
+    "Divider": {
+      "appearances": {
+        "default": {
+          "mapping": {
+            "backgroundColor": "background-basic-color-3"
+          }
+        }
+      }
+    },
+    "StatusBar": {
+      "meta": {
+        "scope": "mobile",
+        "parameters": {
+          "barStyle": {
+            "type": "string"
+          },
+          "backgroundColor": {
+            "type": "string"
+          }
+        },
+        "appearances": {
+          "default": {
+            "default": true
+          }
+        },
+        "variantGroups": {},
+        "states": {}
+      },
+      "appearances": {
+        "default": {
+          "mapping": {
+            "barStyle": "dark-content",
+            "backgroundColor": "background-basic-color-2"
+          }
+        }
+      }
+    },
+    "SafeAreaLayout": {
+      "meta": {
+        "scope": "mobile",
+        "parameters": {
+          "backgroundColor": {
+            "type": "string"
+          }
+        },
+        "appearances": {
+          "default": {
+            "default": true
+          }
+        },
+        "variantGroups": {
+          "insets": {
+            "top": {
+              "default": false
+            },
+            "bottom": {
+              "default": false
+            }
+          }
+        },
+        "states": {}
+      },
+      "appearances": {
+        "default": {
+          "mapping": {},
+          "variantGroups": {
+            "position": {
+              "top": {
+                "backgroundColor": "background-basic-color-2"
+              },
+              "bottom": {
+                "backgroundColor": "background-basic-color-3"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -11,25 +11,35 @@
  */
 
 import React from 'react'
+
 import { Provider } from 'react-redux'
 import { AppearanceProvider } from 'react-native-appearance'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components'
+// import ErrorBoundary from 'react-native-error-boundary'
 
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import * as eva from '@eva-design/eva'
 import RNOtpVerify from 'react-native-otp-verify'
+import { useRequest } from 'ahooks'
 import customMappingsEva from './src/themes/customMappingsEva.json'
-import appTheme from './src/themes/appTheme.json'
+import appTheme from './src/themes/blue600.json'
 import MainApp from './src/MainApp'
 import { LocalizationProvider } from './src/components/Translation'
 import store from './src/store'
-/**
- * Use any valid `name` property from eva icons (e.g `github`, or `heart-outline`)
- * https://akveo.github.io/eva-icons
- */
+import { AppStorage } from './src/services/app-storage.service'
+import { checkNotificationPermissions } from './src/services/push.notifications'
+const initialSetup = async () => {
+  const enabled = await checkNotificationPermissions()
+  await AppStorage.toggleFirstTime()
+  await AppStorage.togglePermissionRequested()
+  await AppStorage.toggleIntroScreen()
+  return enabled
+}
 const App = props => {
-  // This will print the message hash to be appended. 
+  // Check for notification permissions and get the fcm token for the app
+  const { loading, data } = useRequest(() => initialSetup())
+  // This will print the message hash to be appended.
   // see https://developers.google.com/identity/sms-retriever/verify
   RNOtpVerify.getHash()
     .then(hash => {
@@ -54,7 +64,7 @@ const App = props => {
           >
             <SafeAreaProvider>
               <LocalizationProvider>
-                <MainApp {...props} />
+                <MainApp {...props} notificationsEnabled={data} loading={loading} />
               </LocalizationProvider>
             </SafeAreaProvider>
           </ApplicationProvider>

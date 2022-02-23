@@ -1,7 +1,7 @@
-import applicationFormService from './applicationFormService'
-import loanApplicationService from './loanApplicationService'
 
+import { appApi } from './appWrite'
+import otp from './otpService'
 export default {
-  ...applicationFormService,
-  ...loanApplicationService
+  ...otp,
+  appApi
 }

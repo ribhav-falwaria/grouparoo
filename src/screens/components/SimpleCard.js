@@ -28,8 +28,7 @@ const SimpleCard = ({ heading, Icon, content, onPress, loading }) => {
         <Icon />
         <Text
           style={styles.heading}
-          category='h5'
-          status='primary'
+          category='h6'
           appearance='default'
         >
           {heading}

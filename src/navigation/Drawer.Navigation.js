@@ -18,7 +18,7 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
   navigationData.forEach(n => {
     n.handleOnPress = () => {
       navigation.toggleDrawer()
-      navigation.navigate(n.name)
+      navigation.navigate(n.name, {})
     }
   })
   const renderHeader = () => (
@@ -52,7 +52,7 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
       header={renderHeader}
       footer={renderFooter}
       selectedIndex={new IndexPath(state.index)}
-      onSelect={index => navigation.navigate(state.routeNames[index.row])}
+      onSelect={index => navigation.navigate(state.routeNames[index.row], {})}
     >
       {navigationData.map((el, index) => (
         <DrawerItem

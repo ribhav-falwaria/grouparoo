@@ -4,26 +4,39 @@ import Home from '../Home'
 import MyLoans from '../MyLoans'
 import SignIn from '../Signin'
 import SignUp from '../SignUp'
+import SetPassword from '../SetPassword'
 import ForgotPassword from '../ForgotPassword'
 import Otp from '../Otp'
-import ApplicationForm from '../ApplicationForm/'
-// import Otp from './Otp'
+import AppPermissions from '../AppPermissions'
+import ManageLoanApplications from '../ManageLoanApplications'
+import ApplicationForm from '../ApplicationForm'
+import AppIntro from '../AppIntro'
 import {
   HomeIcon,
   MyLoansIcon,
   ApplicationFormIcon,
   SignInIcon,
   SignUpIcon,
-  ForgotPasswordIcon
+  ForgotPasswordIcon,
+  AppPermissionsIcon,
+  ManageLoanApplicationsIcon
 } from '../components/ThemedIcons'
 import ScreenWrapper from './ScreenWrapper'
 import AuthWrapper from './AuthWrapper'
 import FormWrapper from './FormWrapper'
+import IntroWrapper from './IntroWrapper'
 const WrapScreen = (Component, props) => {
   return (
     <ScreenWrapper {...props}>
       <Component {...props} />
     </ScreenWrapper>
+  )
+}
+const WrapIntroScreen = (Component, props) => {
+  return (
+    <IntroWrapper {...props}>
+      <Component {...props} />
+    </IntroWrapper>
   )
 }
 const WrapAuthScreen = (Component, props) => {
@@ -55,7 +68,7 @@ export const NavigationScreens = options => {
     },
     {
       name: 'MyLoans',
-      Component: (props) => WrapScreen(MyLoans, { ...props, alternateScreen: true }),
+      Component: (props) => WrapScreen(MyLoans, { ...props }),
       title: 'myLoans.title',
       drawerTitle: 'myLoans.title',
       navigations: ['drawer', 'home'],
@@ -64,11 +77,27 @@ export const NavigationScreens = options => {
       options
     },
     {
+      name: 'AppIntro',
+      Component: (props) => WrapIntroScreen(AppIntro, props),
+      title: null,
+      navigations: ['auth'],
+      icon: null,
+      options
+    },
+    {
       name: 'SignIn',
       Component: (props) => WrapAuthScreen(SignIn, props),
       title: 'auth.signIn',
       navigations: ['auth'],
       icon: SignInIcon,
+      options
+    },
+    {
+      name: 'SetPassword',
+      Component: (props) => WrapAuthScreen(SetPassword, props),
+      title: 'auth.SetPassword',
+      navigations: ['auth'],
+      icon: null,
       options
     },
     {
@@ -98,9 +127,28 @@ export const NavigationScreens = options => {
       name: 'ApplicationForm',
       Component: (props) => WrapFormScreen(ApplicationForm, props),
       title: 'form.applicationForm',
-      navigations: ['auth', 'home'],
+      navigations: ['home', 'onboard'],
       icon: ApplicationFormIcon,
-      options
+      options,
+      tabOrder: 102
+    },
+    {
+      name: 'Permissions',
+      Component: (props) => WrapFormScreen(AppPermissions, props),
+      title: 'form.appPermissions',
+      navigations: ['onboard'],
+      icon: AppPermissionsIcon,
+      options,
+      tabOrder: 102
+    },
+    {
+      name: 'ManageLoanApplications',
+      Component: (props) => ScreenWrapper(ManageLoanApplications, props),
+      title: 'form.manageLoanApplications',
+      navigations: ['home'],
+      icon: ManageLoanApplicationsIcon,
+      options,
+      tabOrder: 102
     }
   ]
   return navigations
@@ -121,16 +169,43 @@ export const BottomNavigationScreens = options => {
     n => n.navigations.indexOf('tab') > -1
   )
   return {
-    bottomNavigations: orderBy(bottomNavigations, ['tabOrder'],['asc']),
+    bottomNavigations: orderBy(bottomNavigations, ['tabOrder'], ['asc'])
   }
 }
-export const AuthNavigationScreens = options => {
+
+export const OnboardNavigationScreens = options => {
+  const { isPermissionsRequested, isAllPermissionsValid } = options
   const navigations = NavigationScreens(options)
+  const onboardNavigations = navigations
+    .filter(n => n.navigations.indexOf('onboard') > -1)
+    .reduce((v, o) => {
+      v[o.name] = o
+      return v
+    }, {})
+  const isReadyForApplication = isPermissionsRequested && isAllPermissionsValid
+  return isReadyForApplication ? onboardNavigations.ApplicationForm : onboardNavigations.Permissions
+}
+
+export const AuthNavigationScreens = ({
+  showIntroScreen,
+  isFirstTime
+}) => {
+  const navigations = NavigationScreens()
   const authNavigations = navigations.filter(
     n => n.navigations.indexOf('auth') > -1
   )
+  let initialRouteName
+  if (isFirstTime) {
+    if (showIntroScreen) {
+      initialRouteName = 'AppIntro'
+    } else {
+      initialRouteName = 'SignUp'
+    }
+  } else {
+    initialRouteName = 'SignIn'
+  }
   return {
-    authNavigations, initialRouteName: 'ApplicationForm'
+    authNavigations, initialRouteName
   }
 }
 export const HomeNavigationScreens = options => {

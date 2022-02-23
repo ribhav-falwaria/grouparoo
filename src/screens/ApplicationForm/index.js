@@ -1,138 +1,103 @@
-import React, { useState } from 'react'
-import { View } from 'react-native'
-import isEmpty from 'lodash.isempty'
-import { useStore, useSelector, useDispatch } from 'react-redux'
+import React, { memo, useContext } from 'react'
+import { useSelector, useDispatch, useStore } from 'react-redux'
+import {
+  TopNavigation,
+  TopNavigationAction,
+  StyleService,
+  useStyleSheet,
+  Icon
+} from '@ui-kitten/components'
+import { BackHandler } from 'react-native'
+import isUndefined from 'lodash.isundefined'
+import ApplicationFormNative from './ApplicationFormNative'
 import { useRequest } from 'ahooks'
-import { StyleService, useStyleSheet } from '@ui-kitten/components'
+import apiService from '../../apiService'
 import LoadingSpinner from '../components/LoadingSpinner'
-import JsonSchemaMultiStepForm from '../components/JsonSchemaForm/JsonSchemaMultiStepForm'
-import styleConstants from '../styleConstants'
-
-const loadApplicationForm = async (dispatch, loanType) => {
-  console.log('Getting loan App')
-  return dispatch.applicationForms.getByIdAsync({
-    id: loanType.formName,
-    params: loanType
-  })
-}
-const createLoanApplication = async (
-  dispatch,
-  { formData, customer, loanType, onSuccess }
-) => {
-  const data = {
-    formData,
-    customer,
-    loanType
+import { WarningIcon } from '../components/ThemedIcons'
+import { LocalizationContext } from '../../components/Translation'
+import SimpleModal from '../components/SimpleModal'
+import LoanApplicationHelp from './LoanApplicationHelp'
+const createLoanApplication = async (dispatch, activeLoanApplications, currentLoanApplication) => {
+  if (activeLoanApplications.length === 1) {
+    await dispatch.loanApplications.setCurrentLoanApplication(activeLoanApplications[0].loanApplicationId)
+  } else {
+    const executionId = await apiService.appApi.loanApplication.createLoanApplicationId.execute()
+    const loanApplicationId = await apiService.appApi.loanApplication.createLoanApplicationId.get(executionId)
+    return dispatch.loanApplications.createLoanApplication({ loanApplicationId })
   }
-  return dispatch.loanApplications.createAsync({ data, onSuccess })
 }
-const updateLoanApplication = async (
-  dispatch,
-  { formData, customer, loanType, loanApplicationId }
-) => {
-  return dispatch.loanApplications.updateAsync(loanApplicationId, {
-    formData,
-    customer,
-    loanType
-  })
-}
+
 const ApplicationForm = ({ navigation, route }) => {
-  let currentLoanAppId
-  if (route.params) {
-    currentLoanAppId = route.params.currentLoanAppId
-  }
-  const [loanApplicationId, setLoanApplicationId] = useState(currentLoanAppId)
-  const styles = useStyleSheet(themedStyles)
-  const store = useStore()
-  const state = useSelector(state => state)
   const dispatch = useDispatch()
-  const selection = store.select(models => ({
-    defaultLoanType: models.loanTypes.getDefaultLoanType,
-    customer: models.customer.getCustomer,
-    loanType: models.loanTypes.getLoanTypeForApplicationId,
-    loanApplication: models.loanApplications.getApplicationById
-  }))
-  const { defaultLoanType, customer, loanType, loanApplication } = selection(
-    state,
-    {
-      loanApplicationId,
-      id: loanApplicationId
-    }
-  )
-  const currentLoanType = isEmpty(loanType) ? defaultLoanType : loanType
-  const applicationForm = store.select.applicationForms.getById(
-    state,
-    currentLoanType.formName
-  )
-  const { loading } = useRequest(() =>
-    loadApplicationForm(dispatch, currentLoanType)
-  )
-  const createLoanApplicationRequest = useRequest(createLoanApplication, {
-    manual: true
-  })
-  const updateLoanApplicationRequest = useRequest(updateLoanApplication, {
-    manual: true
-  })
-  const onError = () => {}
-  const onSubmit = async (formData, step) => {
-    formData.stepName = step.stepName
-    if (loanApplication && !isEmpty(loanApplication)) {
-      // existing form
-      await updateLoanApplicationRequest.run(dispatch, {
-        formData,
-        loanApplicationId,
-        customer,
-        loanType: currentLoanType
-      })
-    } else {
-      const onSuccess = ({ id }) => {
-        setLoanApplicationId(id)
-      }
-      createLoanApplicationRequest.run(dispatch, {
-        formData,
-        customer,
-        loanType: currentLoanType,
-        onSuccess
-      })
-    }
-  }
-  if (
-    loading ||
-    createLoanApplicationRequest.loading ||
-    updateLoanApplicationRequest.loading
-  ) {
-    return <LoadingSpinner />
-  }
-  const {
-    jsonSchema,
-    uiSchema: { values },
-    schemaSteps: { steps }
-  } = applicationForm
-  const formData = loanApplication ? loanApplication.formData : {}
-  const errors = loanApplication ? loanApplication.errors : {}
-  console.log('INDEX')
-  console.log(formData)
-  return (
-    <View style={styles.container}>
-      <JsonSchemaMultiStepForm
-        schema={jsonSchema}
-        errorSchema={errors}
-        uiSchema={values}
-        steps={steps}
-        formData={formData}
-        onError={onError}
-        onFormSubmit={onSubmit}
-      />
-    </View>
-  )
-}
+  const store = useStore()
+  const styles = useStyleSheet(themedStyles)
+  const state = useSelector(state => state)
+  const [visible, setVisible] = React.useState(false)
+  const { translations } = useContext(LocalizationContext)
 
+  const currentLoanApplication = store.select.loanApplications.getCurrentLoanApplication(state)
+  const activeLoanApplications = store.select.loanApplications.getActiveLoanApplications(state)
+  const isHelpShown = store.select.settings.getIsApplicationHelpShown(state)
+  const createLoanApplicationRequest = useRequest(() => createLoanApplication(dispatch, activeLoanApplications, currentLoanApplication), {
+    ready: isUndefined(currentLoanApplication)
+  })
+  if (createLoanApplicationRequest.loading) {
+    return (
+      <LoadingSpinner />
+    )
+  }
+  if (createLoanApplicationRequest.error) {
+    throw createLoanApplicationRequest.error
+  }
+  const BackIcon = (props) => (
+    <Icon {...props} name='arrow-back' />
+  )
+  const BackAction = () => (
+    <TopNavigationAction icon={BackIcon} onPress={navigateBack} />
+  )
+  const navigateBack = () => {
+    // props.navigation.goBack()
+  }
+  const exitApp = () => {
+    BackHandler.exitApp()
+  }
+  const onPress = () => {
+    dispatch.settings.setApplicationHelpShown(true)
+  }
+  if (!isUndefined(currentLoanApplication)) {
+    return (
+      <>
+        <TopNavigation
+          style={styles.topNavigationStyle}
+          alignment='center'
+          accessoryLeft={BackAction}
+        />
+        {!isHelpShown && (<LoanApplicationHelp onPress={onPress} />)}
+        {isHelpShown && (
+          <ApplicationFormNative
+            currentLoanApplication={currentLoanApplication}
+          />
+        )}
+        <SimpleModal
+          visible={visible}
+          okText={translations['modal.ok']}
+          cancelText={translations['modal.cancel']}
+          onCancel={() => setVisible(false)}
+          onOk={exitApp}
+          title={translations['applicationForm.exitConfirmation.title']}
+          description={translations['applicationForm.exitConfirmation.description']}
+          subTitle={translations['applicationForm.exitConfirmation.subTitle']}
+          Icon={WarningIcon}
+        />
+      </>
+    )
+  } else {
+    throw new Error('NO_CURRENT_LOAN_APPLICATION')
+  }
+}
 const themedStyles = StyleService.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    ...styleConstants.container,
-    marginHorizontal: 16
+  topNavigationStyle: {
+    backgroundColor: 'background-basic-color-1'
   }
 })
 export default ApplicationForm

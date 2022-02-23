@@ -1,4 +1,8 @@
+import isUndefined from 'lodash.isundefined'
 export const rupeeFormatter = x => {
+  if (isUndefined(x)) {
+    return
+  }
   x = x.toString()
   let afterPoint = ''
   if (x.indexOf('.') > 0) afterPoint = x.substring(x.indexOf('.'), x.length)
@@ -10,5 +14,8 @@ export const rupeeFormatter = x => {
     lastThree = ',' + lastThree
   }
   const res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree + afterPoint
-  return `Rs. ${res}`
+  return `${res}`
+}
+export const calculateEmi = (loanAmount, tenure, repaymentUnit) => {
+  return 1000
 }

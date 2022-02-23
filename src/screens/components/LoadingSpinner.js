@@ -2,13 +2,18 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { Spinner } from '@ui-kitten/components'
 
-const LoadingSpinner = () => (
-  <View style={styles.container}>
-    <View style={styles.controlContainer}>
-      <Spinner status='control' />
+const LoadingSpinner = ({ visible }) => {
+  if (visible === false) {
+    return null
+  }
+  return (
+    <View style={styles.container}>
+      <View style={styles.controlContainer}>
+        <Spinner status='control' />
+      </View>
     </View>
-  </View>
-)
+  )
+}
 
 const styles = StyleSheet.create({
   container: {

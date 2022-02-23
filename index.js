@@ -3,7 +3,6 @@
  */
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler'
 import 'react-native-get-random-values'
-import 'react-native-polyfill-globals/auto'
 import dayjs from 'dayjs'
 import 'dayjs/locale/en-in'
 import duration from 'dayjs/plugin/duration'

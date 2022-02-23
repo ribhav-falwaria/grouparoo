@@ -5,13 +5,10 @@ import {
 
 const styleConstants = {
   heading: {
-    paddingVertical: 4,
-    fontWeight: '700'
+    paddingVertical: 4
   },
   subHeading: {
-    paddingVertical: 4,
-    fontWeight: '400',
-    color: 'color-primary-500'
+    paddingVertical: 4
   },
   formContainer: {
     marginTop: 32
@@ -23,7 +20,7 @@ const styleConstants = {
     marginVertical: 8
   },
   content: {
-    color: 'color-primary-300'
+
   },
   contentHighlight: {
 
@@ -31,6 +28,9 @@ const styleConstants = {
   screen: {
     paddingHorizontal: 16,
     paddingVertical: 0,
+    flex: 1
+  },
+  introScreen: {
     flex: 1
   },
   authScreen: {
@@ -52,12 +52,16 @@ const styleConstants = {
     width: widthPercentageToDP('40%'),
     height: widthPercentageToDP('40%')
   },
+  loanOfferCard: {
+    width: widthPercentageToDP('43%'),
+    height: widthPercentageToDP('43%')
+  },
   faqCard: {
     width: widthPercentageToDP('40%'),
     height: widthPercentageToDP('40%') / 2
   },
   cardTitleContainer: {
-    paddingBottom: 4,
+    paddingBottom: 0,
     paddingHorizontal: 0
   },
   iconStyle: {

@@ -4,89 +4,107 @@ import {
   Button,
   Input,
   Text,
-  Divider,
   StyleService,
-  useStyleSheet
+  useStyleSheet,
+  Spinner
 } from '@ui-kitten/components'
+import { useStore, useSelector, useDispatch } from 'react-redux'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import FormLabel from '../components/FormLabel'
-import { FacebookIcon, GoogleIcon } from './extra/icons'
+import { FormIcons } from '../components/ThemedIcons'
+import { useRequest } from 'ahooks'
+import ScreenTitle from '../components/ScreenTitle'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
 
-const SignIn = ({ navigation }) => {
+const loginUser = async (dispatch, { email, password }) => {
+  await dispatch.authentication.signInUser({ email, password })
+}
+
+const SignIn = ({ navigation, route }) => {
   const [email, setEmail] = React.useState()
   const [password, setPassword] = React.useState()
   const { translations } = useContext(LocalizationContext)
+  const title = route.params?.title || translations['auth.Signup']
+  const store = useStore()
+  const dispatch = useDispatch()
+  const state = useSelector(state => state)
   const styles = useStyleSheet(themedStyles)
-  const onSignInButtonPress = () => {
-    navigation && navigation.goBack()
+  const loginUserRequest = useRequest(loginUser, {
+    manual: true
+  })
+  if (loginUserRequest.error) {
+    console.log('error')
   }
-
+  const selection = store.select(models => ({
+    isLoggedIn: models.authentication.isUserLoggedIn,
+    showLoginError: models.appStates.getSigninError
+  }))
+  const {
+    isLoggedIn,
+    showLoginError
+  } = selection(state)
+  const onSignInButtonPress = async () => {
+    await loginUserRequest.run(dispatch, { email, password })
+  }
   const onSignUpButtonPress = () => {
-    navigation && navigation.navigate('SignUp')
+    navigation.navigate('SignUp', {})
   }
   const onForgotButtonPressed = () => {
-    navigation && navigation.navigate('ForgotPassword')
+    navigation.navigate('ForgotPassword', {})
   }
-
+  const loadingIndicator = props => {
+    if (!loginUserRequest.loading) {
+      return null
+    }
+    return (
+      <View style={[props.style, styles.indicator]}>
+        <Spinner size='small' status='basic' />
+      </View>
+    )
+  }
+  const showError = (loginUserRequest.loading === false) && (showLoginError === true && isLoggedIn === false)
   return (
     <KeyboardAwareScrollView style={styles.container}>
-      <View style={styles.socialAuthContainer}>
-        <Text style={styles.socialAuthHintText} category='h6'>
-          {translations['auth.socialMediaSignIn']}
-        </Text>
-        <View style={styles.socialAuthButtonsContainer}>
-          <Button
-            appearance='ghost'
-            size='giant'
-            status='info'
-            accessoryLeft={GoogleIcon}
-          />
-          <Button
-            appearance='ghost'
-            size='giant'
-            status='info'
-            accessoryLeft={FacebookIcon}
-          />
-        </View>
-      </View>
-      <View style={styles.orContainer}>
-        <Divider style={styles.divider} />
-        <Text style={styles.orLabel} category='h5'>
-          OR
-        </Text>
-        <Divider style={styles.divider} />
-      </View>
-      <Text style={styles.emailSignLabel} category='h6'>
-        {translations['auth.signInWithEmail']}
-      </Text>
+      <ScreenTitle title={title} description={translations['auth.signInWithEmail']} />
+      {
+        showError === true && (
+          <Text style={styles.signinErrorLabel} category='p2' status='danger'>
+            {translations['auth.signIn.error']}
+          </Text>
+        )
+      }
       <View style={styles.formContainer}>
         <Input
-          label={<FormLabel content={translations['form.email']} />}
+          label={translations['form.email']}
           placeholder={translations['form.email']}
           value={email}
-          size='large'
+          status={showError && 'danger'}
           onChangeText={setEmail}
+          accessoryRight={FormIcons.FormEmailIcon}
         />
         <Input
           style={styles.passwordInput}
           secureTextEntry
           placeholder={translations['form.password']}
-          label={<FormLabel content={translations['form.password']} />}
+          label={translations['form.password']}
           value={password}
-          size='large'
+          status={showError && 'danger'}
           onChangeText={setPassword}
         />
       </View>
       <View style={styles.bottomButtonContainer}>
-        <Button status='primary' onPress={onSignInButtonPress}>
-          {translations['auth.signInButton']}
+        <Button
+          status='primary'
+          onPress={onSignInButtonPress}
+          accessoryRight={loadingIndicator}
+        >
+          {translations['auth.signInButton'].toUpperCase()}
         </Button>
         <Button
           style={styles.signUpButton}
           appearance='ghost'
-          status='primary'
+          size='small'
+          status='basic'
           onPress={onForgotButtonPressed}
         >
           {translations['auth.forgotPassword.forgotButton']}
@@ -153,13 +171,19 @@ const themedStyles = StyleService.create({
     marginHorizontal: 8,
     ...styleConstants.content
   },
-  emailSignLabel: {
-    alignSelf: 'center',
+  signinErrorLabel: {
     marginTop: 8,
-    ...styleConstants.subHeading
+    paddingHorizontal: 16
+  },
+  content: {
+    ...styleConstants.content
   },
   bottomButtonContainer: {
     paddingTop: 32
+  },
+  indicator: {
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 })
 

@@ -19,11 +19,11 @@ const Loading = () => (
   </Placeholder>
 )
 
-const BlockCard = ({ heading, Icon, content, onPress, loading }) => {
+const BlockCard = ({ heading, Icon, Content, onPress, loading }) => {
   if (loading) {
     return <Loading />
   }
-  const isTextContent = typeof content === 'string'
+  const isTextContent = typeof Content === 'string'
   const styles = useStyleSheet(themedStyles)
   const { translations } = useContext(LocalizationContext)
   return (
@@ -39,16 +39,14 @@ const BlockCard = ({ heading, Icon, content, onPress, loading }) => {
           {translations[heading]}
         </Text>
       </View>
-      <View style={styles.contentContainer}>
-        {isTextContent === true && (
+      {isTextContent === true && (
+        <View style={styles.contentContainer}>
           <Text style={styles.content} category='p1' status='default'>
-            {translations[content]}
+            {translations[Content]}
           </Text>
-        )}
-        {
-          isTextContent === false && (<content />)
-        }
-      </View>
+        </View>
+      )}
+      {isTextContent === false && <Content />}
     </Card>
   )
 }
@@ -62,7 +60,6 @@ const themedStyles = StyleService.create({
     ...styleConstants.cardTitleContainer,
     flexDirection: 'column',
     alignItems: 'flex-start'
-    // justifyContent: 'left'
   },
   contentContainer: {
     marginVertical: 8

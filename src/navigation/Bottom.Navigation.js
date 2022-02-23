@@ -44,7 +44,7 @@ const RootBottomNavigation = ({
   const transforms = useVisibilityAnimation(tabBarVisible)
 
   const onSelect = index => {
-    navigation.navigate(state.routeNames[index])
+    navigation.navigate(state.routeNames[index], {})
   }
 
   return (
