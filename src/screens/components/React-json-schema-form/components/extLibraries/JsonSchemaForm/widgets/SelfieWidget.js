@@ -1,111 +1,151 @@
-import { StyleService, Text } from '@ui-kitten/components'
-import React, { useContext, useState } from 'react'
-import { useRequest } from 'ahooks'
-import Toast from 'react-native-toast-message'
-import isUndefined from 'lodash.isundefined'
-import isEmpty from 'lodash.isempty'
-import { useDispatch } from 'react-redux'
-import { LocalizationContext } from '../../../../translation/Translation'
-import DocumentUploadService from '../../../../services/DocumentUploadService'
-import ImageUploadComponent from '../common/ImageUploadComponent'
-import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
-import DownloadComponent from '../common/DownloadComponent'
+import { StyleService, Text } from "@ui-kitten/components";
+import React, { useContext, useState } from "react";
+import { useRequest } from "ahooks";
+import Toast from "react-native-toast-message";
+import isUndefined from "lodash.isundefined";
+import isEmpty from "lodash.isempty";
+import { useDispatch, useSelector } from "react-redux";
+import { LocalizationContext } from "../../../../translation/Translation";
+import DocumentUploadService from "../../../../services/DocumentUploadService";
+import ImageUploadComponent from "../common/ImageUploadComponent";
+import ReactJsonSchemaUtil from "../../../../services/ReactJsonSchemaFormUtil";
+import DownloadComponent from "../common/DownloadComponent";
+import ResourceFactoryConstants from "../../../../services/ResourceFactoryConstants";
+import DataService from "../../../../services/DataService";
+
+const uploadFileForFaceMatch = async (dispatch, file, docface) => {
+  const resourceFactoryConstants = new ResourceFactoryConstants();
+  const url = resourceFactoryConstants.constants.kyc.getUrlForFaceMatch;
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("doc_face", docface);
+  try {
+    const res = await DataService.postData(url, formData);
+    if (res.data.status === "SUCCESS") {
+      await dispatch.formDetails.setOkycSelfieFile(file);
+      const {uploadedDocId,uploadedFileName} = await uploadToAppWrite(file)
+      if (isUploaded){
+        props.onChange(uploadedDocId + "::" + uploadedFileName)
+      }
+      return true;
+    } else {
+      console.log(res.data.message);
+      throw new Error("FACE_MATCH_FAILED");
+    }
+  } catch (e) {
+    if (e.message === "FACE_MATCH_FAILED") {
+      throw e;
+    } else {
+      throw new Error("CANNOT_REACH_FACE_MATCH_SERVER");
+    }
+  }
+};
 
 const uploadToAppWrite = async (file) => {
-  const documentUploadService = new DocumentUploadService()
+  const documentUploadService = new DocumentUploadService();
   if (isEmpty(file)) {
-    return
+    return;
   }
-  const uploadedFileName = ReactJsonSchemaUtil.getFileName(file).join('::')
+  const uploadedFileName = ReactJsonSchemaUtil.getFileName(file).join("::");
   try {
-    const res = await documentUploadService.uploadFileToAppWrite(file)
-    const responseData = res.data
-    if (responseData.status === 'SUCCESS') {
+    const res = await documentUploadService.uploadFileToAppWrite(file);
+    const responseData = res.data;
+    if (responseData.status === "SUCCESS") {
       return {
         uploadedDocId: responseData.fileId,
-        uploadedFileName
-      }
+        uploadedFileName,
+      };
     } else {
-      console.log(responseData)
-      throw new Error('UPLOAD_SELFIE_TO_DOC_SERVER_FAILED')
+      console.log(responseData);
+      throw new Error("UPLOAD_SELFIE_TO_DOC_SERVER_FAILED");
     }
   } catch (err) {
-    console.log(err)
-    if (err.message === 'UPLOAD_SELFIE_TO_DOC_SERVER_FAILED') {
-      throw err
+    console.log(err);
+    if (err.message === "UPLOAD_SELFIE_TO_DOC_SERVER_FAILED") {
+      throw err;
     } else {
-      throw new Error('CANNOT_REACH_SELFIE_UPLOAD_SERVER')
+      throw new Error("CANNOT_REACH_SELFIE_UPLOAD_SERVER");
     }
   }
-}
-
-const uploadFileToServer = async (dispatch, file) => {
-  if (isEmpty(file)) {
-    return
-  }
-  const docDetails = await uploadToAppWrite(file)
-  const uploadedDocId = `${docDetails.uploadedDocId}'::'${docDetails.uploadedFileName}`
-  return uploadedDocId
-}
+};
 
 const SelfieWidget = (props) => {
-  const hasError = isUndefined(props.rawErrors) ? 0 : props.rawErrors.length > 0
-  const [isUploadDone, setIsUploadDone] = useState(false)
-  const { translations } = useContext(LocalizationContext)
-  const dispatch = useDispatch()
-  const uploadFile = useRequest(uploadFileToServer, {
+  const hasError = isUndefined(props.rawErrors)
+    ? 0
+    : props.rawErrors.length > 0;
+  const kycData = useSelector((state) => state.formDetails.kycData);
+  const [isUploadDone, setIsUploadDone] = useState(false);
+  const { translations } = useContext(LocalizationContext);
+  const dispatch = useDispatch();
+  let docId, fileName;
+  if (props.value) {
+    const tempArr = props.value.split("::");
+    docId = tempArr[0];
+    fileName = tempArr[1];
+  }
+  const removeFile = (uri) => {
+    if (uri.length > 0) {
+      useRemoveFile.run();
+      // remove from props
+      props.onChange(undefined);
+      setIsUploadDone(false);
+    }
+  };
+  const useFaceMatch = useRequest(uploadFileForFaceMatch, {
     manual: true,
-    onSuccess: (results, params) => {
-      const { uploadedDocIds } = results
-      props.onChange(uploadedDocIds)
-      setIsUploadDone(true)
+    onSuccess: () => {
       Toast.show({
-        type: 'success',
-        position: 'bottom',
-        visibilityTime: 2000,
+        type: "success",
+        position: "bottom",
         props: {
-          title: translations['selfie.title'],
-          description: translations['selfie.success']
-        }
-      })
+          title: translations["okyc.facematch.title"],
+          description: translations["okyc.facematch.success"],
+        },
+      });
     },
-    onError: (error, params) => {
-      console.log(error)
-      if (error.message === 'CANNOT_REACH_SELFIE_UPLOAD_SERVER') {
-        throw error
+    onError: (error) => {
+      console.log(error);
+      setIsUploadDone(true);
+      if (error.message === "FACE_MATCH_FAILED") {
+        throw error;
       } else {
         Toast.show({
-          type: 'error',
-          position: 'bottom',
+          type: "error",
+          position: "bottom",
           props: {
-            title: translations['selfie.title'],
-            description: translations['selfie.failed']
-          }
-        })
+            title: translations["okyc.facematch.title"],
+            description: translations["okyc.facematch.failed"],
+          },
+        });
       }
-    }
-  })
-  let docId, fileName
-  if (props.value) {
-    const tempArr = props.value.split('::')
-    docId = tempArr[0]
-    fileName = tempArr[1]
-  }
-
+    },
+  });
   const onFileChange = (data) => {
-    setIsUploadDone(false)
+    setIsUploadDone(false);
     const fileDetails = {
       uri: data.uri,
       type: data.type,
-      name: 'panCard.jpg'
+      name: "selfie.jpg",
+    };
+    const docface = kycData?.data?.photo_link;
+    if (!isUndefined(docface) || !isEmpty(docface)) {
+      useFaceMatch.run(dispatch, fileDetails, docface);
+    }else {
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        props: {
+          title: translations['selfie.title'],
+          description: translations['selfie.compleKycFirst.message']
+        }
+      })
     }
-    uploadFile.run(dispatch, fileDetails)
-  }
+  };
   return (
     <>
       {props.value && (
         <>
-          <Text style={styles.text} status='success'>
+          <Text style={styles.text} status="success">
             Sussessfully Uploaded
           </Text>
           <DownloadComponent fileUrl={fileName} uploadedDocId={docId} />
@@ -116,15 +156,16 @@ const SelfieWidget = (props) => {
         onFileChange={onFileChange}
         useFrontCamera={false}
         hasError={hasError}
-        selectText={translations['selfie.uploadText']}
-        loading={uploadFile.loading}
+        selectText={translations["selfie.uploadText"]}
+        loading={useFaceMatch.loading}
+        removeFile={removeFile}
       />
     </>
-  )
-}
+  );
+};
 const styles = StyleService.create({
   text: {
-    margin: 4
-  }
-})
-export default SelfieWidget
+    margin: 4,
+  },
+});
+export default SelfieWidget;
