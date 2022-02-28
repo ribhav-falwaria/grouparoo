@@ -12,7 +12,6 @@ import { getSchemaForStep, findStepForFormData } from './utils'
 import SpinnerButton from '../../../SpinnerButton'
 import styleConstants from '../../styleConstants'
 import { LocalizationContext } from '../../translation/Translation'
-import HorizontalProgressBar from '../../components/HorizontalProgressBar'
 import appConstants from '../../constants/appConstants'
 import { useSelector } from 'react-redux'
 import ResourceFactoryConstants from '../../services/ResourceFactoryConstants'
@@ -54,9 +53,11 @@ const JsonSchemaMultiStepForm = ({
   const isKycDone = useSelector(
     (state) => state?.formDetails?.formData[appConstants.okycField]
   )
-  const aadharData = useSelector((state) => state?.formDetails?.aadharData)
+  const kycData = useSelector((state) => state?.formDetails?.kycData)
+
   const gstnData = useSelector((state) => state?.formDetails?.gstnData)
   const panData = useSelector((state) => state?.formDetails?.panData)
+
   const udyamData = useSelector((state) => state?.formDetails?.udyamData)
   let thisFormRef
   const { translations } = useContext(LocalizationContext)
@@ -113,10 +114,10 @@ const JsonSchemaMultiStepForm = ({
           requestBody[appConstants.isCommunicationAddSameAsPermanentAddress]
         ) {
           requestBody[appConstants.communicationAddressField] =
-            aadharData?.data?.address
+          kycData?.data?.address
         }
       } else if (field === appConstants.okycField && isKycDone === 'Yes') {
-        requestBody.kycData = aadharData
+        requestBody.kycData = kycData
       }
     }
   }

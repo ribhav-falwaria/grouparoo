@@ -3,16 +3,19 @@ import orderBy from 'lodash.orderby'
 import isUndefined from 'lodash.isundefined'
 import maxBy from 'lodash.maxby'
 import humanizeDuration from 'humanize-duration'
-import { rupeeFormatter } from '../../../utils'
-import apiService from '../../../apiService'
-import { config } from '../../../config'
+import { rupeeFormatter } from '../../utils'
+import apiService from '../../apiService'
+import { config } from '../../config'
+import loanDetails from './loans old/mapper'
 const formatAmount = amount => rupeeFormatter(parseFloat(amount))
+/*************** loanApplicationId and loanId are used interchangably here *************/
 const loans = {
   name: 'loans',
   state: {},
   selectors: {
-    getLoanById: select => (rootState, { loanId }) => {
-      return rootState.loans[loanId]
+    // loanId and loanApplicationId used fungably
+    getLoanById: select => (rootState, { loanApplicationId }) => {
+      return rootState.loans[loanApplicationId]
     },
     hasActiveLoan: select => (rootState) => {
       return Object.keys(rootState.loans)
@@ -21,8 +24,8 @@ const loans = {
           (v) => v === true
         )
     },
-    getById: (select) => (rootState, { loanId }) => {
-      return rootState.loans[loanId]
+    getById: (select) => (rootState, loanApplicationId) => {
+      return rootState.loans[loanApplicationId]
     },
     list: (select) => rootState => {
       const loans = rootState.loans
@@ -30,27 +33,28 @@ const loans = {
     },
     getDpdSchedule: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const notRepaid = loan.details.repaymentDetails.schedule
+      const notRepaid = loan.repayment
         .filter(
-          schedule => parseInt(schedule.status === config.REPAYMENT_PENDIND_STATUS)
+          schedule => !schedule.isTxnSettled
         )
         .filter(
-          schedule => dayjs().diff(dayjs(schedule.date), 'day', true) > 1
+          schedule => dayjs().diff(dayjs(parseInt(schedule.installment_date)), 'day', true) > 1
         )
       return notRepaid
     },
     getTotalDpdAmount: select => (rootState, { loanId }) => {
-      const dpdSchedule = select.loans.getDpdSchedule(rootState, { loanId })
-      return dpdSchedule.reduce((o, v) => {
-        o.emi = o.emi + v.emi
-        o.principal = o.principal + v.principal
-        o.interest = o.interest + v.interest
-        return o
-      }, {
-        emi: 0,
-        principal: 0,
-        interest: 0
-      })
+      const loan = select.loans.getById(rootState, loanId)
+      /*
+      {
+      "interestDueAmount": null,
+      "totalDueAmount": -126.92,
+      "principalDueAmount": 0,
+      "penalDueAmount": 126.92,
+      "pastDueDays": 96,
+      "numInstallmentsPaid": 4
+    },
+      */
+      return loan.basicDetails.outstanding
     },
     getActiveLoans: select => rootState => {
       return select.loans
@@ -59,32 +63,46 @@ const loans = {
     },
     getProductName: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const product = select.loanProduct.getById(loan.details.productId)
-      return product.displayName
+      if (!isUndefined(loan)) {
+        const product = select.loanProducts.getProductBySchemeCode({
+          schemeCode: loan.basicDetails.schemeCode,
+          schemeName: loan.basicDetails.schemeName
+        })
+        return product.displayName
+      }
     },
     getLoanAccountNumber: select => (rootState, { loanId }) => {
-      return rootState.loans[loanId].externalLoanId
+      // Since loan Account Number will be the same as the loanApplicationId
+      return loanId
+      // return rootState.loans[loanId].externalLoanId
     },
     getLoanAmount: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      return parseFloat(loan.details.finalApprovedAmount)
+      return loan.basicDetails.loanAmount
     },
     getMaturityDate: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const lastEmi = maxBy(loan.details.repaymentDetails.schedule, 'date')
-      return dayjs(lastEmi.date).format(
+      return dayjs(parseInt(loan.basicDetails.maturityDate)).format(
         'DD-MMM-YY'
       )
     },
+    //FIXME: NEEDS A SOLUTION
     getRemainingPrincipal: select => (rootState, { loanId, formatted }) => {
       const loan = select.loans.getById(rootState, loanId)
-      return formatted ? rupeeFormatter(loan.details.principalOutstanding) : loan.details.principalOutstanding
+      // depends on repayment frequency as well. 
+      // if (loan.basicDetails.repaymentFrequency === )
+      // loan.repayment.find(rp => {
+      //   rp.installmentDate
+      // })
     },
     getRemainingTenure: select => (rootState, { loanId }) => {
       const language = select.settings.getLanguage(rootState)
       const maturityDate = select.loans.getMaturityDate(rootState, { loanId })
-      const loan = select.loans.getById(rootState, { loanId })
-      const product = select.loanProducts.getProductById(rootState, { productId: loan.details.productId })
+      const loan = select.loans.getById(rootState, loanId)
+      const product = select.loanProducts.getProductBySchemeCode(rootState, {
+        schemeCode: loan.basicDetails.schemeCode,
+        schemeName: loan.basicDetails.schemeName
+      })
       const diff = maturityDate.diff(dayjs())
       const inDays = dayjs.duration(diff).asDays()
       const productType = product.productType || config.DEFAULT_PRODUCT_TYPE
@@ -143,10 +161,11 @@ const loans = {
     },
     getInterestDetails: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const product = select.loanProducts.getProductById(rootState, {
-        productId: loan.details.productId
+      const product = select.loanProducts.getProductBySchemeCode(rootState, {
+        schemeCode: loan.basicDetails.schemeCode,
+        schemeName: loan.basicDetails.schemeName
       })
-      const interestRate = 24
+      const interestRate = loan.basicDetails.interestRate
       const interestFrequency = `period.per.${product.interestFrequency}`
       return {
         interestRate: `${interestRate}% ${interestFrequency}`,
@@ -290,7 +309,7 @@ const loans = {
         return state
       }
       allLoans.forEach(al => {
-        state[al.externalLoanId] = al
+        state[al.loanApplicationId] = al
       })
       return state
     }
@@ -298,11 +317,11 @@ const loans = {
   effects: (dispatch) => ({
     async getAllLoans (_, rootState) {
       const { customer } = rootState
-      // FIXME: Move execute / get in 2 steps
       try {
         const executionId = await apiService.appApi.loans.getAllLoans.execute(customer.customerDetails.$id)
         const allLoans = await apiService.appApi.loans.getAllLoans.get(executionId)
-        dispatch.loans.addAllLoans({ allLoans })
+        const loan = loanDetails()
+        dispatch.loans.addAllLoans({ allLoans: [loan] })
       } catch (e) {
         console.log(e.stack)
         console.log(e.message)

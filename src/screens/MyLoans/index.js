@@ -71,7 +71,7 @@ const MyLoans = props => {
         heading={loanAccountNumber}
         Icon={MyLoansIcon}
         onPress={() => onPressLoanItem(loan)}
-        content={Content}
+        Content={Content}
       />
     )
   }

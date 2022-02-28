@@ -5,8 +5,15 @@ const loanProducts = {
   state: {
   },
   selectors: {
+    list: select => (rootState) => {
+      return Object.keys(rootState.loanProducts).map(ky => rootState[loanProducts[ky]])
+    },
     getProductById: select => (rootState, { productId }) => {
       return rootState.loanProducts[productId]
+    },
+    getProductBySchemeCode: select => (rootState, { schemeCode, schemeName }) => {
+      const lps = select.loanProducts.list(rootState)
+      return lps.find(lp => lp.schemeCode === schemeCode)
     },
     getProductDisplayName: select => (rootState, { productId }) => {
       const product = select.loanProducts.getProductById(rootState, { productId })

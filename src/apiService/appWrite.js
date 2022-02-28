@@ -9,6 +9,7 @@ const isInvalidValue = (val) => {
 }
 // Fill with your Appwrite API endpoint and Project ID!
 sdk.setEndpoint(config.appWrite.url).setProject(config.appWrite.projectId)
+
 const getCompletionStatus = async (functionId, executionId) => {
   let completed = false
   let responseWithStatus

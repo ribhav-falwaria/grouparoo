@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, useCallback } from 'react'
 import isEmpty from 'lodash.isempty'
 import { useRequest } from 'ahooks'
 import Toast from 'react-native-toast-message'
@@ -26,6 +26,7 @@ const generateOtp = async (appId, aadharNumber) => {
 
     })
     const data = res.data
+
     if (data.status === 'SUCCESS') {
       return true
     } else {
@@ -42,7 +43,7 @@ const generateOtp = async (appId, aadharNumber) => {
   }
 }
 
-const verifyOtp = async (appId, otp, shareCode) => {
+const verifyOtp = async (appId, otp, shareCode, panData) => {
   const resource = new ResourceFactoryConstants()
   if (otp.length !== 6) {
     return
@@ -55,18 +56,50 @@ const verifyOtp = async (appId, otp, shareCode) => {
     })
     const data = res.data
     if (data.status === 'SUCCESS') {
-      return data?.data
+      const kycData = data.data
+      const kycMatchData = await matchKycData(panData, kycData)
+      // Name match failed / dobMatch Failed
+      kycData.kycMatchData = kycMatchData
+      return kycData
     } else {
       console.log(data.message)
       throw new Error('CANNOT_VALIDATE_AADHAR_OTP')
     }
   } catch (err) {
     console.log(err)
-    if (err.message === 'CANNOT_VALIDATE_AADHAR_OTP') {
+    const msg = err.message
+    if (msg === 'CANNOT_VALIDATE_AADHAR_OTP' ||
+      msg === 'NAME_MATCH_FAILED' ||
+      msg === 'IDENTITY_MATCH_FAILED'
+    ) {
       throw err
     } else {
       throw new Error('CANNOT_REACH_AADHAR_SERVER_FOR_OTP_VERIFY')
     }
+  }
+}
+
+const matchKycData = async (panData, kycData) => {
+  const resource = new ResourceFactoryConstants()
+  try {
+    const res = await DataService.postData(resource.constants.kyc.getUrlForIdMatch, {
+      panData,
+      kycData
+    })
+    if (res.data?.status === 'SUCCESS') {
+      const matchData = res.data?.data
+      if (!matchData.dobMatch) {
+        throw new Error('DOB_MATCH_FAILED')
+      }
+      if (matchData.matchRatio < 80) {
+        throw new Error('NAME_MATCH_FAILED')
+      }
+      return matchData
+    } else {
+      throw new Error('IDENTITY_MATCH_FAILED')
+    }
+  } catch (e) {
+
   }
 }
 
@@ -75,15 +108,14 @@ const OKYCComponent = (props) => {
   const { theme } = useFormContext()
   const { translations } = useContext(LocalizationContext)
   const appId = useSelector((state) => state?.formDetails?.tempId)
+  const panData = useSelector((state) => state.formDetails.panData)
   const [isAadharValid, setIsAadharValid] = useState(true)
   const [shareCode, setShareCode] = useState()
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  // const [isSubmitted, setIsSubmitted] = useState(false)
   const [isShareCodeValid, setIsShareCodeValid] = useState(true)
-  const [isConsentValid, setIsConsentValid] = useState(true)
   const [otpGenerated, setOtpGenerated] = useState(false)
   const [otpVerified, setOtpVerified] = useState(false)
   const [aadharCard, setAdharCard] = useState('')
-  const [kycData, setKycData] = useState({})
   const [aadharConsent, setAadharConsent] = useState(true)
   const [otp, setOtp] = useState('')
 
@@ -104,7 +136,6 @@ const OKYCComponent = (props) => {
       }
     },
     onSuccess: (result) => {
-      setKycData(result)
       setOtpVerified(true)
       Toast.show({
         type: 'success',
@@ -120,9 +151,9 @@ const OKYCComponent = (props) => {
       }
     }
   })
-  async function fetchOtp () {
-    try {
-      await generateOtp(appId, finalAadharCard)
+  const useGenerateOtp = useRequest(generateOtp, {
+    manual: true,
+    onSuccess: (result) => {
       Toast.show({
         type: 'success',
         position: 'bottom',
@@ -133,8 +164,8 @@ const OKYCComponent = (props) => {
         }
       })
       setOtpGenerated(true)
-    } catch (error) {
-      setIsSubmitted(false)
+    },
+    onError: (error) => {
       if (error.message === 'CANNOT_REACH_AADHAR_SERVER_FOR_OTP') {
         throw error
       } else {
@@ -148,27 +179,72 @@ const OKYCComponent = (props) => {
         })
       }
     }
-  }
-  useEffect(() => {
+  })
+  const onSendOtpHandler = () => {
     let hasError = false
-    if (isSubmitted) {
-      if (isEmpty(aadharCard) || (aadharCard && aadharCard.length !== 14)) {
-        setIsAadharValid(false)
-        hasError = true
-      } else {
-        setIsAadharValid(true)
-      }
-      if (!aadharConsent) {
-        setIsConsentValid(false)
-        hasError = true
-      } else {
-        setIsConsentValid(true)
-      }
-      if (!hasError) {
-        fetchOtp()
-      }
+    if (isEmpty(aadharCard) || (aadharCard && aadharCard.length !== 14)) {
+      setIsAadharValid(false)
+      hasError = true
+    } else {
+      setIsAadharValid(true)
     }
-  }, [isSubmitted])
+    if (!aadharConsent) {
+      hasError = true
+    }
+    if (!hasError) {
+      useGenerateOtp.run(appId, finalAadharCard)
+    }
+  }
+  // useEffect(() => {
+  //   const fetchOtp = async () => {
+  //     try {
+  //       await generateOtp(appId, finalAadharCard)
+  //       Toast.show({
+  //         type: 'success',
+  //         position: 'bottom',
+  //         visibilityTime: 2000,
+  //         props: {
+  //           title: translations['aadhar.otp.title'],
+  //           description: translations['aadhar.otp.success']
+  //         }
+  //       })
+  //       setIsSubmitted(false)
+  //       setOtpGenerated(true)
+  //     } catch (error) {
+  //       setIsSubmitted(false)
+  //       if (error.message === 'CANNOT_REACH_AADHAR_SERVER_FOR_OTP') {
+  //         throw error
+  //       } else {
+  //         Toast.show({
+  //           type: 'error',
+  //           position: 'bottom',
+  //           props: {
+  //             title: translations['aadhar.otp.title'],
+  //             description: translations['aadhar.otp.failed']
+  //           }
+  //         })
+  //       }
+  //     }
+  //   }
+  //   let hasError = false
+  //   if (isSubmitted) {
+  //     if (isEmpty(aadharCard) || (aadharCard && aadharCard.length !== 14)) {
+  //       setIsAadharValid(false)
+  //       hasError = true
+  //     } else {
+  //       setIsAadharValid(true)
+  //     }
+  //     if (!aadharConsent) {
+  //       setIsConsentValid(false)
+  //       hasError = true
+  //     } else {
+  //       setIsConsentValid(true)
+  //     }
+  //     if (!hasError) {
+  //       fetchOtp()
+  //     }
+  //   }
+  // }, [isSubmitted])
 
   const onBlurHandler = () => {
     finalAadharCard = aadharCard
@@ -179,7 +255,7 @@ const OKYCComponent = (props) => {
   }
 
   const otpVerificationHandler = () => {
-    useOtpVerfy.run(appId, otp, shareCode)
+    useOtpVerfy.run(appId, otp, shareCode, panData)
   }
   const validateShareCode = () => {
     if (shareCode.toString().length !== 4) {
@@ -213,7 +289,7 @@ const OKYCComponent = (props) => {
           <View style={styles.rowMargin}>
             <CheckBox
               checked={aadharConsent}
-              status={isConsentValid ? 'basic' : 'danger'}
+              status={aadharConsent ? 'basic' : 'danger'}
               onChange={(nextChecked) => setAadharConsent(nextChecked)}
             >
               {translations['aadhar.consent']}
@@ -221,12 +297,12 @@ const OKYCComponent = (props) => {
           </View>
           <View style={styles.rowMargin}>
             <SpinnerButton
-              loading={isSubmitted}
-              disabled={isSubmitted || !aadharConsent}
+              loading={useGenerateOtp.loading}
+              disabled={useGenerateOtp.loading || !aadharConsent}
               style={styles.button}
               appearance='outline'
-              onPress={() => setIsSubmitted(true)}
-              status={isSubmitted ? 'basic' : 'primary'}
+              onPress={onSendOtpHandler}
+              status='primary'
             >
               {translations['aadhar.generateOtp']}
             </SpinnerButton>
@@ -238,8 +314,8 @@ const OKYCComponent = (props) => {
           <View style={styles.rowMargin}>
             <OtpComponent
               primaryPhone={translations['adhhar.registeredPhone']}
-              onResendOtp={fetchOtp}
-              loading={useOtpVerfy.lading}
+              onResendOtp={onSendOtpHandler}
+              loading={useOtpVerfy.loading}
               onValidateOtp={setOtp}
               otpValid={otpVerified}
               numSecondsWaitForResend={WAIT_RESEND_MS}

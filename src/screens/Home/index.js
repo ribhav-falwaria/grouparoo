@@ -12,7 +12,7 @@ import PendingLoanApplications from '../components/PendingLoanApplications'
 import MyLoansCard from '../components/MyLoansCard'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { AllIcons } from '../components/ThemedIcons'
-
+import ScreenTitle from '../components/ScreenTitle'
 const HomeListComponents = {
   SimpleCard,
   RepaymentCard,
@@ -49,26 +49,10 @@ const HomeScreen = ({ navigation, route }) => {
   }
   const processPayment = (item, loan) => {}
   const renderHeader = () => (
-    <>
-      <View style={styles.section}>
-        <Text
-          style={styles.heading}
-          category='h4'
-          appearance='default'
-          status='primary'
-        >
-          {`${localeText.hello}`}
-        </Text>
-        <Text
-          style={styles.subHeading}
-          category='s1'
-          appearance='default'
-          status='default'
-        >
-          {localeText.subHeading}
-        </Text>
-      </View>
-    </>
+    <ScreenTitle
+      title={localeText.hello}
+      description={localeText.subHeading}
+    />
   )
 
   const renderVerticalItems = ({ item }) => {

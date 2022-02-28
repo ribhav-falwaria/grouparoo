@@ -9,6 +9,7 @@ class ResourceFactoryConstants {
   apiGateWay = "https://dev-codeapp.novopay.in";
   adapterServiceUrl = "https://novo-adapter-dev.novopay.in/";
   appWriteUrl = "https://dev-appwrite.novopay.in/v1/";
+  qaGateWay = "https://novo-adapter-qa.novopay.in/";
   REACT_APP_DMS_SERVER_URL = "https://asset-qa-platform.novopay.in";
   REACT_APP_SPRING_VERIFY_SERVER_URL = "https://api-dev.springscan.springverify.com/";
   REACT_APP_AADHAR_PAN_SERVICE = "https://sandbox.veri5digital.com/verification-service/api/1.0/"
@@ -91,6 +92,7 @@ class ResourceFactoryConstants {
         "enterOtp",
         "/okyc/"
       ),
+      getUrlForIdMatch: this.qaGateWay + 'match',
       getUrlForFaceMatch: this.getCustomUrl(
         this.apiGateWay,
         "faceMatch",

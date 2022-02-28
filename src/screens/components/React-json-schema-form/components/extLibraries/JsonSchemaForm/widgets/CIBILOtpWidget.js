@@ -45,7 +45,7 @@ const CIBILOtpWidget = (props) => {
     console.log('Form Data at CIBIL Widget', currentFormData)
     const names =
       currentFormData?.fullName?.split(' ') ||
-      JSON.parse(panData?.name).name.trim().split(' ') ||
+      panData?.name.trim().split(' ') ||
       ''
     const mobileNoWithoutCountryCode = currentFormData?.primaryPhone
     const payload = {

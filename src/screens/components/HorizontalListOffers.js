@@ -14,14 +14,14 @@ const renderHorizontalOfferItem = ({ item }) => {
       loading={item.loading}
       heading={item.title}
       Icon={AllIcons[item.icon]}
-      content={item.content}
+      Content={item.content}
       onPress={() => item.onPress(item)}
     />
   )
 }
 
 const getOffers = async (dispatch, { customer }) => {
-  return dispatch.offers.getAsync(customer)
+  return dispatch.offers.getAllOffers(customer)
 }
 const HorizontalListOffers = ({ navigation }) => {
   const store = useStore()
@@ -32,7 +32,7 @@ const HorizontalListOffers = ({ navigation }) => {
   const onPress = (item) => {
     // Navigate to the screen provided in Item
   }
-  const offers = store.select.offers.list(state)
+  const offers = store.select.offers.getOffers(state)
   const styles = useStyleSheet(themedStyles)
   offers.forEach(o => {
     o.onPress = onPress

@@ -62,7 +62,7 @@ const loanApplications = {
     getLoanDetailsForApplication: select => (rootState, { loanApplicationId }) => {
       const loanApplication = rootState.loanApplications.application[loanApplicationId]
       const loan = select.loans.getLoanById({
-        loanId: loanApplication.loanId
+        loanApplicationId: loanApplication.loanApplicationId
       })
       return loan
     }

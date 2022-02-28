@@ -1,0 +1,407 @@
+{
+  "partner": "Arthmate",
+  "status": "DISBURSED",
+  "externalLoanId": "100091",
+  "loanApplicationId": "100213",
+  "loanHealth": "Excellent",
+  "customerName": "Ravindra Pratap Singh",
+  "loanType": "Term Loan",
+  "basicDetails": {
+    "asset_details": {
+      "asset_classification_value": "Standard",
+      "asset_classification": "STD"
+    },
+    "amount_details": {
+      "approved_loan_amount": "200000.000000",
+      "disbursed_amount": "200000.000000",
+      "principal_outstanding_amount": "0.000000",
+      "penal_due_amount": 126.92,
+      "interest_due_amount": "0.000000",
+      "total_due_amount": "-126.920000",
+      "total_overdue_amount": "0.000000",
+      "principal_paid_amount": "200000.000000",
+      "penal_paid_amount": "126.920000",
+      "interest_paid_amount": "6128.000000",
+      "principal_waived_amount": "0.000000",
+      "interest_waived_amount": "0.000000",
+      "penal_waived_amount": "0.000000"
+    },
+    "customer_details": {
+      "id": "137",
+      "name": "Ram Avatar",
+      "code": "0000000507",
+      "photo_doc_id": "e6ba9a3d-c0be-4dad-8f8d-8f816d0f3f9c",
+      "business_name": "Society"
+    },
+    "installment_details": {
+      "loan_term": "18",
+      "loan_term_unit": "MONTH",
+      "loan_term_unit_value": "Months",
+      "installment_type": "INSTL_TYP_EQU",
+      "installment_type_value": "Equated",
+      "past_due_days": "96",
+      "installment_amount": "12809.000000",
+      "paid_installment_count": "4",
+      "next_installment_due_date": "1630693800000",
+      "overdue_date": "1641493800000",
+      "total_installment_count": "18"
+    },
+    "account_details": {
+      "loan_account_id": "570",
+      "expected_disbursement_date": "1628015400000",
+      "loan_status": "ACTIVE",
+      "loan_status_value": "Active",
+      "last_payment_date": "1638988200000",
+      "first_repayment_date": "1630693800000",
+      "closure_date": null
+    },
+    "product_details": {
+      "product_code": "LP001",
+      "product_name": "Personal Loan"
+    },
+    "interest_details": {
+      "upfront_interest_period_unit_value": null,
+      "upfront_interest_applicable": "true",
+      "upfront_interest_period": "1",
+      "interest_setup_id": "138",
+      "interest_round_off_type": "RND_OFF_TYP_RDN",
+      "interest_rounding_factor": "0",
+      "upfront_interest_amount": 16199,
+      "interest_setup_code": "IS_RoundDown",
+      "effective_interest_rate": 16.2,
+      "interest_setup_name": "RoundDown Interest setup",
+      "interest_calculation_days_in_month": "DIM_ACTUAL",
+      "interest_calculation_days_in_month_value": "Actual",
+      "account_spread": 4.2,
+      "interest_calculation_days_in_year": "DIY_ACTUAL",
+      "scheme_interest_rate": 12,
+      "interest_round_off_type_value": "Round Down",
+      "upfront_interest_period_unit": null,
+      "interest_calculation_days_in_year_value": "Actual"
+    },
+    "disbursement_details": {
+      "mode": "CASH",
+      "mode_value": "Cash",
+      "expected_disbursement_date": "1632421800000",
+      "disbursement_amount": 83801,
+      "actual_disbursement_date": "12039812093"
+    },
+    "repayment_details": {
+      "installment_multiples_of_value": "0",
+      "interest_calculation_basis_value": "Reducing Balance",
+      "number_of_installments": "1",
+      "interest_frequency_value": null,
+      "interest_calculation_basis": "REDUCING_BALANCE",
+      "maturity_date": "1663957800000",
+      "installment_type": "INSTL_TYP_BULT",
+      "first_interest_payment_date": 1663957800000,
+      "mode": "CASH",
+      "mode_value": "Cash",
+      "installment_rounding_type_value": null,
+      "installment_rounding_type": null,
+      "interest_frequency": null,
+      "repayment_frequency": "MONTHLY",
+      "repayment_frequency_value": "Monthly",
+      "installment_rounding_factor": "0",
+      "first_repayment_date": "1663957800000",
+      "installment_multiples_of": "ZERO",
+      "installment_type_value": "Bullet Payment",
+      "principal_rounding_factor": "0"
+    },
+    "disbursement_repayment_account_details": [],
+    "loan_details": {
+      "product_scheme_id": "306",
+      "account_number": "0000000646",
+      "product_scheme_name": "uibullet",
+      "loan_category": "LOAN_PERS",
+      "office_code": "IDFCP1",
+      "loan_status_value": "Active",
+      "loan_category_value": "Personal Loan",
+      "loan_product_id": "321",
+      "product_code": "UIBulletUP",
+      "loan_purpose": null,
+      "currency_code": "INR",
+      "loan_product_version": "0001",
+      "office_id": "1",
+      "product_id": "340",
+      "loan_term_unit_value": "Months",
+      "id": "651",
+      "customer_code": "0000000409",
+      "loan_status": "ACTIVE",
+      "currency_code_value": "INR",
+      "loan_amount": 100000,
+      "product_name": "UIBulletUP",
+      "loan_term_unit": "MONTH",
+      "submitted_on_date": "1632421800000",
+      "office_name": "IDFC Head Office",
+      "customer_photo": null,
+      "loan_term": "12",
+      "loan_purpose_value": null,
+      "customer_name": "Test Type Individual",
+      "product_scheme_code": "uibullet",
+      "customer_id": "123"
+    }
+  },
+  "statement": [
+    {
+      "transaction_details": {
+        "transaction_id": "2889",
+        "transaction_date": "1650393486000",
+        "cr_dr_indicator": "C",
+        "transaction_ref_no": "21100000002903",
+        "transaction_amount": 27,
+        "transaction_type_name": "Loan Repayment",
+        "client_reference_number": "1640068744",
+        "transaction_value_date": "1650393000000",
+        "channel_code": "NOVOPAY",
+        "transaction_type": "LOAN_REPAYMENT",
+        "created_by": "3",
+        "originating_office_id": "1",
+        "approved_by": "3",
+        "narration": "Loan Repayment",
+        "transaction_sub_type": "CASH",
+        "transaction_sub_type_name": "Cash Transaction",
+        "currency": "INR",
+        "account_list": [
+          {
+            "account_details": {
+              "cr_dr_indicator": "C",
+              "transaction_amount": 27,
+              "narration": "Principal",
+              "currency": "INR"
+            }
+          }
+        ],
+        "balance_after_transaction": -59566.29
+      }
+    },
+    {
+      "transaction_details": {
+        "transaction_id": "2888",
+        "transaction_date": "1650393265000",
+        "cr_dr_indicator": "C",
+        "transaction_ref_no": "21100000002902",
+        "transaction_amount": 14567,
+        "transaction_type_name": "Loan Repayment",
+        "client_reference_number": "1640068502",
+        "transaction_value_date": "1650393000000",
+        "channel_code": "NOVOPAY",
+        "transaction_type": "LOAN_REPAYMENT",
+        "created_by": "3",
+        "originating_office_id": "1",
+        "approved_by": "3",
+        "narration": "Loan Repayment",
+        "transaction_sub_type": "CASH",
+        "transaction_sub_type_name": "Cash Transaction",
+        "currency": "INR",
+        "account_list": [
+          {
+            "account_details": {
+              "cr_dr_indicator": "C",
+              "transaction_amount": 14567,
+              "narration": "Principal",
+              "currency": "INR"
+            }
+          }
+        ],
+        "balance_after_transaction": -59593.29
+      }
+    },
+    {
+      "transaction_details": {
+        "transaction_id": "2885",
+        "transaction_date": "1645036399000",
+        "cr_dr_indicator": "C",
+        "transaction_ref_no": "20480000002899",
+        "transaction_amount": 7210,
+        "transaction_type_name": "Loan Repayment",
+        "client_reference_number": ".ruvx910d68_1645077831150",
+        "transaction_value_date": "1645077797000",
+        "channel_code": "NOVOPAY",
+        "transaction_type": "LOAN_REPAYMENT",
+        "created_by": "752",
+        "originating_office_id": "1",
+        "approved_by": "752",
+        "narration": "Loan Repayment",
+        "transaction_sub_type": "CASH",
+        "transaction_sub_type_name": "Cash Transaction",
+        "currency": "INR",
+        "account_list": [
+          {
+            "account_details": {
+              "cr_dr_indicator": "C",
+              "transaction_amount": 7210,
+              "narration": "Principal",
+              "currency": "INR"
+            }
+          }
+        ],
+        "balance_after_transaction": -74160.29
+      }
+    },
+    {
+      "transaction_details": {
+        "transaction_id": "2883",
+        "transaction_date": "1642358386000",
+        "cr_dr_indicator": "C",
+        "transaction_ref_no": "20170000002897",
+        "transaction_amount": 7231.76,
+        "transaction_type_name": "Loan Repayment",
+        "client_reference_number": "1640066332",
+        "transaction_value_date": "1642357800000",
+        "channel_code": "NOVOPAY",
+        "transaction_type": "LOAN_REPAYMENT",
+        "created_by": "3",
+        "originating_office_id": "1",
+        "approved_by": "3",
+        "narration": "Loan Repayment",
+        "transaction_sub_type": "CASH",
+        "transaction_sub_type_name": "Cash Transaction",
+        "currency": "INR",
+        "account_list": [
+          {
+            "account_details": {
+              "cr_dr_indicator": "C",
+              "transaction_amount": 7231.76,
+              "narration": "Principal",
+              "currency": "INR"
+            }
+          }
+        ],
+        "balance_after_transaction": -81370.29
+      }
+    },
+    {
+      "transaction_details": {
+        "transaction_id": "2881",
+        "transaction_date": "1640061805000",
+        "cr_dr_indicator": "D",
+        "transaction_ref_no": "13550000002895",
+        "transaction_amount": 88602.05,
+        "transaction_type_name": "Disbursement",
+        "client_reference_number": "00000007701640061789652",
+        "transaction_value_date": "1640025000000",
+        "channel_code": "NOVOPAY",
+        "transaction_type": "LOAN_DISBURSEMENT",
+        "created_by": "752",
+        "originating_office_id": "1",
+        "approved_by": "752",
+        "narration": "Loan Disbursement",
+        "transaction_sub_type": "CASH",
+        "transaction_sub_type_name": "Cash Transaction",
+        "currency": "INR",
+        "account_list": [
+          {
+            "account_details": {
+              "cr_dr_indicator": "D",
+              "transaction_amount": 58.25,
+              "narration": "Documentation Fee",
+              "currency": "INR"
+            }
+          },
+          {
+            "account_details": {
+              "cr_dr_indicator": "D",
+              "transaction_amount": 1.75,
+              "narration": "sGST for disbursements",
+              "currency": "INR"
+            }
+          },
+          {
+            "account_details": {
+              "cr_dr_indicator": "D",
+              "transaction_amount": 9.7,
+              "narration": "Loan account processing fee",
+              "currency": "INR"
+            }
+          },
+          {
+            "account_details": {
+              "cr_dr_indicator": "D",
+              "transaction_amount": 0.3,
+              "narration": "sGST for disbursements",
+              "currency": "INR"
+            }
+          },
+          {
+            "account_details": {
+              "cr_dr_indicator": "D",
+              "transaction_amount": 88532.05,
+              "narration": "Disbursement Amount",
+              "currency": "INR"
+            }
+          }
+        ],
+        "balance_after_transaction": -88602.05
+      }
+    }
+  ],
+  "repayment": [
+    {
+      "interest_accrued_amount": 0,
+      "interest_overdue_amount": 0,
+      "principal_overdue_amount": 0,
+      "principal_waived_amount": 0,
+      "installment_amount": 5359,
+      "penalties_overdue_amount": 0,
+      "interest_currentdue_amount": 0,
+      "interest_actual_amount": 85,
+      "interest_paid_amount": 0,
+      "penalties_paid_amount": 0,
+      "penalties_currentdue_amount": 0,
+      "principal_actual_amount": 5274,
+      "principal_outstanding_amount": 54726,
+      "penalties_accrued_amount": 0,
+      "installment_date": "1628101800000",
+      "interest_waived_amount": 0,
+      "penalties_waived_amount": 0,
+      "principal_paid_amount": 5274,
+      "principal_currentdue_amount": 0,
+      "is_settled": "false"
+    },
+    {
+      "interest_accrued_amount": 0,
+      "interest_overdue_amount": 0,
+      "principal_overdue_amount": 0,
+      "principal_waived_amount": 0,
+      "installment_amount": 5359,
+      "penalties_overdue_amount": 0,
+      "interest_currentdue_amount": 0,
+      "interest_actual_amount": 604,
+      "interest_paid_amount": 0,
+      "penalties_paid_amount": 0,
+      "penalties_currentdue_amount": 0,
+      "principal_actual_amount": 4755,
+      "principal_outstanding_amount": 49971,
+      "penalties_accrued_amount": 0,
+      "installment_date": "1630780200000",
+      "interest_waived_amount": 0,
+      "penalties_waived_amount": 0,
+      "principal_paid_amount": 4755,
+      "principal_currentdue_amount": 0,
+      "is_settled": "false"
+    },
+    {
+      "interest_accrued_amount": 0,
+      "interest_overdue_amount": 0,
+      "principal_overdue_amount": 0,
+      "principal_waived_amount": 0,
+      "installment_amount": 5359,
+      "penalties_overdue_amount": 0,
+      "interest_currentdue_amount": 0,
+      "interest_actual_amount": 533,
+      "interest_paid_amount": 0,
+      "penalties_paid_amount": 0,
+      "penalties_currentdue_amount": 0,
+      "principal_actual_amount": 4826,
+      "principal_outstanding_amount": 45145,
+      "penalties_accrued_amount": 0,
+      "installment_date": "1633372200000",
+      "interest_waived_amount": 0,
+      "penalties_waived_amount": 0,
+      "principal_paid_amount": 4826,
+      "principal_currentdue_amount": 0,
+      "is_settled": "false"
+    }
+  ]
+}

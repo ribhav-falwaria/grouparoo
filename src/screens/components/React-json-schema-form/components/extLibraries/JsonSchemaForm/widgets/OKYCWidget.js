@@ -42,10 +42,10 @@ const OKYCWidget = (props) => {
   const { translations } = useContext(LocalizationContext)
   const {
     okycSelfieFile,
-    aadharData
+    kycData
   } = useSelector(state => ({
     selfieFile: state.formDetails.selfieFile,
-    aadharData: state.formDetails.aadharData
+    kycData: state.formDetails.kycData
   }))
   const [isUploadDone, setIsUploadDone] = useState(!isEmpty(okycSelfieFile))
   const hasError = isUndefined(props.rawErrors) ? 0 : props.rawErrors.length > 0
@@ -54,12 +54,12 @@ const OKYCWidget = (props) => {
   const useRemoveFile = useRequest(() => dispatch.formDetails.setOkycSelfieFile(undefined), {
     manual: true
   })
-  const useSaveAdhaarData = useRequest((aadharData) => dispatch.formDetails.setaadharData(aadharData), {
+  const useSaveAdhaarData = useRequest((kycData) => dispatch.formDetails.setaadharData(kycData), {
     manual: true
   })
-  const onOtpSuccessHandler = (aadharData) => {
+  const onOtpSuccessHandler = (kycData) => {
     setIsAadharDataFetched(true)
-    useSaveAdhaarData.run(aadharData)
+    useSaveAdhaarData.run(kycData)
   }
   const useFaceMatch = useRequest(uploadFileForFaceMatch, {
     manual: true,
@@ -108,7 +108,7 @@ const OKYCWidget = (props) => {
       type: data.type,
       name: 'selfie.jpg'
     }
-    const docface = aadharData?.data?.doc_face
+    const docface = kycData?.data?.doc_face
     if (!isUndefined(docface) || !isEmpty(docface)) {
       useFaceMatch.run(dispatch, fileDetails, docface)
     }

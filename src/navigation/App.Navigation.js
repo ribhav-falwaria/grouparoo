@@ -22,7 +22,8 @@ const AppNavigator = props => {
   if (props.loading || loading) {
     return <LoadingSpinner />
   }
-  const isOnboarding = (hasActiveLoan === false || isPermissionsRequested === false)
+  // FIXME: Hack to get loan data
+  const isOnboarding = false //(hasActiveLoan === false || isPermissionsRequested === false)
   const screenProps = {
     isLoggedIn,
     isPermissionsRequested,

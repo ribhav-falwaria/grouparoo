@@ -1,37 +1,22 @@
-import createListModels from '../../createListModels'
-import { api } from './api'
+import { testOffers } from './test'
 const offers = {
   name: 'offers',
-  api,
-  extensions: {
-    state: [],
-    reducers: {},
-    effects: (dispatch, baseEffects) => ({
-      async create (payload, rootState) {
-        const { data } = payload
-        return baseEffects.createAsync(data)
-      },
-      async update (payload, rootState) {
-        const { id, data } = payload
-        baseEffects.updateAsync(id, data)
-      },
-      async remove (payload, rootState) {
-        const { id } = payload
-        baseEffects.removeAsync(id)
-      },
-      async get (payload, rootState) {
-        const { id } = payload
-        baseEffects.getAsync(id)
-      },
-      async getById (payload, rootState) {
-        const { id, params } = payload
-        return baseEffects.getByIdAsync(id, params)
-      }
-    })
-  }
+  selectors: {
+    getOffers: select => rootState => {
+      return rootState.offers
+    }
+  },
+  state: [],
+  reducers: {
+    setOffers: (state, offers) => {
+      state = [...offers]
+      return state
+    }
+  },
+  effects: (dispatch) => ({
+    getAllOffers (customerId, rootState) {
+      dispatch.offers.setOffers(testOffers)
+    }
+  })
 }
-export default createListModels(
-  offers.name,
-  offers.api,
-  offers.extensions
-)
+export default offers

@@ -25,9 +25,9 @@ const formDetails = {
     panData: {},
     gstnData: {},
     udyamData: {},
+    kycData: {},
     // tempId for application
     tempId: String(Math.floor(100000 + Math.random() * 900000)),
-    aadharData: {}
   },
   selectors: {
     getPanFile: select => (rootState) => rootState.formDetails.panFile,
@@ -169,11 +169,10 @@ const formDetails = {
         udyamData: payload
       }
     },
-    setaadharData: (state, payload) => {
-      return {
-        ...state,
-        aadharData: payload
-      }
+    setaadharData: (state, { kycData, kycMatchData }) => {
+      state.kycData = kycData
+      state.kycMatchData = kycMatchData
+      return state
     }
   }
 }
