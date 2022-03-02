@@ -1,30 +1,37 @@
-import React, { useState } from 'react'
-import { View } from 'react-native'
-import {
-  StyleService,
-  useStyleSheet
-} from '@ui-kitten/components'
-import LoanOffersPerProduct from './LoanOffersPerProduct'
-import { loanOfferPart2 } from '../../../test/loanOffers'
-import AmountRangeSelector from '../AmountRangeSelector'
-import { LoanAmountDisplayBig } from '../ValueDisplayComponent'
-import { config } from '../../../config'
+import React, { useState } from "react";
+import { View } from "react-native";
+import { StyleService, useStyleSheet } from "@ui-kitten/components";
+import LoanOffersPerProduct from "./LoanOffersPerProduct";
+import { loanOfferPart2 } from "../../../test/loanOffers";
+import AmountRangeSelector from "../AmountRangeSelector";
+import { LoanAmountDisplayBig } from "../ValueDisplayComponent";
+import { config } from "../../../config";
 const LoanOffers = ({
   currentLoanAmount,
   selectedLoanOffer = {},
   onOfferSelected,
-  loanOffers
+  loanOffers,
 }) => {
-  loanOffers = loanOffers || loanOfferPart2
-  const styles = useStyleSheet(themedStyles)
-  const [loanAmount, setLoanAmount] = useState(currentLoanAmount || config.TERM_LOAN_MIN_AMOUNT)
-  const [editLoanAmount, setEditLoanAmount] = useState(false)
-  const onSelectLoanOffer = ({ productId, offerId }) => {
-    console.log(productId)
+  loanOffers = loanOffers || loanOfferPart2;
+  const styles = useStyleSheet(themedStyles);
+  const [loanAmount, setLoanAmount] = useState(
+    currentLoanAmount || config.TERM_LOAN_MIN_AMOUNT
+  );
+  const [editLoanAmount, setEditLoanAmount] = useState(false);
+  const onSelectLoanOffer = ({
+    productId,
+    offerId,
+    finalLoanTenure,
+    finalInstallmentFrequency,
+  }) => {
     onOfferSelected({
-      productId, offerId, finalLoanAmount: loanAmount
-    })
-  }
+      productId,
+      offerId,
+      finalLoanAmount: loanAmount,
+      finalLoanTenure,
+      finalInstallmentFrequency,
+    });
+  };
   return (
     <View>
       <View>
@@ -47,24 +54,22 @@ const LoanOffers = ({
         </View>
       )}
       <View>
-        {
-          loanOffers.map((lo, ix) => (
-            <LoanOffersPerProduct
-              key={`loan-offer-${ix}`}
-              loanOption={lo}
-              selectedLoanOffer={selectedLoanOffer}
-              onSelect={onSelectLoanOffer}
-              loanAmount={loanAmount}
-            />
-          ))
-        }
+        {loanOffers.map((lo, ix) => (
+          <LoanOffersPerProduct
+            key={`loan-offer-${ix}`}
+            loanOption={lo}
+            selectedLoanOffer={selectedLoanOffer}
+            onSelect={onSelectLoanOffer}
+            loanAmount={loanAmount}
+          />
+        ))}
       </View>
     </View>
-  )
-}
+  );
+};
 const themedStyles = StyleService.create({
   rangeSelector: {
-    marginTop: 16
-  }
-})
-export default LoanOffers
+    marginTop: 16,
+  },
+});
+export default LoanOffers;
