@@ -27,6 +27,7 @@ const uploadFileUsingRNFetchBlob = async (base64, fileName) => {
       throw new Error('CANNOT_UPLOAD_FILE_TO_DOC_SERVER')
     }
   } catch (e) {
+    console.log("Inside uploadFileUsingRNFetchBlob() method, exception caught",e);
     if (e.message === 'CANNOT_UPLOAD_FILE_TO_DOC_SERVER') {
       throw e
     } else {
@@ -56,6 +57,7 @@ const maskAadhaar = async (dispatch, file, isBack) => {
       throw new Error('CANNOT_MASK_AADHAAR_INCORRECT_FILE')
     }
   } catch (err) {
+    console.log("Inside maskAadhaar() method, exception caught",err);
     if (err.message === 'CANNOT_MASK_AADHAAR_INCORRECT_FILE') {
       throw err
     } else {

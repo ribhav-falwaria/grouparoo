@@ -113,7 +113,7 @@ class ResourceFactoryConstants {
     },
     bankStatement: {
       uploadBankStatement: this.getCustomUrl(
-        this.adapterServiceUrl,
+        "https://novo-adapter-qa.novopay.in/",
         "",
         "v1/api/bankstatement"
       ),
@@ -122,7 +122,7 @@ class ResourceFactoryConstants {
       uploadAadharWithFronAndBack: this.getCustomUrl(
         this.apiGateWay,
         "mask",
-        "/aaadhar/"
+        "/aadhaar/"
       ),
     },
     exists: {
