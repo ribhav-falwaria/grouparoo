@@ -104,7 +104,7 @@ const BankStatementUploadField = (props) => {
     manual: true,
     onSuccess: (result, params) => {
       const { uploadedDocIds } = result
-      const allUploadedDocIds = props.value ? [...props.value, ...uploadedDocIds] : uploadedDocIds
+      const allUploadedDocIds = props.formData ? [...props.value, ...uploadedDocIds] : uploadedDocIds
       props.onChange(allUploadedDocIds)
       setIsUploadDone(true)
       Toast.show({
@@ -140,7 +140,7 @@ const BankStatementUploadField = (props) => {
     if (!isEmpty(file) > 0) {
       useRemoveFile.run(file)
       // remove from props
-      const newProps = props.value.filter(v => v.indexOf(file.name) > -1)
+      const newProps = props.formData.filter(v => v.indexOf(file.name) > -1)
       props.onChange([...newProps])
     }
   }

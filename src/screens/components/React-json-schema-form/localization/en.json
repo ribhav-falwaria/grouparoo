@@ -54,6 +54,7 @@
   "selfie.success": "Selfie uploaded successfully",
   "selfie.failed": "Invalid Selfie Image, please take your selfie again. Ensure that your face is correctly visible.",
   "selfie.uploadText": "Click to upload Your Selfie",
+  "selfie.compleKycFirst.message":"First,Complete your Aadhaar KYC",
   "aadhar.enterAdhaarNumber": "Enter Aadhaar Number",
   "aadhar.shareCode": "Enter Aadhaar Share Code",
   "aadhar.enterCaptcha": "Enter Captcha",
