@@ -41,25 +41,13 @@ const MyLoansCard = ({ loanId, Icon, onPress, loading, heading }) => {
     loanAmount: models.loans.getLoanAmount,
     maturityDate: models.loans.getMaturityDate,
     loanAccountNumber: models.loans.getLoanAccountNumber,
-    remainingTenure: models.loans.getRemainingTenure,
     remainingPrincipal: models.loans.getRemainingPrincipal
   }))
-  const { loanAmount, loanAccountNumber, maturityDate, remainingTenure, remainingPrincipal } = selector(state, { loanId })
-  // const loanAmount = store.select.loans.getLoanAmount(state, loanId)
-  // const maturityDate = store.select.loans.getMaturityDate(state, loanId)
-  // const loanAccountNumber = store.select.loans.getLoanAccountNumber(
-  //   state,
-  //   loanId
-  // )
-  // const remainingTenure = store.select.loans.getRemainingTenure(state, loanId)
-  // const remainingPrincipal = store.select.loans.getRemainingPrincipal(
-  //   state,
-  //   loanId
-  // )
+  const { loanAmount, loanAccountNumber, maturityDate, remainingPrincipal } = selector(state, { loanId })
   const styles = useStyleSheet(themedStyles)
   const { translations } = useContext(LocalizationContext)
   const cardHeading = translations.formatString(translations[heading], {
-    loanAccountNumber: loanAccountNumber.truncated
+    loanAccountNumber: loanAccountNumber
   })
   return (
     <Card style={styles.cardContainer} onPress={onPress}>
@@ -67,8 +55,7 @@ const MyLoansCard = ({ loanId, Icon, onPress, loading, heading }) => {
         <View style={styles.cardTitleContainer}>
           <Icon />
           <Text
-            style={styles.heading}
-            category='h5'
+            category='h6'
             status='primary'
             appearance='default'
           >
@@ -78,27 +65,20 @@ const MyLoansCard = ({ loanId, Icon, onPress, loading, heading }) => {
       </View>
       <View style={styles.contentContainer}>
         <View style={styles.loanDetailColumn}>
-          <Text category='p1' status='default' style={styles.content}>
+          <Text category='p1' status='default'>
             {translations['myLoans.loanAmount']}
           </Text>
-          <Text category='p1' status='primary'>
+          <Text category='s1' status='primary' style={styles.content}>
+            <Text category='p1' status='basic'>{'₹ '}</Text>
             {rupeeFormatter(loanAmount)}
           </Text>
         </View>
         <View style={styles.loanDetailColumn}>
-          <Text category='p1' status='default' style={styles.content}>
+          <Text category='p1' status='default'>
             {translations['loan.maturityDate']}
           </Text>
-          <Text category='p1' status='primary'>
-            {`${maturityDate} (${remainingTenure})`}
-          </Text>
-        </View>
-        <View style={styles.loanDetailColumn}>
-          <Text category='p1' status='default' style={styles.content}>
-            {translations['loan.remainingPrincipal']}
-          </Text>
-          <Text category='p1' status='primary'>
-            {remainingPrincipal}
+          <Text category='s1' status='primary' style={styles.content}>
+            {`${maturityDate}`}
           </Text>
         </View>
       </View>
@@ -116,7 +96,7 @@ const themedStyles = StyleService.create({
     ...styleConstants.cardTitleContainer,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'flex-start'
   },
   contentContainer: {
     ...styleConstants.contentContainer,
@@ -130,7 +110,7 @@ const themedStyles = StyleService.create({
     marginLeft: 'auto'
   },
   content: {
-    ...styleConstants.content
+    marginTop: 4
   },
   loanDetailColumn: {
     flexDirection: 'column'

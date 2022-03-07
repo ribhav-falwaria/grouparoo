@@ -5,8 +5,7 @@ import {
   Card,
   Text,
   StyleService,
-  useStyleSheet,
-  Button
+  useStyleSheet
 } from '@ui-kitten/components'
 import {
   Placeholder,
@@ -41,22 +40,16 @@ const RepaymentCard = ({ heading, loanId, Icon, onPress, onPaymentPress, loading
   const selector = store.select(models => ({
     productName: models.loans.getProductName,
     loanAccountNumber: models.loans.getLoanAccountNumber,
-    nextInstallment: models.loans.getNextInstallment,
-    dpdSchedule: models.loans.getDpdSchedule
+    nextInstallment: models.loans.getNextInstallment
   }))
-  const { nextInstallment, dpdSchedule, productName, loanAccountNumber } = selector(state, {
+  const { nextInstallment, loanAccountNumber } = selector(state, {
     loanId
   })
 
   const styles = useStyleSheet(themedStyles)
   const { translations } = useContext(LocalizationContext)
   const isRepayNow = nextInstallment.pastDueDays > 0
-
-  const onPayPress = () => {
-    //FIXME: Need to change this after use case from nishant
-    onPaymentPress(loanId, 1000)
-  }
-  // Nothing to repay - no dpd
+  // Nothing to show cuase the borrower is in dpd
   if (isRepayNow) {
     return null
   }
@@ -93,31 +86,12 @@ const RepaymentCard = ({ heading, loanId, Icon, onPress, onPaymentPress, loading
         </Text>
       </View>
       <View style={styles.contentContainer}>
-        <View style={styles.repaymentSchedule}>
-          <View>
-            <View style={styles.scheduleRowHead}>
-              <Text category='p1' status='default' style={styles.rowContent}>
-                {translations['repayment.installment']}
-              </Text>
-              <Text category='p1' status='default' style={styles.rowContent}>
-                {translations['repayment.overdue']}
-              </Text>
-            </View>
-            {dpdSchedule.map((schedule, ix) => (
-              <View key={`schedule-${ix}`} style={styles.scheduleRow}>
-                <Text category='p1' status='default' style={styles.rowContent}>
-                  {schedule.dueDate}
-                </Text>
-                <Text category='p1' status='danger' style={styles.scheduleText}>
-                  {rupeeFormatter(schedule.amount)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      </View>
-      <View style={styles.payNow}>
-        <Button onPress={onPayPress}>{translations['pay.now']}</Button>
+        <Text style={styles.content} category='p1' appearance='hint'>
+          {`${translations['repayment.installmentDate']} : `}
+        </Text>
+        <Text category='s1'>
+          {`${nextInstallment.installmentDate}  (${nextInstallment.humanize})`}
+        </Text>
       </View>
     </Card>
   )
@@ -169,7 +143,8 @@ const themedStyles = StyleService.create({
     flexDirection: 'row'
   },
   payNow: {
-    width: '100%'
+    marginLeft: 'auto',
+    width: 150
   }
 })
 

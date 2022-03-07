@@ -6,55 +6,65 @@ const loanProducts = {
   },
   selectors: {
     list: select => (rootState) => {
-      return Object.keys(rootState.loanProducts).map(ky => rootState[loanProducts[ky]])
-    },
-    getProductById: select => (rootState, { productId }) => {
-      return rootState.loanProducts[productId]
+      const { loanProducts } = rootState
+      return Object.keys(loanProducts).map(ky => loanProducts[ky])
     },
     getProductBySchemeCode: select => (rootState, { schemeCode, schemeName }) => {
       const lps = select.loanProducts.list(rootState)
       return lps.find(lp => lp.schemeCode === schemeCode)
     },
-    getProductDisplayName: select => (rootState, { productId }) => {
-      const product = select.loanProducts.getProductById(rootState, { productId })
-      const name = select.loanTypes.getDisplayName(rootState, {
-        loanTypeId: product.loanTypeId
-      })
+    getProductDisplayName: select => (rootState, { schemeCode, productCode }) => {
+      const product = select.loanProducts.getProductBySchemeCode(rootState, { schemeCode, productCode })
+      const name = product.loanType.name
       return name
     },
-    getRepaymentDescription: select => (rootState, { productId }) => {
-      const product = select.loanProducts.getProductById(rootState, { productId })
-      if (product.interestRepaymentMode === config.REPAYMENT_AMORTIZED) {
+    getInterestFrequency: select => (rootState, { schemeCode, schemeName }) => {
+      const product = select.loanProducts.getProductBySchemeCode(rootState, { schemeCode, schemeName })
+      const rpMode = product.repaymentMode.repaymentMode
+      let interestFrequency
+      if (rpMode === config.REPAYMENT_UPFRONT_EQUATED || rpMode === config.REPAYMENT_UPFRONT_AMORTIZED) {
+        interestFrequency = `period.${interestFrequency}ly.upfront`
+      } else if (rpMode === config.REPAYMENT_BULLET_BEGINNING) {
+        interestFrequency = 'period.paidUpfront'
+      } else if (rpMode === config.REPAYMENT_BULLET_END) {
+        interestFrequency = 'period.paidAtend'
+      }
+      return interestFrequency
+    },
+    getRepaymentDescription: select => (rootState, { schemeCode, schemeName }) => {
+      const product = select.loanProducts.getProductBySchemeCode(rootState, { schemeCode, schemeName })
+      const rpMode = product.repaymentMode.repaymentMode
+
+      if (rpMode === config.REPAYMENT_AMORTIZED || rpMode === config.REPAYMNET_EQUATED) {
         return {
           description: 'loan.amortization',
-          mode: config.REPAYMENT_AMORTIZED
+          mode: rpMode
         }
-      } else if (product.interestRepaymentMode === config.REPAYMNET_UPFRONT) {
+      } else if (rpMode === config.REPAYMENT_UPFRONT_EQUATED || rpMode === config.REPAYMENT_UPFRONT_EQUATED) {
         return {
           principal: 'loan.principalAmount',
           pincipalAndInterest: 'loan.principalAndInterest',
           interest: 'loan.interestAmount',
-          mode: config.REPAYMNET_UPFRONT
+          mode: rpMode
 
         }
-      } else if (product.interestRepaymentMode === config.REPAYMENT_BULLET_END) {
+      } else if (rpMode === config.REPAYMENT_BULLET_END) {
         return {
           description: 'loan.repaymentAmount',
           principal: 'loan.principalAmount',
           interest: 'loan.interestAmount',
-          mode: config.REPAYMENT_BULLET_END
+          mode: rpMode
 
         }
       } else if (product.interestRepaymentMode === config.REPAYMENT_BULLET_BEGINNING) {
         return {
           principal: 'loan.principalAmount',
-          interest: 'loan.interestAmount',
-          mode: config.REPAYMENT_BULLET_BEGINNING
+          mode: rpMode
         }
       }
     },
-    getRepaymentFrequencyForDisplay: select => (rootState, { productId }) => {
-      const product = select.loanProducts.getProductById(rootState, { productId })
+    getRepaymentFrequencyForDisplay: select => (rootState, { schemeCode, schemeName }) => {
+      const product = select.loanProducts.getProductBySchemeCode(rootState, { schemeCode, schemeName })
       if (product.interestRepaymentMode === config.REPAYMENT_AMORTIZED) {
         return {
           repaymentFrequency: `period.per.${product.interestFrequency}`,
@@ -87,7 +97,7 @@ const loanProducts = {
   reducers: {
     setLoanProducts: (state, { products }) => {
       products.forEach(pr => {
-        state[pr.$id] = pr
+        state[pr.id] = pr
       })
       return state
     }

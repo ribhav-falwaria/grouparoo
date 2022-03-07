@@ -4,13 +4,11 @@ import {
   StyleService,
   TopNavigation,
   TopNavigationAction,
-  Icon,
-  Text
+  Icon
 } from '@ui-kitten/components'
 import styleConstants from '../styleConstants'
 import SafeAreaLayout from '../../components/SafeAreaLayout.component'
-import { config } from '../../config'
-const AuthWrapper = props => {
+const ModalWrapper = props => {
   const styles = useStyleSheet(themedStyles)
   const BackIcon = (props) => (
     <Icon {...props} name='arrow-back' />
@@ -43,4 +41,4 @@ const themedStyles = StyleService.create({
   }
 })
 
-export default AuthWrapper
+export default ModalWrapper

@@ -7,6 +7,8 @@ import MyLoanSvg from '../../assets/images/monetization_on_black_24dp'
 import RepaySvg from '../../assets/images/payments_black_24dp'
 import ReferralSvg from '../../assets/images/auto_awesome_black_24dp.svg'
 import OfferSvg from '../../assets/images/verified_black_24dp'
+import RupeeIconSvg from '../../assets/images/rupee-symbol.svg'
+import BankIconSvg from '../../assets/images/account_balance_black_24dp.svg'
 const buildIcon = (IconSvg) => {
   const theme = useTheme()
   return (
@@ -21,6 +23,7 @@ const buildEvaIcon = (name, fill, width, height) => {
     <Icon name={name} style={{ marginRight: 4 }} fill={fill || theme['color-warning-500']} width={width || 26} height={height || 26} />
   )
 }
+
 export const NoInternetIcon = () => buildEvaIcon('wifi-off-outline', undefined, 36, 36)
 export const SmsIcon = () => buildEvaIcon('message-circle-outline')
 
@@ -29,6 +32,7 @@ export const CameraIcon = () => buildEvaIcon('video-outline')
 export const LocationIcon = () => buildEvaIcon('pin-outline')
 
 export const MyLoansIcon = () => buildIcon(MyLoanSvg)
+export const NetBankingIcon = () => buildIcon(BankIconSvg)
 export const RepaymentIcon = () => buildIcon(RepaySvg)
 export const ReferralIcon = () => buildIcon(ReferralSvg)
 export const LoanAgentIcon = () => buildEvaIcon('award-outline')
@@ -36,6 +40,7 @@ export const OfferIcon = () => buildIcon(OfferSvg)
 export const LoanOfferIcon = () => buildEvaIcon('bookmark-outline')
 export const ApplicationFormIcon = () => buildEvaIcon('file-text-outline')
 export const AppPermissionsIcon = () => buildEvaIcon('checkmark-square-outline')
+export const CreditCardIcon = () => buildEvaIcon('credit-card-outline')
 
 export const ManageLoanApplicationsIcon = () => buildEvaIcon('list-outline')
 export const SignInIcon = () => buildEvaIcon('log-in-outline')

@@ -3,7 +3,7 @@ export const rupeeFormatter = x => {
   if (isUndefined(x)) {
     return
   }
-  x = x.toString()
+  x = Math.round(x).toString()
   let afterPoint = ''
   if (x.indexOf('.') > 0) afterPoint = x.substring(x.indexOf('.'), x.length)
   x = Math.floor(x)

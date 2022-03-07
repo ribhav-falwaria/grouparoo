@@ -1,14 +1,49 @@
 import dayjs from 'dayjs'
 import orderBy from 'lodash.orderby'
 import isUndefined from 'lodash.isundefined'
-import maxBy from 'lodash.maxby'
+import minBy from 'lodash.minby'
 import humanizeDuration from 'humanize-duration'
 import { rupeeFormatter } from '../../utils'
 import apiService from '../../apiService'
 import { config } from '../../config'
-import loanDetails from './loans old/mapper'
 const formatAmount = amount => rupeeFormatter(parseFloat(amount))
 /*************** loanApplicationId and loanId are used interchangably here *************/
+const dayjsMapper = {
+  [config.FREQ_MONTHLY]: 'month',
+  [config.FREQ_DAILY]: 'day',
+  [config.FREQ_WEEKLY]: 'week',
+  [config.FREQ_YEARLY]: 'year',
+  [config.FREQ_HALFYEARLY]: 'year'
+}
+const humanize = (inDays, language) => {
+  const diff = inDays * 1000 * 60 * 60 * 24
+  if (inDays > 365) {
+    return humanizeDuration(diff, {
+      units: ['y'],
+      round: false,
+      language
+    })
+  } else if (inDays > 30) {
+    return humanizeDuration(diff, {
+      units: ['m', 'w', 'd'],
+      round: true,
+      language
+    })
+  } else if (inDays > 7) {
+    return humanizeDuration(diff, {
+      units: ['w', 'd'],
+      round: true,
+      language
+    })
+  } else {
+    return humanizeDuration(diff, {
+      units: ['d'],
+      round: true,
+      language
+    })
+  }
+}
+
 const loans = {
   name: 'loans',
   state: {},
@@ -38,9 +73,41 @@ const loans = {
           schedule => !schedule.isTxnSettled
         )
         .filter(
-          schedule => dayjs().diff(dayjs(parseInt(schedule.installment_date)), 'day', true) > 1
+          schedule => dayjs().diff(dayjs(parseInt(schedule.installmentDate)), 'day', true) > 1
         )
       return notRepaid
+    },
+    getNextInstallment: select => (rootState, { loanId }) => {
+      const loan = select.loans.getById(rootState, loanId)
+      const nextInstallment = minBy(loan.repayment.filter(rp => rp.installmentDate > dayjs().valueOf()), 'installmentDate')
+      if (loan.basicDetails.outstanding.pastDueDays > 0) {
+        const { principalDueAmount, interestDueAmount, pastDueDays, penalDueAmount, totalDueAmount } = loan.basicDetails.outstanding
+        const pendingRepayment = {
+          pastDueDays: pastDueDays,
+          principal: principalDueAmount,
+          interest: interestDueAmount,
+          penalty: penalDueAmount,
+          total: totalDueAmount
+        }
+        return pendingRepayment
+      } else {
+        if (nextInstallment.length === 0) {
+          return nextInstallment
+        }
+        const diff = dayjs(nextInstallment.installmentDate).diff(dayjs())
+        const inDays = dayjs.duration(diff).days()
+        const language = select.settings.getLanguage(rootState)
+        return {
+          pastDueDays: 0,
+          principal: nextInstallment.principalAmount,
+          interest: nextInstallment.interestAmount,
+          penalty: 0,
+          total: nextInstallment.installmentAmount,
+          installmentDate: dayjs(nextInstallment.installmentDate).format(config.APP_DATE_FORMAT),
+          humanize: humanize(inDays, language),
+          inDays
+        }
+      }
     },
     getTotalDpdAmount: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
@@ -64,11 +131,11 @@ const loans = {
     getProductName: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
       if (!isUndefined(loan)) {
-        const product = select.loanProducts.getProductBySchemeCode({
+        const displayName = select.loanProducts.getProductDisplayName(rootState, {
           schemeCode: loan.basicDetails.schemeCode,
           schemeName: loan.basicDetails.schemeName
         })
-        return product.displayName
+        return displayName
       }
     },
     getLoanAccountNumber: select => (rootState, { loanId }) => {
@@ -82,156 +149,123 @@ const loans = {
     },
     getMaturityDate: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      return dayjs(parseInt(loan.basicDetails.maturityDate)).format(
-        'DD-MMM-YY'
+      return dayjs(loan.basicDetails.maturityDate).format(
+        config.APP_DATE_FORMAT
       )
     },
-    //FIXME: NEEDS A SOLUTION
-    getRemainingPrincipal: select => (rootState, { loanId, formatted }) => {
+    getCurrentRepayment: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      // depends on repayment frequency as well. 
-      // if (loan.basicDetails.repaymentFrequency === )
-      // loan.repayment.find(rp => {
-      //   rp.installmentDate
-      // })
+      const lower = dayjs().startOf(dayjsMapper[loan.repaymentFrequency]).valueOf()
+      const upper = dayjs().endOf(dayjsMapper[loan.repaymentFrequency]).valueOf()
+      const currentRepayment = loan.repayment.find(s => s.installmentDate >= lower && s.installmentDate <= upper)
+      return currentRepayment
+    },
+    // FIXME: this is incorrect. navneet to populate this field.
+    getRemainingPrincipal: select => (rootState, { loanId, formatted }) => {
+      const currentStatement = select.loans.getCurrentRepayment(rootState, { loanId })
+      if (isUndefined(currentStatement)) {
+        return 0
+      }
+      if (formatted) {
+        return rupeeFormatter(currentStatement.principalOutstanding)
+      } else {
+        return currentStatement.principalOutstanding
+      }
+    },
+    getHasOutstandingRepayment: select => (rootState, { loanId }) => {
+      const loan = select.loans.getById(rootState, loanId)
+      return loan.basicDetails.outstanding.pastDueDays > 0
     },
     getRemainingTenure: select => (rootState, { loanId }) => {
       const language = select.settings.getLanguage(rootState)
-      const maturityDate = select.loans.getMaturityDate(rootState, { loanId })
       const loan = select.loans.getById(rootState, loanId)
-      const product = select.loanProducts.getProductBySchemeCode(rootState, {
-        schemeCode: loan.basicDetails.schemeCode,
-        schemeName: loan.basicDetails.schemeName
-      })
-      const diff = maturityDate.diff(dayjs())
-      const inDays = dayjs.duration(diff).asDays()
-      const productType = product.productType || config.DEFAULT_PRODUCT_TYPE
-      if (productType === 'shortterm') {
-        if (inDays < 7) {
-          return humanizeDuration(diff, {
-            units: ['d'],
-            round: true,
-            language
-          })
-        } else {
-          return humanizeDuration(diff, {
-            units: ['w'],
-            round: true,
-            language
-          })
-        }
-      } else if (loan.loan_details.product_code === 'termloan') {
-        if (inDays > 365) {
-          return humanizeDuration(diff, {
-            units: ['y'],
-            round: true,
-            language
-          })
-        } else if (inDays > 30) {
-          return humanizeDuration(diff, {
-            units: ['m'],
-            round: true,
-            language
-          })
-        } else if (inDays > 7) {
-          return humanizeDuration(diff, {
-            units: ['w'],
-            round: true,
-            language
-          })
-        } else {
-          return humanizeDuration(diff, {
-            units: ['d'],
-            round: true,
-            language
-          })
-        }
-      } else if (
-        ['creditline, purchasecredit'].indexOf(
-          loan.loan_details.product_code
-        ) !== -1
-      ) {
-        return humanizeDuration(diff, { units: ['d'], round: true, language })
-      }
-      return humanizeDuration(diff, { units: ['w'], round: true, language })
-    },
-    getIsPrepayEnabled: select => (rootState, { loanId }) => {
-      const loan = select.loans.getById(rootState, loanId)
-      return loan.canPrepay || false
+      const maturityDate = loan.basicDetails.maturityDate
+      const diff = dayjs(maturityDate).diff(dayjs())
+      const inDays = dayjs.duration(diff).days()
+      return humanize(inDays, language)
     },
     getInterestDetails: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const product = select.loanProducts.getProductBySchemeCode(rootState, {
+      const interestRate = loan.basicDetails.interestRate
+      const interestFrequency = select.loanProducts.getInterestFrequency(rootState, {
         schemeCode: loan.basicDetails.schemeCode,
         schemeName: loan.basicDetails.schemeName
       })
-      const interestRate = loan.basicDetails.interestRate
-      const interestFrequency = `period.per.${product.interestFrequency}`
       return {
-        interestRate: `${interestRate}% ${interestFrequency}`,
-        interestAmount: product.interestRepaymentMode === 'upfront'
+        interestRate: `${interestRate}`,
+        interestAmount: loan.isUpFrontInterest
           ? `${formatAmount(
-            232323
+            loan.upfrontInterestAmount
           )} ${interestFrequency}}`
-          : null
+          : undefined
       }
     },
     getAmortizationDetails: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
+      // first find the repayment schedule for this installment
+      // FIXME: this is wrong. Need to verify with Navneet
       return {
-        amount: parseFloat(loan.loan_details.installment_amount),
-        units: `period.per.${loan.repayment_details.repayment_frequency.toLowerCase()}`
+        amount: loan.basicDetails.nextInstallmentAmount,
+        units: `period.per.${loan.basicDetails.repaymentFrequency}`
       }
     },
     getDisbursementDate: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      return dayjs(
-        parseInt(loan.disbursement_details.expected_disbursement_date)
-      ).format('DD-MMM-YYYY')
+      // FIXME: remove this once navneet adds actual disbursement date
+      return dayjs(loan.basicDetails.dusbursementDate || loan.basicDetails.expectedDisbursementDate).format(config.APP_DATE_FORMAT)
     },
-    getPrepayEnabled: select => (rootState, { loanId }) => {
+    getIsPrepayEnabled: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      return loan.loan_details.prepay_enabled
+      const product = select.loanProducts.getProductBySchemeCode(rootState, {
+        schemeCode: loan.basicDetails.schemeCode,
+        schemeName: loan.basicDetails.schemeName
+      })
+      return product.canPrepay
     },
 
     getLoanDetailsForDisplay: select => (rootState, { loanId }) => {
-      const { externalLoanId, details } = select.loans.getById(rootState, loanId)
+      const loan = select.loans.getById(rootState, loanId)
       const loanDetailsForDisplay = {
-        loanApplicationNumber: externalLoanId,
-        finalApprovedAmount: rupeeFormatter(details.finalApprovedAmount),
-        disbursalDate: dayjs(details.disbursalDate, config.LOAN_DATE_FORMAT).format(config.APP_DATE_FORMAT),
-        totalOutstanding: rupeeFormatter(details.totalOutstanding),
-        principalOutstanding: rupeeFormatter(details.principalOutstanding),
-        nextRepaymentDate: dayjs(details.nextRepaymentDate, config.LOAN_DATE_FORMAT).format(config.APP_DATE_FORMAT),
-        appliedLoanAmount: rupeeFormatter(details.appliedLoanAmount),
-        previousRepaymentDate: dayjs(details.previousRepaymentDate, config.LOAN_DATE_FORMAT).format(config.APP_DATE_FORMAT),
-        emi: rupeeFormatter(details.emi),
-        repayment: select.product.getRepaymentFrequencyForDisplay(rootState, { productId: details.productId }),
-        displayName: select.product.getProductDisplayName(rootState, {
-          productId: details.productId
+        loanApplicationNumber: loanId,
+        finalApprovedAmount: rupeeFormatter(loan.basicDetails.loanAmount),
+        disbursalDate: dayjs(loan.basicDetails.disbursalDate, config.APP_DATE_FORMAT).format(config.APP_DATE_FORMAT),
+        principalOutstanding: rupeeFormatter(loan.basicDetails.principalOutstanding),
+        nextRepaymentDate: dayjs(loan.basicDetails.nextInstallmentDate, config.APP_DATE_FORMAT).format(config.APP_DATE_FORMAT),
+        emi: rupeeFormatter(loan.basicDetails.nextInstallmentAmount),
+        repayment: select.product.getRepaymentFrequencyForDisplay(rootState, {
+          schemeCode: loan.basicDetails.schemeCode,
+          schemeName: loan.basicDetails.schemeName
         }),
-        tenure: details.tenure
+        displayName: select.product.getProductDisplayName(rootState, {
+          schemeCode: loan.basicDetails.schemeCode,
+          schemeName: loan.basicDetails.schemeName
+        }),
+        tenure: loan.basicDetails.term,
+        tenureUnit: `period.${loan.basicDetails.repaymentFrequency}s`
       }
       return loanDetailsForDisplay
     },
     getRepaymentSchedule: select => (rootState, { loanId }) => {
-      const { details: { repaymentSchedule, productId } } = select.loans.getById(rootState, loanId)
-      const { mode, ...descriptions } = select.loanProducts.getRepaymentDescription(rootState, { productId })
-      return orderBy(repaymentSchedule, (rd) => parseInt(rd.date), ['desc']).map(
+      const loan = select.loans.getById(rootState, loanId)
+      const { mode, ...descriptions } = select.loanProducts.getRepaymentDescription(rootState, {
+        schemeCode: loan.basicDetails.schemeCode,
+        schemeName: loan.basicDetails.schemeName
+      })
+      return orderBy(loan.repayment.filter(rd => rd.installmentDate <= dayjs().valueOf()), 'installmentDate', ['desc']).map(
         rd => {
-          let { emi, interest, principal, date, status } = rd
-          if (isUndefined(emi) || emi === 0) {
+          const { installmentAmount, interestAmount, principalAmount, installmentDate, isTxnSettled } = rd
+          if (isUndefined(installmentAmount) || installmentAmount === 0) {
             return {}
           }
-          principal = isUndefined(principal) ? 0 : principal
-          interest = isUndefined(interest) ? 0 : interest
+          const principal = isUndefined(principalAmount) ? 0 : principalAmount
+          const interest = isUndefined(interestAmount) ? 0 : interestAmount
           let description
-          const isFullyPaid = status === config.REPAYMENT_PAID_STATUS
+          const isFullyPaid = (installmentDate < dayjs().valueOf()) ? isTxnSettled : true
           let amount
-          if (mode === config.REPAYMNET_UPFRONT) {
+          if (mode === config.REPAYMENT_UPFRONT_AMORTIZED || mode === config.REPAYMENT_UPFRONT_EQUATED) {
             if (principal > 0 && interest > 0) {
               description = descriptions.principalAndInterest
-              amount = emi
+              amount = installmentAmount
             } else if (principal > 0) {
               description = descriptions.principal
               amount = principal
@@ -239,15 +273,15 @@ const loans = {
               description = descriptions.interest
               amount = interest
             }
-          } else if (mode === config.REPAYMENT_AMORTIZED) {
+          } else if (mode === config.REPAYMENT_AMORTIZED || mode === config.REPAYMNET_EQUATED) {
             description = descriptions.description
-            amount = emi
+            amount = installmentAmount
           } else if (mode === config.REPAYMENT_BULLET_BEGINNING) {
             description = descriptions.principal
             amount = principal
           } else if (mode === config.REPAYMENT_BULLET_END) {
             description = descriptions.description
-            amount = emi
+            amount = installmentAmount + interestAmount
           }
           return {
             amount,
@@ -255,7 +289,7 @@ const loans = {
             description,
             interest,
             principal,
-            repaymentDate: dayjs(date, config.REPAYMENT_DATE_FORMAT).format('DD-MMM-YYYY')
+            repaymentDate: dayjs(installmentDate).format(config.REPAYMENT_DATE_FORMAT)
           }
         }
       )
@@ -264,34 +298,47 @@ const loans = {
       const repaymentSchedule = select.loans.getRepaymentSchedule(rootState, { loanId })
       const upcomingRepayment = orderBy(
         repaymentSchedule.filter(
-          rp => rp.repaymentDate > dayjs() && rp.status === config.REPAYMENT_PENDIND_STATUS
+          rp => rp.installmentDate > dayjs().valueOf() && rp.status === config.REPAYMENT_PENDIND_STATUS
         ),
         ['repaymentDate'],
         ['desc']
       )
       return upcomingRepayment[0]
     },
+    // FIXME: we need to handle this
     getPendingRepayment: select => (rootState, { loanId }) => {
-      const repaymentSchedule = select.loans.getRepaymentSchedule(rootState, { loanId })
+      const loan = select.loans.getById(rootState, loanId)
+      const { basicDetails, repayment } = loan
+      const { principalDueAmount, interestDueAmount, pastDueDays, penalDueAmount, totalDueAmount } = basicDetails.outstanding
+      const pendingRepayment = {
+        pastDueDays: pastDueDays,
+        principal: principalDueAmount,
+        interest: interestDueAmount,
+        penalty: penalDueAmount,
+        total: totalDueAmount
+      }
+      const today = dayjs().valueOf()
       const repaymentTillNow = orderBy(
-        repaymentSchedule.filter(
-          rp => rp.repaymentDate < dayjs() && rp.status === config.REPAYMENT_PENDIND_STATUS
+        repayment.filter(
+          rp => rp.installmentDate < dayjs().valueOf() && !rp.isTxnSettled
         ),
-        ['repaymentDate'],
+        ['installmentDate'],
         ['desc']
       )
       if (repaymentTillNow.length > 0) {
         // There can be both interest and principal or principal
         const repaymentAmount = repaymentTillNow.reduce(
           (o, v) => {
-            v.principal = v.principal + o.principal
-            v.interest = v.interest + o.interest
-            v.total = v.total + o.amount
+            v.principal = v.principal + o.principalOverdueAmount
+            v.interest = v.interest + o.interestOverdueAmount
+            v.penalty = v.penalty + o.penaltyAccruedAmount
+            v.total = v.total + o.penaltyAccruedAmount + o.interestOverdueAmount + o.principalOverdueAmount
             return v
           },
           {
             principal: 0,
             interest: 0,
+            penalty: 0,
             total: 0
           })
         return {
@@ -320,8 +367,7 @@ const loans = {
       try {
         const executionId = await apiService.appApi.loans.getAllLoans.execute(customer.customerDetails.$id)
         const allLoans = await apiService.appApi.loans.getAllLoans.get(executionId)
-        const loan = loanDetails()
-        dispatch.loans.addAllLoans({ allLoans: [loan] })
+        dispatch.loans.addAllLoans({ allLoans })
       } catch (e) {
         console.log(e.stack)
         console.log(e.message)

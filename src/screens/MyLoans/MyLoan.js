@@ -21,6 +21,8 @@ import styleConstants from '../styleConstants'
 import { LocalizationContext } from '../../components/Translation'
 import { rupeeFormatter } from '../../utils'
 import { CheckIconSmall, CancelIcon } from '../components/ThemedIcons'
+import RupeeText from '../components/RupeeText'
+import PercentText from '../components/PercentText'
 const MyLoan = ({ navigation, loanId }) => {
   const [viewMore, { toggle }] = useToggle(false)
   const store = useStore()
@@ -35,13 +37,13 @@ const MyLoan = ({ navigation, loanId }) => {
     remainingTenure: models.loans.getRemainingTenure,
     remainingPrincipal: models.loans.getRemainingPrincipal,
     productName: models.loans.getProductName,
-    isPrepayEnabled: models.loans.getPrepayEnabled,
+    isPrepayEnabled: models.loans.getIsPrepayEnabled,
     interestDetails: models.loans.getInterestDetails,
     amortizationAmount: models.loans.getAmortizationDetails,
     disbursementDate: models.loans.getDisbursementDate,
     dpdAmount: models.loans.getTotalDpdAmount,
     repaymentSchedule: models.loans.getRepaymentSchedule,
-    upcomingRepayment: models.loans.getUpcomingRepayment
+    nextInstallment: models.loans.getNextInstallment
   }))
   const {
     productName,
@@ -56,30 +58,24 @@ const MyLoan = ({ navigation, loanId }) => {
     disbursementDate,
     dpdAmount,
     repaymentSchedule,
-    upcomingRepayment
+    nextInstallment
   } = selector(state, { loanId })
 
-  const onPrepayPress = () => {}
-  const onPressRepaymentPayNow = () => {}
-  const onPressUpcoming = () => {}
+  const onPrepayPress = () => { }
+  const onPressRepaymentPayNow = () => { }
+  const onPressUpcoming = () => { }
 
   const TopOverlay = () => (
     <View style={styles.overlay}>
-      <View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: theme['color-primary-transparent-200'] }
-        ]}
-      >
+      <View>
         <View style={styles.viewContainer}>
           <View style={styles.section}>
             <Text
               style={styles.heading}
               category='h4'
               appearance='default'
-              status='primary'
             >
-              {`${loanAccountNumber.truncated}`}
+              {`${translations['loan.loanAccountNumberShort']} : ${loanAccountNumber}`}
             </Text>
             <View style={styles.subSection}>
               <View>
@@ -88,10 +84,11 @@ const MyLoan = ({ navigation, loanId }) => {
                 </Text>
                 <Text
                   style={styles.subHeading}
-                  category='h6'
+                  category='h5'
                   appearance='default'
                   status='primary'
                 >
+                  <RupeeText />
                   {rupeeFormatter(loanAmount)}
                 </Text>
               </View>
@@ -110,40 +107,65 @@ const MyLoan = ({ navigation, loanId }) => {
   )
   const loanBasicInformation = [
     {
-      heading: 'loan.interestAmount',
-      value: interestDetails.interestAmount
-    },
-    {
-      heading: 'loan.amortization',
-      value: `${rupeeFormatter(amortizationAmount.amount)} ${
-        translations[amortizationAmount.units]
-      }`
+      heading: 'loan.maturityDate',
+      value: maturityDate,
+      rupeeFormat: false
     },
     {
       heading: 'loan.remainingPrincipal',
-      value: remainingPrincipal
+      value: rupeeFormatter(remainingPrincipal),
+      rupeeFormat: true
     }
   ]
+  // if (interestDetails.interestAmount > 0) {
+  //   loanBasicInformation.unshift({
+  //     heading: 'loan.interestAmount',
+  //     value: `${rupeeFormatter(interestDetails.interestAmount)} ${translations[amortizationAmount.units]
+  //       }`,
+  //     rupeeFormat: true
+  //   })
+  // } else {
+  //   loanBasicInformation.unshift({
+  //     heading: 'loan.interestRate',
+  //     value: interestDetails.interestRate,
+  //     percentFormat: true
+  //   })
+  // }
   const RenderBasicLoanInformation = () => (
-    <View style={styles.loanInformation}>
-      {loanBasicInformation.map((lb, ix) => {
-        return lb.value === null ? null : (
-          <View style={styles.subSection} key={`$loaninfo-${ix}`}>
-            <Text style={styles.content} category='p2' status='default'>
-              {translations[lb.heading]}
-            </Text>
-            <Text
-              style={styles.subHeading}
-              category='p1'
-              appearance='default'
-              status='primary'
-            >
-              {lb.value}
-            </Text>
-          </View>
-        )
-      })}
-    </View>
+    <>
+      <Text
+        style={styles.subHeading}
+        category='h6'
+        appearance='default'
+        status='primary'
+      >
+        {translations['loan.loanDetails']}
+      </Text>
+      <View style={styles.loanInformation}>
+        {loanBasicInformation.map((lb, ix) => {
+          return lb.value === null
+            ? null
+            : (
+              <View style={styles.subSection} key={`$loaninfo-${ix}`}>
+                <Text style={styles.content} category='p1' status='default'>
+                  {translations[lb.heading]}
+                </Text>
+                <Text
+                  style={styles.subHeading}
+                  category='p1'
+                  appearance='default'
+                  status='primary'
+                >
+                  {lb.rupeeFormat && (<RupeeText />)}
+                  {lb.value}
+                  {lb.percentFormat && (<PercentText />)}
+                </Text>
+              </View>
+              )
+        })}
+      </View>
+    </>
+
   )
   const RenderPendingRepayment = () => (
     <View style={styles.repaymentContainer}>
@@ -162,6 +184,7 @@ const MyLoan = ({ navigation, loanId }) => {
           appearance='default'
           status='danger'
         >
+          <RupeeText />
           {rupeeFormatter(dpdAmount)}
         </Text>
       </View>
@@ -173,14 +196,14 @@ const MyLoan = ({ navigation, loanId }) => {
     </View>
   )
   const RenderUpComingRepayment = () => {
-    if (upcomingRepayment === null) {
+    if (nextInstallment.length === 0) {
       return null
     }
     return (
       <View style={styles.repaymentContainer}>
         <Text
           style={styles.subHeading}
-          category='s1'
+          category='h6'
           appearance='default'
           status='primary'
         >
@@ -188,20 +211,32 @@ const MyLoan = ({ navigation, loanId }) => {
         </Text>
         <View style={styles.repaymentRow}>
           <View>
-            <Text style={styles.content} category='p2' status='default'>
+            <Text style={styles.content} category='p1' status='default'>
               {translations['repayment.installmentDate']}
             </Text>
-            <Text
-              style={styles.subHeading}
-              category='s1'
-              appearance='default'
-              status='primary'
-            >
-              {upcomingRepayment.repaymentDate}
-            </Text>
+            {nextInstallment.pastDueDays > 0 && (
+              <Text
+                style={styles.subHeading}
+                category='s1'
+                appearance='default'
+                status='danger'
+              >
+                {translations['repayment.immediate']}
+              </Text>
+            )}
+            {nextInstallment.pastDueDays === 0 && (
+              <Text
+                style={styles.subHeading}
+                category='s1'
+                appearance='default'
+                status='primary'
+              >
+                {nextInstallment.installmentDate}
+              </Text>
+            )}
           </View>
           <View>
-            <Text style={styles.content} category='p2' status='default'>
+            <Text style={styles.content} category='p1' status='default'>
               {translations['repayment.installment']}
             </Text>
             <Text
@@ -210,15 +245,19 @@ const MyLoan = ({ navigation, loanId }) => {
               appearance='default'
               status='primary'
             >
-              {rupeeFormatter(upcomingRepayment.repaymentAmount)}
+              <RupeeText />
+              {rupeeFormatter(nextInstallment.total)}
             </Text>
-            <Button
-              style={styles.payNow}
-              size='small'
-              onPress={onPressUpcoming}
-            >
-              {translations['pay.now']}
-            </Button>
+            {nextInstallment.pastDueDays > 0 && (
+              <Button
+                style={styles.payNow}
+                size='small'
+                onPress={onPressUpcoming}
+              >
+                {translations['pay.now']}
+              </Button>
+            )}
+
           </View>
         </View>
       </View>
@@ -229,7 +268,8 @@ const MyLoan = ({ navigation, loanId }) => {
       return (
         <View style={styles.repaymentAmountStyle}>
           <Text category='p1' status={item.isFullyPaid ? 'primary' : 'danger'}>
-            {item.amount}
+            <RupeeText />
+            {rupeeFormatter(item.amount)}
           </Text>
           {item.isFullyPaid === true && (
             <Text
@@ -255,7 +295,7 @@ const MyLoan = ({ navigation, loanId }) => {
     return (
       <ListItem
         style={styles.listContainer}
-        title={`${item.repaymentDate} ${translations['repayment.installment']}`}
+        title={`${item.repaymentDate}`}
         description={translations[item.description]}
         accessoryLeft={item.isFullyPaid ? CheckIconSmall : CancelIcon}
         accessoryRight={renderAmount}
@@ -291,7 +331,7 @@ const MyLoan = ({ navigation, loanId }) => {
     </>
   )
   const renderFooter = props => (
-    <View style={[props.style, styles.footerContainer]}>
+    <View style={[props.style]}>
       {dpdAmount > 0 && <RenderPendingRepayment />}
       <RenderUpComingRepayment />
     </View>
@@ -328,6 +368,7 @@ const MyLoan = ({ navigation, loanId }) => {
         renderItem={renderListItem}
         ListHeaderComponent={RenderListHeader}
         ListFooterComponent={ListFooter}
+        showVerticalScrollBar={false}
       />
     </View>
   )
@@ -340,9 +381,6 @@ const themedStyles = StyleService.create({
   },
   container: {
     backgroundColor: 'background-basic-color-2'
-  },
-  footerContainer: {
-    paddingHorizontal: 16
   },
   listContainer: {
     marginHorizontal: 16
@@ -364,12 +402,12 @@ const themedStyles = StyleService.create({
     height: heightPercentageToDP('30%')
   },
   subSection: {
-    flexDirection: 'column'
+    flexDirection: 'column',
+    marginTop: 8
   },
   bookingCard: {
     marginTop: -1 * heightPercentageToDP('10%'),
-    margin: 16,
-    ...styleConstants.cardContainer
+    margin: 16
   },
   loanInformation: {
     flexDirection: 'row',

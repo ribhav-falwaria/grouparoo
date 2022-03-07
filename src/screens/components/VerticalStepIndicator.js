@@ -18,7 +18,7 @@ const VerticalStepIndicator = ({
     currentStepIndicatorSize: 40,
     separatorStrokeWidth: 3,
     currentStepStrokeWidth: 5,
-    stepStrokeCurrentColor: theme['color-warning-300'],
+    stepStrokeCurrentColor: theme['color-warning-500'],
     separatorFinishedColor: theme['color-warning-300'],
     separatorUnFinishedColor: theme['color-basic-500'],
     stepIndicatorFinishedColor: theme['color-warning-300'],
@@ -50,9 +50,18 @@ const VerticalStepIndicator = ({
       <View style={styles.rowItem}>
         <View style={styles.rowItemDetail}>
           <Text category='p1' appearance='hint'>
+            {translations['application.applicationNumber']}
+          </Text>
+          <Text category='s1' appearance='default' status='primary'>
+            {loanApplicationId}
+          </Text>
+        </View>
+        <View style={styles.rowItemDetail}>
+          <Text category='p1' appearance='hint'>
             {translations['application.form.loanAmount']}
           </Text>
-          <Text category='h6' appearance='default' status='primary'>
+          <Text category='s1' appearance='default' status='primary'>
+            <Text category='p1' status='basic'>{'₹ '}</Text>
             {rupeeFormatter(loanAmount)}
           </Text>
         </View>
@@ -60,7 +69,7 @@ const VerticalStepIndicator = ({
           <Text category='p1' appearance='hint'>
             {translations['pendingLoanApplication.applicationStartDate']}
           </Text>
-          <Text category='h6' appearance='default' status='primary'>
+          <Text category='s1' appearance='default' status='primary'>
             {applicationStartDate}
           </Text>
         </View>
@@ -85,7 +94,9 @@ const VerticalStepIndicator = ({
             renderStepIndicator={renderStepIndicator}
           />
         </View>
-        <RenderDetails />
+        <View style={styles.details}>
+          <RenderDetails />
+        </View>
       </View>
     </View>
   )
@@ -97,14 +108,18 @@ const styles = StyleSheet.create({
     height: 300,
     flexDirection: 'row'
   },
+  details: {
+    flex: 1
+  },
   stepIndicator: {
     marginVertical: 16,
-    paddingHorizontal: 0
+    paddingHorizontal: 0,
+    flex: 1.5
   },
   rowItem: {
     flex: 3,
     paddingVertical: 24,
-    paddingLeft: 36,
+    // paddingLeft: 36,
     justifyContent: 'center'
   },
   rowItemDetail: {

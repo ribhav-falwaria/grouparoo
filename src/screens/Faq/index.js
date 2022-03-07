@@ -36,6 +36,7 @@ const Faq = props => {
       data={faqs}
       numColumns={2}
       renderItem={renderFaqItem}
+      showsVerticalScrollIndicator={false}
     />
   )
 }

@@ -18,7 +18,7 @@ export default ({
 }
 const themedStyles = StyleService.create({
   heading: {
-    marginBottom: 16
+    marginBottom: 36
   },
   headingText: {
     marginBottom: 4

@@ -18,12 +18,26 @@ export const config = {
     retrieveLoanOffersFunctionId: '61ff837314b01addd96a',
     borrowingEntitiesCollectionId: '620274f11aaf04f08370',
     retrieveLoanApplicationFunctionId: '61ff77ef81669037d64a',
-    addressCollectionId: '61fc93bfae7d80de1ae2'
+    addressCollectionId: '61fc93bfae7d80de1ae2',
+    cashFreeTokenFunctionId: '621f9d2f51d07eca5f6b',
+    cashfreeSignatureFunctionId: ''
   },
   DEFAULT_PASSWORD: 'welcome',
   otp: {
     sendOtp: 'https://dev-codeapp.novopay.in/sendOtp',
     validateOtp: 'https://dev-codeapp.novopay.in/validateOtp'
+  },
+  PAYMENT_ENV: 'Test',
+  CASHFREE_APP_ID: '10135219c0acc6b63005cb8cf8253101',
+  CASHFREE_STATUSES: {
+    SUCCESS: 'SUCCESS',
+    FLAGGED: 'FLAGGED',
+    PENDING: 'PENDING',
+    FAILED: 'FAILED',
+    CANCELLED: 'CANCELLED',
+    INCOMPLETE: 'INCOMPLETE',
+    USER_DROPPED: 'USER_DROPPED',
+    VOID: 'VOID'
   },
   permissions: {
     permissionTypes: [
@@ -49,12 +63,31 @@ export const config = {
   DEFAULT_PRODUCT_TYPE: 'termloan',
   LOAN_DATE_FORMAT: 'YYYY-MM-DD',
   APP_DATE_FORMAT: 'DD-MMM-YYYY',
+  // Repayment
   REPAYMENT_AMORTIZED: 'amortized',
-  REPAYMNET_UPFRONT: 'upfront',
+  REPAYMNET_EQUATED: 'equated',
+  REPAYMENT_UPFRONT_EQUATED: 'upfrontequated',
   REPAYMENT_BULLET_END: 'bulletend',
   REPAYMENT_BULLET_BEGINNING: 'bulletbeginning',
-  REPAYMENT_DATE_FORMAT: 'YYYYMMDD',
+  REPAYMENT_UPFRONT_AMORTIZED: 'upfrontamortized',
+
+  REPAYMENT_DATE_FORMAT: 'DD-MMM-YY',
   TERM_LOAN_AMOUNT_STEP: 25000,
   TERM_LOAN_MIN_AMOUNT: 50000,
-  TERM_LOAN_MAX_AMOUNT: 300000
+  TERM_LOAN_MAX_AMOUNT: 300000,
+  INSTALLMENT_TYPE_BULLET: 'BULLET',
+  INSTALLMENT_TYPE_EQUATED: 'EQUATED',
+  INSTALLMENT_TYPE_EQUAL_PRINCIPAL: 'EQUAL_PRINCIPAL',
+  FREQ_MONTHLY: 'm',
+  FREQ_DAILY: 'd',
+  FREQ_WEEKLY: 'w',
+  FREQ_YEARLY: 'y',
+  FREQ_QUARTERLY: 'q',
+  EVENT_ACTIVE: 'EVENT_ACTIVE',
+  EVENT_FORM_SUBMITTED: 'EVENT_FORM_SUBMITTED',
+  EVENT_DROPOFF: 'EVENT_DROPOFF',
+  EVENT_PAYMENT_DROP: 'EVENT_PAYMENT_DROP',
+  EVENT_PAYMENT_SUCCESS: 'EVENT_PAYMENT_SUCCESS',
+  EVENT_PAYMENT_FAILED: 'EVENT_PAYMENT_FAILED'
+
 }

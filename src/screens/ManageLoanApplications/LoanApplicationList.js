@@ -87,6 +87,7 @@ const LoanApplicationList = ({ activeLoanApplications, onEditLoanApplication }) 
       data={activeLoanApplications}
       renderItem={renderItem}
       ItemSeparatorComponent={Divider}
+      showsVerticalScrollIndicator={false}
     />
   )
 }

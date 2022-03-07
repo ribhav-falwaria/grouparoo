@@ -7,6 +7,10 @@ import {
   Button,
   Text
 } from '@ui-kitten/components'
+import dayjs from 'dayjs'
+import useAppState from 'react-native-appstate-hook'
+import { config } from '../../../../../config'
+import apiService from '../../../../../apiService'
 import JSonSchemaForm from './JsonSchemaForm'
 import { getSchemaForStep, findStepForFormData } from './utils'
 import SpinnerButton from '../../../SpinnerButton'
@@ -33,7 +37,17 @@ const JsonSchemaMultiStepForm = ({
   stepSchemaName,
   token
 }) => {
+  useAppState({
+    onBackground: () => apiService.appApi.stateEvents.send({
+      customerId,
+      appStatus: 'background',
+      createdOn: dayjs().valueOf(),
+      eventTypeId: config.EVENT_DROPOFF
+    })
+  })
   const tempId = useSelector((state) => state?.formDetails?.tempId)
+  const customerId = useSelector((state) => state?.customer?.customerDetails?.$id)
+
   const [finalSaveMessageVisibility, setFinalSaveMessageValidity] =
     useState(false)
   const resourseFactoryConstants = new ResourceFactoryConstants()

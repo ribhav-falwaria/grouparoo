@@ -54,7 +54,7 @@ const PendingLoanApplications = ({
           <Icon />
           <Text
             style={styles.heading}
-            category='h5'
+            category='h6'
             status='primary'
             appearance='default'
           >

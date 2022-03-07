@@ -25,6 +25,69 @@ const getCompletionStatus = async (functionId, executionId) => {
   return responseWithStatus
 }
 export const appApi = {
+  stateEvents: {
+    send: async (appStateEvents) => {
+      try {
+        await sdk.database.createDocument(
+          config.appWrite.appStateEventsCollectionId,
+          'unique()',
+          appStateEvents
+        )
+      } catch (err) {
+        console.log(err.message)
+      }
+    }
+  },
+  cashfree: {
+    signatureVerify: {
+      execute: async (signatureData) => {
+        try {
+          const executionDetails = await sdk.functions.createExecution(config.appWrite.cashfreeSignatureFunctionId, signatureData)
+          return executionDetails.$id
+        } catch (e) {
+          throw new Error('CANNOT_GET_VERIFY_EXECUTION_ID')
+        }
+      },
+      get: async (executionId) => {
+        const responseWithStatus = await getCompletionStatus(config.appWrite.cashfreeSignatureFunctionId, executionId)
+        if (responseWithStatus.status === 'completed') {
+          const response = JSON.parse(responseWithStatus.stdout)
+          if (response.status !== 'OK') {
+            throw new Error('VERIFY_EXECUTION_FAILED')
+          }
+          return response.verified
+        } else {
+          throw new Error('CANNOT_GET_VERIFY_EXECUTION')
+        }
+      }
+    },
+    token: {
+      execute: async (loanAppId, amount, env) => {
+        try {
+          const payload = JSON.stringify({
+            loanAppId, amount, env
+          })
+          const executionDetails = await sdk.functions.createExecution(config.appWrite.cashFreeTokenFunctionId, payload)
+          return executionDetails.$id
+        } catch (err) {
+          console.log(err)
+          throw new Error('CANNOT_GET_CASHFREE_TOKEN_EXECUTION_ID')
+        }
+      },
+      get: async (executionId) => {
+        const responseWithStatus = await getCompletionStatus(config.appWrite.cashFreeTokenFunctionId, executionId)
+        if (responseWithStatus.status === 'completed') {
+          const response = JSON.parse(responseWithStatus.stdout)
+          if (response.status !== 'OK') {
+            throw new Error('CANNOT_GET_CASHFREE_TOKEN')
+          }
+          return response.cftoken
+        } else {
+          throw new Error('CANNOT_GET_CASHFREE_TOKEN')
+        }
+      }
+    }
+  },
   borrowingEntities: {
     get: async () => {
       try {

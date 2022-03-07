@@ -1,31 +1,35 @@
 import * as React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
+import { createStackNavigator } from '@react-navigation/stack'
+
 import Drawer from './Drawer.Navigation'
 import RootBottomNavigation from './Bottom.Navigation'
 import {
   HomeDrawerNavigationScreens,
-  BottomNavigationScreens
+  BottomNavigationScreens,
+  HomeNavigationScreens
 } from '../screens/NavigationScreens'
 import { HomeIcon } from '../screens/components/ThemedIcons'
 const HomeDrawer = createDrawerNavigator()
 const BottomTab = createBottomTabNavigator()
-
+const HomeStack = createStackNavigator()
 const TabBarVisibilityOptions = ({ route }) => {
   const isNestedRoute = route.state?.index > 0
   return { tabBarVisible: !isNestedRoute }
 }
 
-const HomeTabsNavigator = () => {
-  const { bottomNavigations, initialRouteName } = BottomNavigationScreens({})
+const HomeStackNavigation = () => {
+  const { homeNavigations } = HomeNavigationScreens({})
   return (
-    <BottomTab.Navigator
-      screenOptions={TabBarVisibilityOptions}
-      initialRouteName={initialRouteName}
-      tabBar={props => <RootBottomNavigation {...props} bottomNavigations={bottomNavigations} />}
+    <HomeStack.Navigator
+      initialRouteName='Home'
+      screenOptions={{
+        headerShown: false
+      }}
     >
-      {bottomNavigations.map((screen, ix) => (
-        <BottomTab.Screen
+      {homeNavigations.map((screen, ix) => (
+        <HomeStack.Screen
           key={`bottom-${ix}`}
           name={screen.name}
           component={screen.Component}
@@ -36,6 +40,20 @@ const HomeTabsNavigator = () => {
           }}
         />
       ))}
+    </HomeStack.Navigator>
+  )
+}
+
+const HomeTabsNavigator = () => {
+  const { bottomNavigations, initialRouteName } = BottomNavigationScreens({})
+  return (
+    <BottomTab.Navigator
+      // screenOptions={TabBarVisibilityOptions}
+      initialRouteName={initialRouteName}
+      tabBar={props => <RootBottomNavigation {...props} bottomNavigations={bottomNavigations} />}
+    >
+      <BottomTab.Screen name='HomeStack' component={HomeStackNavigation} />
+
     </BottomTab.Navigator>
   )
 }

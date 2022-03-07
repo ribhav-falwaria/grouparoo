@@ -8,6 +8,7 @@ import { LocalizationContext } from '../../components/Translation'
 import SimpleCard from '../components/SimpleCard'
 import HorizontalListOffer from '../components/HorizontalListOffers'
 import RepaymentCard from '../components/RepaymentCard'
+import NextEmiCard from '../components/NextEmiCard'
 import PendingLoanApplications from '../components/PendingLoanApplications'
 import MyLoansCard from '../components/MyLoansCard'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -16,6 +17,7 @@ import ScreenTitle from '../components/ScreenTitle'
 const HomeListComponents = {
   SimpleCard,
   RepaymentCard,
+  NextEmiCard,
   PendingLoanApplications,
   MyLoansCard
 }
@@ -47,7 +49,9 @@ const HomeScreen = ({ navigation, route }) => {
     hello: translations.formatString(translations['hello!'], customer),
     subHeading: translations['app.title']
   }
-  const processPayment = (item, loan) => {}
+  const processPayment = (loanId, amount) => {
+    navigation.navigate('Payments', { loanId, amount })
+  }
   const renderHeader = () => (
     <ScreenTitle
       title={localeText.hello}
@@ -60,38 +64,59 @@ const HomeScreen = ({ navigation, route }) => {
     if (item.name === 'MyLoans') {
       if (loans.length > 0) {
         return loans.map((loan, ix) => (
-          <Component
-            key={`myloanscard-${ix}`}
-            loanId={loan.loanApplicationId}
-            Icon={AllIcons[item.icon]}
-            onPress={() => item.onPress(item)}
-            heading={item.heading}
-          />
+          <View style={styles.componentStyle} key={`myloanscard-${ix}`}>
+            <Component
+              loanId={loan.loanApplicationId}
+              Icon={AllIcons[item.icon]}
+              onPress={() => item.onPress(item)}
+              heading={item.heading}
+            />
+          </View>
         ))
       }
     } else if (item.name === 'PendingApplications') {
       if (loanApplications.length > 0) {
         return loanApplications.map((loanApplication, ix) => (
-          <Component
-            key={`pendingapplication-${ix}`}
-            loanApplicationId={loanApplication.loanApplicationId}
-            Icon={AllIcons[item.icon]}
-            onPress={() => item.onPress(item)}
-            heading={item.heading}
-          />
+          <View style={styles.componentStyle} key={`pendingapplication-${ix}`}>
+
+            <Component
+              loanApplicationId={loanApplication.loanApplicationId}
+              Icon={AllIcons[item.icon]}
+              onPress={() => item.onPress(item)}
+              heading={item.heading}
+            />
+          </View>
         ))
       }
     } else if (item.name === 'RepaymentsPending') {
       if (loans.length > 0) {
         return loans.map((loan, ix) => (
-          <Component
-            loanId={loan.loanApplicationId}
-            key={`repayment-${ix}`}
-            onPress={() => item.onPress(item, loan)}
-            onPaymentPress={() => processPayment(item)}
-            Icon={AllIcons[item.icon]}
-            heading={item.heading}
-          />
+          <View style={styles.componentStyle} key={`repayment-${ix}`}>
+            <Component
+              loanId={loan.loanApplicationId}
+              onPress={() => item.onPress(item, loan)}
+              onPaymentPress={processPayment}
+              Icon={AllIcons[item.icon]}
+              heading={item.heading}
+            />
+          </View>
+
+        ))
+      }
+    } else if (item.name === 'NextEmi') {
+      if (loans.length > 0) {
+        return loans.map((loan, ix) => (
+          <View style={styles.componentStyle} key={`nextemi-${ix}`}>
+            <Component
+              loanId={loan.loanApplicationId}
+              key={`nextemi-${ix}`}
+              onPress={() => item.onPress(item, loan)}
+              onPaymentPress={processPayment}
+              Icon={AllIcons[item.icon]}
+              heading={item.heading}
+            />
+          </View>
+
         ))
       }
     } else if (item.name === 'Offers') {
@@ -119,6 +144,7 @@ const HomeScreen = ({ navigation, route }) => {
       data={homeListItems}
       renderItem={renderVerticalItems}
       ListHeaderComponent={renderHeader}
+      showsVerticalScrollIndicator={false}
     />
   )
 }
@@ -133,6 +159,9 @@ const themedStyles = StyleService.create({
     // justifyContent: 'flex-start',
     // height: 'auto',
     // marginTop: 'auto'
+  },
+  componentStyle: {
+    marginBottom: 4
   },
   heading: {
     ...styleConstants.heading

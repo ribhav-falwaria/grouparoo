@@ -43,11 +43,11 @@ const loanTermMap = {
   YEAR: 'y'
 }
 const loanStatusTypes = {
-  APPROVED: 'APPROVED',
-  ACTIVE: 'ACTIVE',
-  OD: 'OVERDRAWN',
-  WRITOFF: 'WRITEOFF',
-  CLOSED: 'CLOSED'
+  APPROVED: 'approved',
+  ACTIVE: 'active',
+  OD: 'overdrawn',
+  WRITOFF: 'writeoff',
+  CLOSED: 'closed'
 }
 
 const disbursementModeTypes = {
@@ -95,11 +95,7 @@ const basicDetailsMapper = {
     key: 'loanAmount',
     transform: v => parseInt(v)
   },
-  'amount_details.principal_outstanding': {
-    key: 'principalOutstanding',
-    transform: (v) => parseFloat(v)
-  },
-  'amount_details.intetest_due_amount': {
+  'amount_details.interest_due_amount': {
     key: 'outstanding.interestDueAmount',
     transform: (v) => parseFloat(v)
   },
@@ -127,6 +123,10 @@ const basicDetailsMapper = {
     key: 'nextInstallmentDate',
     transform: (v) => parseInt(v)
   },
+  'installment_details.installment_amount': {
+    key: 'nextInstallmentAmount',
+    transform: (v) => parseInt(v)
+  },
   'account_details.last_payment_date': {
     key: 'lastPaymentDate',
     transform: (v) => parseInt(v)
@@ -140,8 +140,8 @@ const basicDetailsMapper = {
     key: 'expectedDisbursementDate',
     transform: (v) => parseInt(v)
   },
-  'disbursement_details.disbursement_date': {
-    key: 'dusbursementDate',
+  'disbursement_details.actual_disbursement_date': {
+    key: 'disbursementDate',
     transform: (v) => parseInt(v)
   },
   'disbursement_details.mode': {
@@ -166,7 +166,7 @@ const basicDetailsMapper = {
   },
   'repayment_details.interest_calculation_basis': {
     key: 'interestCalculationBasis',
-    trandform: (v) => interestCalculationMap[v],
+    transform: (v) => interestCalculationMap[v],
     default: 'REDUCING'
   },
   'repayment_details.maturity_date': {
@@ -179,7 +179,7 @@ const basicDetailsMapper = {
   },
   'repayment_details.repayment_frequency': {
     key: 'repaymentFrequency',
-    trasform: v => frequencyMap[v]
+    transform: v => frequencyMap[v]
   },
   'repayment_details.first_repayment_date': {
     key: 'firstRepaymentDate',
@@ -208,7 +208,7 @@ const statementMapper = {
     key: 'txnDate',
     transform: v => parseInt(v)
   },
-  'transaction_details.amount': {
+  'transaction_details.transaction_amount': {
     key: 'amount',
     transform: v => parseFloat(v)
   },
@@ -220,26 +220,19 @@ const statementMapper = {
     key: 'txnType',
     transform: (v) => txnSubTypes[v]
   },
-  'transaction_details.account_list': [
-    {
-      'account_details.cr_dr_indicator': 'creditDebit',
-      'account_details.transaction_amount': 'txnAmount',
-      'account_details.narration': {
-        key: 'txnDetailType',
-        transform: v => txnDetailsMap[v]
-      }
-    }
-  ],
   'transaction_details.balance_after_transaction': {
     key: 'closingBalance',
     transform: v => parseInt(v)
-  },
-  'transaction_details.is_settled': {
-    key: 'isTxnSettled',
-    transform: v => v === 'true'
   }
 }
-
+const accountDetailMapper = {
+  cr_dr_indicator: 'creditDebit',
+  transaction_amount: {
+    key: 'txnAmount',
+    transform: (v) => parseFloat(v)
+  },
+  narration: 'narration'
+}
 const scheduleMapper = {
   installment_amount: {
     key: 'installmentAmount',
@@ -270,7 +263,7 @@ const scheduleMapper = {
     transform: v => parseFloat(v)
   },
   principal_paid_amount: {
-    key: 'interestPaidAmount',
+    key: 'principalPaidAmount',
     transform: v => parseFloat(v)
   },
   // Overdue amount if there is a grace period
@@ -290,6 +283,10 @@ const scheduleMapper = {
   installment_date: {
     key: 'installmentDate',
     transform: v => parseInt(v)
+  },
+  is_settled: {
+    key: 'isTxnSettled',
+    transform: v => v === 'true'
   }
 }
 
@@ -299,6 +296,12 @@ const prepareLoanDetails = (data) => {
   const mappedStatement = []
   statement.forEach(st => {
     const stmt = ObjectMapper(st, statementMapper)
+    const acDetails = []
+    st.transaction_details.account_list.forEach(ad => {
+      const acd = ObjectMapper(ad.account_details, accountDetailMapper)
+      acDetails.push(acd)
+    })
+    stmt.details = acDetails
     mappedStatement.push(stmt)
   })
   const mappedRepaymentSchedule = []

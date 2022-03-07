@@ -11,6 +11,8 @@ import AppPermissions from '../AppPermissions'
 import ManageLoanApplications from '../ManageLoanApplications'
 import ApplicationForm from '../ApplicationForm'
 import AppIntro from '../AppIntro'
+import Payments from '../Payments'
+import Repayments from '../Repayments'
 import {
   HomeIcon,
   MyLoansIcon,
@@ -19,12 +21,14 @@ import {
   SignUpIcon,
   ForgotPasswordIcon,
   AppPermissionsIcon,
-  ManageLoanApplicationsIcon
+  ManageLoanApplicationsIcon,
+  RepaymentIcon
 } from '../components/ThemedIcons'
 import ScreenWrapper from './ScreenWrapper'
 import AuthWrapper from './AuthWrapper'
 import FormWrapper from './FormWrapper'
 import IntroWrapper from './IntroWrapper'
+import ModalWrapper from './ModalWrapper'
 const WrapScreen = (Component, props) => {
   return (
     <ScreenWrapper {...props}>
@@ -53,6 +57,13 @@ const WrapFormScreen = (Component, props) => {
     </FormWrapper>
   )
 }
+const WrapModalScreen = (Component, props) => {
+  return (
+    <ModalWrapper {...props}>
+      <Component {...props} />
+    </ModalWrapper>
+  )
+}
 export const NavigationScreens = options => {
   const navigations = [
     {
@@ -73,6 +84,26 @@ export const NavigationScreens = options => {
       drawerTitle: 'myLoans.title',
       navigations: ['drawer', 'home'],
       Icon: MyLoansIcon,
+      drawerOrder: 2,
+      options
+    },
+    {
+      name: 'Payments',
+      Component: (props) => WrapModalScreen(Payments, { ...props }),
+      title: 'payments.title',
+      drawerTitle: '',
+      navigations: ['home'],
+      Icon: RepaymentIcon,
+      drawerOrder: 2,
+      options
+    },
+    {
+      name: 'Repayments',
+      Component: (props) => WrapScreen(Repayments, { ...props }),
+      title: 'repayment.title',
+      drawerTitle: 'myLoans.repayments',
+      navigations: ['home', 'drawer'],
+      Icon: RepaymentIcon,
       drawerOrder: 2,
       options
     },
@@ -211,7 +242,7 @@ export const AuthNavigationScreens = ({
 export const HomeNavigationScreens = options => {
   const navigations = NavigationScreens(options)
   const homeNavigations = navigations.filter(
-    n => n.navigations.indexOf('tab') > -1
+    n => n.navigations.indexOf('home') > -1
   )
   return {
     homeNavigations

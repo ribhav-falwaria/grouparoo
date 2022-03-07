@@ -12,7 +12,7 @@ const homeListItems = {
       navigate: 'Loans'
     },
     {
-      order: 3,
+      order: 4,
       name: 'PendingApplications',
       component: 'PendingLoanApplications',
       icon: 'ApplicationFormIcon',
@@ -30,7 +30,16 @@ const homeListItems = {
       navigate: 'Repayments'
     },
     {
-      order: 4,
+      order: 3,
+      name: 'NextEmi',
+      component: 'NextEmiCard',
+      icon: 'RepaymentIcon',
+      heading: 'repayment.upcomingRepayment',
+      content: 'repayment.nextEmiContent',
+      navigate: 'Loans'
+    },
+    {
+      order: 5,
       name: 'Offers',
       component: 'HorizontalListOffer'
     }

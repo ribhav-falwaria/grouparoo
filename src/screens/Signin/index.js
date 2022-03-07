@@ -24,7 +24,7 @@ const SignIn = ({ navigation, route }) => {
   const [email, setEmail] = React.useState()
   const [password, setPassword] = React.useState()
   const { translations } = useContext(LocalizationContext)
-  const title = route.params?.title || translations['auth.Signup']
+  const title = route.params?.title || translations['auth.SignIn']
   const store = useStore()
   const dispatch = useDispatch()
   const state = useSelector(state => state)

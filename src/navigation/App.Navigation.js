@@ -32,11 +32,12 @@ const AppNavigator = props => {
     isAllPermissionsValid,
     isOnboarding
   }
+  const isHome = isLoggedIn === true && isOnboarding === false
   return (
     <NavigationContainer ref={navigationRef}>
       <StatusBar
         animated
-        backgroundColor={theme['background-basic-color-1']}
+        backgroundColor={isHome ? theme['background-basic-color-2'] : theme['background-basic-color-1']}
         barStyle='dark-content'
         showHideTransition='none'
         hidden={false}
@@ -53,7 +54,7 @@ const AppNavigator = props => {
             </Stack.Screen>
           )
         }
-        {isLoggedIn === true && isOnboarding === false && (
+        {isHome && (
           <Stack.Screen
             name='Home'
             options={{}}
