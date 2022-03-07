@@ -3,6 +3,7 @@ import { config } from '../config'
 import isUndefined from 'lodash.isundefined'
 import isNull from 'lodash.isnull'
 import isEmpty from 'lodash.isempty'
+import crashlytics from '@react-native-firebase/crashlytics';
 const sdk = new Appwrite()
 const isInvalidValue = (val) => {
   return isUndefined(val) || isNull(val) || val === 'np' || val === -1 || val.length === 0
@@ -34,7 +35,7 @@ export const appApi = {
           appStateEvents
         )
       } catch (err) {
-        console.log(err.message)
+        crashlytics().log(err.message);
       }
     }
   },
@@ -45,6 +46,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.cashfreeSignatureFunctionId, signatureData)
           return executionDetails.$id
         } catch (e) {
+          crashlytics().recordError(e);
           throw new Error('CANNOT_GET_VERIFY_EXECUTION_ID')
         }
       },
@@ -70,7 +72,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.cashFreeTokenFunctionId, payload)
           return executionDetails.$id
         } catch (err) {
-          console.log(err)
+          crashlytics().log(err)
           throw new Error('CANNOT_GET_CASHFREE_TOKEN_EXECUTION_ID')
         }
       },
@@ -94,7 +96,7 @@ export const appApi = {
         const borrowingEntities = await sdk.database.listDocuments(config.appWrite.borrowingEntitiesCollectionId)
         return borrowingEntities.documents
       } catch (err) {
-        console.log(err)
+        crashlytics().log(err)
         throw new Error('CANNOT_GET_BORROWING_ENTITIES')
       }
     }
@@ -105,7 +107,7 @@ export const appApi = {
         const response = await sdk.database.listDocuments(config.appWrite.loanTypesCollectionId)
         return response.documents
       } catch (e) {
-        console.log(e)
+        crashlytics().log(err)
         throw new Error('CANNOT_GET_LOAN_TYPES')
       }
     }
@@ -117,7 +119,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.loanProductMetadataFunctionId)
           return executionDetails.$id
         } catch (err) {
-          console.log(err)
+          crashlytics().log(err)
           throw new Error('CANNOT_GET_LOAN_PRODUCTS_EXECUTION_ID')
         }
       },
@@ -138,7 +140,7 @@ export const appApi = {
         const account = await sdk.account.get()
         return account
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('NO_LOGGEDIN_USER')
       }
     },
@@ -146,7 +148,7 @@ export const appApi = {
       try {
         await sdk.account.updatePassword(password)
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_SET_PASSWORD')
       }
     },
@@ -162,7 +164,7 @@ export const appApi = {
         const jwt = await sdk.account.createJWT()
         return jwt
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_CREATE_JWT')
       }
     }
@@ -174,7 +176,7 @@ export const appApi = {
         const user = await sdk.account.get()
         return user
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_CREATE_SESSION')
       }
     },
@@ -188,7 +190,7 @@ export const appApi = {
         if (e.message === 'Account already exists') {
           throw new Error('ACCOUNT_EXISTS')
         } else {
-          console.log(e)
+          crashlytics().log(e)
           throw new Error('CANNOT_REGISTER_USER')
         }
       }
@@ -225,7 +227,7 @@ export const appApi = {
           return {}
         }
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_CUSTOMER_BY_USREID')
       }
     },
@@ -235,7 +237,7 @@ export const appApi = {
         const customerData = await sdk.database.getDocument(appWrite.customersCollectionId, id)
         return customerData
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_CUSTOMER_BY_ID')
       }
     },
@@ -254,7 +256,7 @@ export const appApi = {
         customerData.$id = data.$id
         return data
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_CREATE_NEW_CUSTOMER')
       }
     }
@@ -265,7 +267,7 @@ export const appApi = {
         const preferences = await sdk.account.getPrefs()
         return preferences
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_PREFERENCES')
       }
     },
@@ -274,7 +276,7 @@ export const appApi = {
         const prefs = await sdk.account.updatePrefs(preferences)
         return prefs
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_UPDATE_PREFERENCES')
       }
     }
@@ -294,7 +296,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.lmsManagementFunctionId, payload)
           return executionDetails.$id
         } catch (e) {
-          console.log(e)
+          crashlytics().log(e)
           throw new Error('CANNOT_EXECUTE_GET_LOANS')
         }
       },
@@ -308,7 +310,7 @@ export const appApi = {
             throw new Error('CANNOT_GET_ALL_LOANS_FOR_CUSTOMER')
           }
         } catch (e) {
-          console.log(e)
+          crashlytics().log(e)
           throw new Error('CANNOT_GET_ALL_LOANS')
         }
       }
@@ -321,7 +323,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.loanApplicationIdGenerationFunctionId, config.LOAN_APPLICATION_TYPE)
           return executionDetails.$id
         } catch (e) {
-          console.log(e)
+          crashlytics().log(e)
           throw new Error('CANNOT_EXECUTE_LOAN_APP_ID')
         }
       },
@@ -335,7 +337,7 @@ export const appApi = {
             throw new Error('CANNOT_GET_LOAN_APPLICATION_ID')
           }
         } catch (e) {
-          console.log(e)
+          crashlytics().log(e)
           throw new Error('CANNOT_GET_LOAN_APP_ID')
         }
       }
@@ -355,7 +357,7 @@ export const appApi = {
           return {}
         }
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_LOAN_APPLICATION')
       }
     },
@@ -379,7 +381,7 @@ export const appApi = {
           return []
         }
       } catch (e) {
-        console.log(e)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_ALL_LOAN_APPLICATIONS')
       }
     },
@@ -411,7 +413,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.retrieveLoanOffersFunctionId, loanApplicationId)
           return executionDetails.$id
         } catch (err) {
-          console.log(err)
+          crashlytics().log(e)
           throw new Error('CANNOT_CREATE_LOAN_OFFER_EXECUTION')
         }
       },
@@ -425,7 +427,7 @@ export const appApi = {
             throw new Error('CANNOT_GET_LOAN_OFFER_DETAILS')
           }
         } catch (err) {
-          console.log(err)
+          crashlytics().log(e)
           throw new Error('CANNOT_GET_LOAN_OFFER_DETAILS')
         }
       }
