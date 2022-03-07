@@ -117,8 +117,9 @@ const UdyamAadharInputWidget = ({
       })
     }
   })
-  const onBlurTextHandler = () => {
-    const tempUdyam = udyamPrefix + '-' + udyamAadhar
+  const onUdyamChangeHandler = (udyam) => {
+    setUdyamAadhar(udyam);
+    const tempUdyam = udyamPrefix + '-' + udyam
     if (isEmpty(tempUdyam) || (tempUdyam && tempUdyam.length !== 19)) {
       return
     }
@@ -149,8 +150,8 @@ const UdyamAadharInputWidget = ({
         value={udyamAadhar}
         secureTextEntry={secureEntry}
         textContentType={textContentType}
-        onChangeText={(newText) => setUdyamAadhar(newText)}
-        onBlur={onBlurTextHandler}
+        onChangeText={(newText) => onUdyamChangeHandler(newText)}
+        // onBlur={onBlurTextHandler}
         onFocus={() => {
           onFocus(id, value)
         }}

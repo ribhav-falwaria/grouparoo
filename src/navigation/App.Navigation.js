@@ -23,7 +23,7 @@ const AppNavigator = props => {
     return <LoadingSpinner />
   }
   // FIXME: Hack to get loan data
-  const isOnboarding = false //(hasActiveLoan === false || isPermissionsRequested === false)
+  const isOnboarding = (hasActiveLoan === false || isPermissionsRequested === false)
   const screenProps = {
     isLoggedIn,
     isPermissionsRequested,

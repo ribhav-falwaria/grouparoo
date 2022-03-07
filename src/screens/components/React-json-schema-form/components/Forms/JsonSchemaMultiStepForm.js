@@ -145,7 +145,8 @@ const JsonSchemaMultiStepForm = ({
     } else if (status === 'complete') {
       requestDataToUpdate.progress = 'COMPLETE'
     }
-    requestDataToUpdate.tempId = tempId
+   // requestDataToUpdate.loanApplicationId = tempId
+    console.log(requestDataToUpdate);
     DataService.postData(`${url}`, requestDataToUpdate)
       .then((res) => {
         res = res?.data

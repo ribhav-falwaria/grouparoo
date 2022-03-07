@@ -320,6 +320,7 @@ const OKYCComponent = (props) => {
               otpValid={otpVerified}
               numSecondsWaitForResend={WAIT_RESEND_MS}
               otpValidWindow={OTP_VALID_MS}
+              size={"small"}
             />
           </View>
           <View style={styles.rowMargin}>
@@ -344,7 +345,7 @@ const OKYCComponent = (props) => {
             <Button
               style={styles.button}
               appearance='outline'
-              onPress={otpVerificationHandler()}
+              onPress={otpVerificationHandler}
             >
               {translations['aadhar.verify']}
             </Button>

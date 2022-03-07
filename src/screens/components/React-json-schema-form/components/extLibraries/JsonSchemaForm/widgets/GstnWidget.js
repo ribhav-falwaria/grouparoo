@@ -110,12 +110,20 @@ const GstnWidget = ({
     }
   }
 
-  const onBlurTextHandler = () => {
-    if (isEmpty(gstin) || (gstin && gstin.length !== 15)) {
+  // const onBlurTextHandler = () => {
+  //   if (isEmpty(gstin) || (gstin && gstin.length !== 15)) {
+  //     return
+  //   }
+  //   useValidateGstn.run(dispatch, gstin)
+  // }
+
+  const onGstnChangeHandler = (gstn) => {
+    setGstin(gstn);
+    if (isEmpty(gstn) || (gstn && gstn.length !== 15)) {
       return
     }
-    useValidateGstn.run(dispatch, gstin)
-  }
+    useValidateGstn.run(dispatch, gstn)
+  };
 
   return (
     <>
@@ -133,8 +141,8 @@ const GstnWidget = ({
         value={gstin}
         secureTextEntry={secureEntry}
         textContentType={textContentType}
-        onChangeText={(_, rawText) => setGstin(rawText)}
-        onBlur={onBlurTextHandler}
+        onChangeText={(_, rawText) => onGstnChangeHandler(rawText)}
+        // onBlur={onBlurTextHandler}
         onFocus={() => {
           onFocus(id, value)
         }}
