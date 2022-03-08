@@ -20,7 +20,8 @@ export const config = {
     retrieveLoanApplicationFunctionId: '61ff77ef81669037d64a',
     addressCollectionId: '61fc93bfae7d80de1ae2',
     cashFreeTokenFunctionId: '621f9d2f51d07eca5f6b',
-    cashfreeSignatureFunctionId: ''
+    appStateEventsCollectionId: '6223228537efd99c9714',
+    cashfreeSignatureFunctionId: '6225db949e947cf7e996'
   },
   DEFAULT_PASSWORD: 'welcome',
   otp: {

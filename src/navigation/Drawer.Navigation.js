@@ -58,7 +58,7 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
         <DrawerItem
           key={index}
           title={translations[el.drawerTitle]}
-          // onPress={el.handleOnPress}
+          onPress={el.handleOnPress}
           accessoryLeft={el.Icon}
         />
       ))}

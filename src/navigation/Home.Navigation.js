@@ -1,10 +1,11 @@
-import * as React from 'react'
+import React, { useContext } from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createStackNavigator } from '@react-navigation/stack'
 
 import Drawer from './Drawer.Navigation'
 import RootBottomNavigation from './Bottom.Navigation'
+import { LocalizationContext } from '../components/Translation'
 import {
   HomeDrawerNavigationScreens,
   BottomNavigationScreens,
@@ -14,9 +15,12 @@ import { HomeIcon } from '../screens/components/ThemedIcons'
 const HomeDrawer = createDrawerNavigator()
 const BottomTab = createBottomTabNavigator()
 const HomeStack = createStackNavigator()
-const TabBarVisibilityOptions = ({ route }) => {
-  const isNestedRoute = route.state?.index > 0
-  return { tabBarVisible: !isNestedRoute }
+const BOTTOM_STACKS = [
+  'HomeStack'
+]
+const TabBarVisibilityOptions = ({ navigation, route }) => {
+  const isBottomRoute = BOTTOM_STACKS.indexOf(route.name) > -1
+  return { tabBarVisible: isBottomRoute }
 }
 
 const HomeStackNavigation = () => {
@@ -25,7 +29,9 @@ const HomeStackNavigation = () => {
     <HomeStack.Navigator
       initialRouteName='Home'
       screenOptions={{
-        headerShown: false
+        headerShown: false,
+        gestureEnabled: false,
+        animationEnabled: false
       }}
     >
       {homeNavigations.map((screen, ix) => (
@@ -48,7 +54,7 @@ const HomeTabsNavigator = () => {
   const { bottomNavigations, initialRouteName } = BottomNavigationScreens({})
   return (
     <BottomTab.Navigator
-      // screenOptions={TabBarVisibilityOptions}
+      screenOptions={TabBarVisibilityOptions}
       initialRouteName={initialRouteName}
       tabBar={props => <RootBottomNavigation {...props} bottomNavigations={bottomNavigations} />}
     >
@@ -60,6 +66,7 @@ const HomeTabsNavigator = () => {
 
 const HomeNavigator = () => {
   const { drawerNavigations, initialRouteName } = HomeDrawerNavigationScreens({})
+  const { translations } = useContext(LocalizationContext)
   // Just show the dummy screen for permissions.
   drawerNavigations.unshift({
     name: 'Home',

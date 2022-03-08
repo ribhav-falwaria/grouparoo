@@ -1,7 +1,9 @@
 /**
  * @format
  */
+import 'react-native-gesture-handler'
 import { gestureHandlerRootHOC } from 'react-native-gesture-handler'
+
 import 'react-native-get-random-values'
 import dayjs from 'dayjs'
 import 'dayjs/locale/en-in'
