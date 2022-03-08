@@ -35,7 +35,7 @@ const SimpleCard = ({ heading, Icon, content, onPress, loading }) => {
         </Text>
       </View>
       <View style={styles.contentContainer}>
-        <Text style={styles.content} category='p1' status='default'>
+        <Text style={styles.content} category='c1' appearance='hint'>
           {content}
         </Text>
       </View>

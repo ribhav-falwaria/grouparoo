@@ -25,7 +25,9 @@ const AuthNavigator = (props) => {
     <AuthStack.Navigator
       initialRouteName={initialRouteName}
       screenOptions={{
-        headerShown: false
+        headerShown: false,
+        gestureEnabled: false,
+        animationEnabled: false
         // headerStyle: {
         //   backgroundColor: theme['background-basic-color-1'],
         //   elevation: 0, // remove shadow on Android
