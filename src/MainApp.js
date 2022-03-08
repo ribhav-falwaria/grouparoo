@@ -17,6 +17,7 @@ import store from './store'
 import AppNavigation from './navigation/App.Navigation'
 import { LocalizationContext } from './components/Translation'
 import ToastComponent from './screens/components/ToastComponent'
+import crashlytics from '@react-native-firebase/crashlytics';
 /**
  * Use any valid `name` property from eva icons (e.g `github`, or `heart-outline`)
  * https://akveo.github.io/eva-icons
@@ -83,6 +84,8 @@ const mapStateToProps = (state, props) => {
     isAllPermissionsValid: models.permissionsHelp.allPermissionsValid
   }))
   const loading = state.loading.models.permissionsHelp || state.loading.models.authentication || props.loading
+  const loggedinCustomerId = state?.customer?.customerDetails?.$id
+  crashlytics().setUserId(loggedinCustomerId ? loggedinCustomerId : "(Not Logged In)")
   return {
     ...selection(state),
     loading
@@ -96,6 +99,7 @@ const mapDispatchToProps = (dispatch) => ({
       dispatch.permissionsHelp.checkRequiredPermissions(),
       dispatch.settings.loadLoanApplicationHelpShown()
     ])
+
     SplashScreen.hide()
   }
 })

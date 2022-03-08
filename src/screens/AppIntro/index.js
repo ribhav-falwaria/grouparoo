@@ -65,7 +65,8 @@ const AppIntro = ({ navigation }) => {
   }
 
   const _onDone = () => {
-    console.log('Pressed')
+    //  Need to fix it later
+    navigation.navigate("SignIn");
   }
 
   return (

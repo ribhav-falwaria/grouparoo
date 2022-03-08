@@ -22,6 +22,7 @@ import ResourceFactoryConstants from '../../services/ResourceFactoryConstants'
 import DataService from '../../services/DataService'
 import merge from 'lodash/merge'
 import IconUtil from '../common/IconUtil'
+import crashlytics from '@react-native-firebase/crashlytics';
 const FIRST_STEP_INDEX = 1
 const finalformObject = {}
 const JsonSchemaMultiStepForm = ({
@@ -164,12 +165,13 @@ const JsonSchemaMultiStepForm = ({
             setLoaderVisibility(false)
             return
           }
-          console.log(res.message)
+          crashlytics().log(res.message)
           throw new Error('CANNOT_POST_TO_NOCODE_SERVER')
         }
         setLoaderVisibility(false)
       })
       .catch((err) => {
+        crashlytics().recordError(err);
         setLoaderVisibility(false)
         throw err
       })
