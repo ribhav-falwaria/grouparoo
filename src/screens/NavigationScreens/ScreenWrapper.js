@@ -13,10 +13,13 @@ const ScreenWrapper = props => {
   const { alternateScreen } = props
   const theme = useTheme()
   const styles = useStyleSheet(themedStyles)
+  const menuIconOnPress = () => {
+    props.navigation.toggleDrawer()
+  }
   const renderDrawerAction = () => (
     <TopNavigationAction
       icon={(imageProps) => <MenuIcon {...imageProps} fill={theme['color-primary-500']} />}
-      onPress={() => props.navigation.toggleDrawer}
+      onPress={menuIconOnPress}
     />
   )
   const renderRightActions = () => (

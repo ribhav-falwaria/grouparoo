@@ -26,9 +26,9 @@ const buildEvaIcon = (name, fill, width, height) => {
 
 export const NoInternetIcon = () => buildEvaIcon('wifi-off-outline', undefined, 36, 36)
 export const SmsIcon = () => buildEvaIcon('message-circle-outline')
-
+export const DeviceIcon = () => buildEvaIcon('smartphone-outline')
 export const CameraIcon = () => buildEvaIcon('video-outline')
-
+export const ContactListIcon = () => buildEvaIcon('list-outline')
 export const LocationIcon = () => buildEvaIcon('pin-outline')
 
 export const MyLoansIcon = () => buildIcon(MyLoanSvg)
@@ -106,7 +106,9 @@ export const AllIcons = {
   HomeIcon,
   SmsIcon,
   CameraIcon,
-  LocationIcon
+  LocationIcon,
+  ContactListIcon,
+  DeviceIcon
 }
 
 export const CreditCheckIcon = () => buildEvaIcon('checkmark-circle-outline')

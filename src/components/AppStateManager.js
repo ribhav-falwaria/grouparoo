@@ -1,48 +1,32 @@
-import React, { useState, useEffect } from 'react'
-import { AppState, View, StyleSheet } from 'react-native'
-import { BlurView, VibrancyView } from '@react-native-community/blur'
-
+import React from 'react'
+import { useSelector } from 'react-redux'
+import useAppState from 'react-native-appstate-hook'
+import apiService from '../apiService'
+import dayjs from 'dayjs'
+import { config } from '../config'
 // render `inactive` screen via top-level `AppStateManager` component
 const AppStateManager = (props) => {
-  const [appState, setAppState] = useState(AppState.currentState)
-  const handleAppStateChange = (state) => {
-    setAppState(state)
-  }
-  useEffect(() => {
-    AppState.addEventListener('change', handleAppStateChange)
-    return () => {
-      AppState.removeEventListener('change', handleAppStateChange)
-    }
-  }, [])
+  const customerDetails = useSelector(state => state.customer.customerDetails)
+  useAppState({
+    onForeground: apiService.appApi.stateEvents.send({
+      customerId: customerDetails?.$id || 'NA',
+      appStatus: 'active',
+      createdOn: dayjs().valueOf(),
+      eventTypeId: config.EVENT_ACTIVE
+    }),
+    onBackground: apiService.appApi.stateEvents.send({
+      customerId: customerDetails?.$id || 'NA',
+      appStatus: 'background',
+      createdOn: dayjs().valueOf(),
+      eventTypeId: config.EVENT_ACTIVE
+    })
+  })
   return (
     <>
-      {appState === 'inactive' && (
-        <View style={styles.container}>
-          {props.children}
-          <BlurView
-            style={styles.absolute}
-            blurType='light'
-            blurAmount={10}
-            reducedTransparencyFallbackColor='white'
-          />
-        </View>
-      )}
-      {appState !== 'inactive' && props.children}
+      {props.children}
     </>
   )
 }
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  absolute: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    right: 0
-  }
-})
+
 
 export default AppStateManager

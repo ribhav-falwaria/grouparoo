@@ -27,6 +27,18 @@ const permissionsHelp = {
         title: 'help.location.title',
         content: 'help.location.content',
         icon: 'LocationIcon'
+      },
+      {
+        order: 4,
+        title: 'help.phone.title',
+        content: 'help.phone.content',
+        icon: 'DeviceIcon'
+      },
+      {
+        order: 5,
+        title: 'help.contacts.title',
+        content: 'help.contacts.content',
+        icon: 'ContactListIcon'
       }]
     },
     rationale: {

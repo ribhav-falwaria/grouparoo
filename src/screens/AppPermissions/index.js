@@ -129,6 +129,7 @@ const AppPermissions = (props) => {
 
       <View style={styles.container}>
         <List
+          style={styles.container}
           contentContainerStyle={styles.contentContainer}
           data={helpSteps}
           renderItem={renderItem}
@@ -163,7 +164,7 @@ const themedStyles = StyleService.create({
     backgroundColor: 'background-basic-color-1'
   },
   contentContainer: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: 'background-basic-color-1'
   },
   permissionsList: {
