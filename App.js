@@ -16,7 +16,7 @@ import { Provider } from 'react-redux'
 import { AppearanceProvider } from 'react-native-appearance'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components'
-// import ErrorBoundary from 'react-native-error-boundary'
+import ErrorBoundary from 'react-native-error-boundary'
 
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import * as eva from '@eva-design/eva'
@@ -30,6 +30,7 @@ import store from './src/store'
 import { AppStorage } from './src/services/app-storage.service'
 import { checkNotificationPermissions } from './src/services/push.notifications'
 import AppStateManager from './src/components/AppStateManager'
+import ErrorFallbackComponent from './src/screens/Errors/ErrorFallbackComponent'
 
 const initialSetup = async () => {
   const enabled = await checkNotificationPermissions()
@@ -68,7 +69,9 @@ const App = props => {
             <SafeAreaProvider>
               <LocalizationProvider>
                 <AppStateManager>
+                  <ErrorBoundary FallbackComponent={ErrorFallbackComponent}>
                   <MainApp {...props} notificationsEnabled={data} loading={loading} />
+                  </ErrorBoundary>
                 </AppStateManager>
               </LocalizationProvider>
             </SafeAreaProvider>

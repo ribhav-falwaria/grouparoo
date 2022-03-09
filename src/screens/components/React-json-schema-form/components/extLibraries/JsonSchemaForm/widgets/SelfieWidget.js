@@ -23,11 +23,8 @@ const uploadFileForFaceMatch = async (dispatch, file, docface) => {
     const res = await DataService.postData(url, formData);
     if (res.data.status === "SUCCESS") {
       await dispatch.formDetails.setOkycSelfieFile(file);
-      const {uploadedDocId,uploadedFileName} = await uploadToAppWrite(file)
-      if (isUploaded){
-        props.onChange(uploadedDocId + "::" + uploadedFileName)
-      }
-      return true;
+      const {uploadedDocId,uploadedFileName} = await uploadToAppWrite([file])
+      return {uploadedDocId,uploadedFileName};
     } else {
       console.log(res.data.message);
       throw new Error("FACE_MATCH_FAILED");
@@ -73,8 +70,12 @@ const SelfieWidget = (props) => {
   const hasError = isUndefined(props.rawErrors)
     ? 0
     : props.rawErrors.length > 0;
-  const kycData = useSelector((state) => state.formDetails.kycData);
-  const [isUploadDone, setIsUploadDone] = useState(false);
+  const kycData = useSelector((state) => {
+    const data = state.formDetails.kycData;
+    return data;
+  });
+  const selfieFile = useSelector((state)=>state.formDetails.okycSelfieFile)
+  const [isUploadDone, setIsUploadDone] = useState(!isEmpty(selfieFile));
   const { translations } = useContext(LocalizationContext);
   const dispatch = useDispatch();
   let docId, fileName;
@@ -93,7 +94,9 @@ const SelfieWidget = (props) => {
   };
   const useFaceMatch = useRequest(uploadFileForFaceMatch, {
     manual: true,
-    onSuccess: () => {
+    onSuccess: (res) => {
+      setIsUploadDone(true);
+      props.onChange(res.uploadedDocId + "::" + res.uploadedFileName)
       Toast.show({
         type: "success",
         position: "bottom",
@@ -127,7 +130,7 @@ const SelfieWidget = (props) => {
       type: data.type,
       name: "selfie.jpg",
     };
-    const docface = kycData?.data?.photo_link;
+    const docface = kycData?.photo_link;
     if (!isUndefined(docface) || !isEmpty(docface)) {
       useFaceMatch.run(dispatch, fileDetails, docface);
     }else {
@@ -143,18 +146,12 @@ const SelfieWidget = (props) => {
   };
   return (
     <>
-      {props.value && (
-        <>
-          <Text style={styles.text} status="success">
-            Sussessfully Uploaded
-          </Text>
-          <DownloadComponent fileUrl={fileName} uploadedDocId={docId} />
-        </>
-      )}
+     
       <ImageUploadComponent
         isUploadDone={isUploadDone}
         onFileChange={onFileChange}
         useFrontCamera={false}
+        uris={selfieFile ? [selfieFile.uri] : []}
         hasError={hasError}
         selectText={translations["selfie.uploadText"]}
         loading={useFaceMatch.loading}

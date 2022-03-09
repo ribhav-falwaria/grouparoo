@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Text,
   Button,
@@ -7,15 +7,17 @@ import {
 } from "@ui-kitten/components";
 import { View } from "react-native";
 import crashlytics from '@react-native-firebase/crashlytics';
+import { LocalizationContext } from "../../components/Translation";
 
 const ErrorFallbackComponent = ({ error, resetError }) => {
+  const { translations } = useContext(LocalizationContext)
   crashlytics().recordError(error);
   const styles = useStyleSheet(themedStyles);
   return (
     <View style={styles.container}>
-      <Text category={"h1"}>Something happened!</Text>
-      <Text>{error.toString()}</Text>
-      <Button onPress={resetError} status={"primary"} title={"Try again"} />
+      <Text category={"h1"}>{translations["error.tryagain"]}</Text>
+      {/* <Text>{error.toString()}</Text> */}
+      <Button onPress={resetError} status={"primary"}>{translations["error.tryagain"]}</Button>
     </View>
   );
 };

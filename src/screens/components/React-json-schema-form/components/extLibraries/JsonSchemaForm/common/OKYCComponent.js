@@ -13,6 +13,7 @@ import DataService from '../../../../services/DataService'
 import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
 import { LocalizationContext } from '../../../../translation/Translation'
 import OtpComponent from '../../../../../OtpComponent'
+
 let finalAadharCard
 const WAIT_RESEND_MS = 2 * 60 * 1000
 const OTP_VALID_MS = 5 * 60 * 1000
@@ -57,9 +58,11 @@ const verifyOtp = async (appId, otp, shareCode, panData) => {
     const data = res.data
     if (data.status === 'SUCCESS') {
       const kycData = data.data
-      const kycMatchData = await matchKycData(panData, kycData)
-      // Name match failed / dobMatch Failed
-      kycData.kycMatchData = kycMatchData
+      let kycMatchData;
+      if (!isEmpty(kycData) && !isEmpty(panData)){
+        kycMatchData = await matchKycData(panData, kycData)
+        kycData.kycMatchData = kycMatchData
+      }
       return kycData
     } else {
       console.log(data.message)
@@ -67,13 +70,17 @@ const verifyOtp = async (appId, otp, shareCode, panData) => {
     }
   } catch (err) {
     console.log(err)
+    //AADHAAR_AND_PAN_NOT_MATCHING
     const msg = err.message
     if (msg === 'CANNOT_VALIDATE_AADHAR_OTP' ||
       msg === 'NAME_MATCH_FAILED' ||
-      msg === 'IDENTITY_MATCH_FAILED'
+      msg === 'IDENTITY_MATCH_FAILED' || msg === 'CAN_NOT_REACH__AADHAR_PAN_MATCH_SERVER'
     ) {
       throw err
-    } else {
+    } else if (err.name === "AADHAAR_AND_PAN_NOT_MATCHING"){
+      throw err;
+    }
+     else {
       throw new Error('CANNOT_REACH_AADHAR_SERVER_FOR_OTP_VERIFY')
     }
   }
@@ -88,18 +95,19 @@ const matchKycData = async (panData, kycData) => {
     })
     if (res.data?.status === 'SUCCESS') {
       const matchData = res.data?.data
-      if (!matchData.dobMatch) {
-        throw new Error('DOB_MATCH_FAILED')
-      }
-      if (matchData.matchRatio < 80) {
-        throw new Error('NAME_MATCH_FAILED')
-      }
+      // Backend api is doing the comparision
+      // if (!matchData.dobMatch) {
+      //   throw new Error('DOB_MATCH_FAILED')
+      // }
+      // if (matchData.matchRatio < 80) {
+      //   throw new Error('NAME_MATCH_FAILED')
+      // }
       return matchData
     } else {
-      throw new Error('IDENTITY_MATCH_FAILED')
+      throw new Error("AADHAAR_AND_PAN_NOT_MATCHING",res.data.message)
     }
   } catch (e) {
-
+     throw new Error("CAN_NOT_REACH__AADHAR_PAN_MATCH_SERVER");
   }
 }
 
@@ -195,56 +203,7 @@ const OKYCComponent = (props) => {
       useGenerateOtp.run(appId, finalAadharCard)
     }
   }
-  // useEffect(() => {
-  //   const fetchOtp = async () => {
-  //     try {
-  //       await generateOtp(appId, finalAadharCard)
-  //       Toast.show({
-  //         type: 'success',
-  //         position: 'bottom',
-  //         visibilityTime: 2000,
-  //         props: {
-  //           title: translations['aadhar.otp.title'],
-  //           description: translations['aadhar.otp.success']
-  //         }
-  //       })
-  //       setIsSubmitted(false)
-  //       setOtpGenerated(true)
-  //     } catch (error) {
-  //       setIsSubmitted(false)
-  //       if (error.message === 'CANNOT_REACH_AADHAR_SERVER_FOR_OTP') {
-  //         throw error
-  //       } else {
-  //         Toast.show({
-  //           type: 'error',
-  //           position: 'bottom',
-  //           props: {
-  //             title: translations['aadhar.otp.title'],
-  //             description: translations['aadhar.otp.failed']
-  //           }
-  //         })
-  //       }
-  //     }
-  //   }
-  //   let hasError = false
-  //   if (isSubmitted) {
-  //     if (isEmpty(aadharCard) || (aadharCard && aadharCard.length !== 14)) {
-  //       setIsAadharValid(false)
-  //       hasError = true
-  //     } else {
-  //       setIsAadharValid(true)
-  //     }
-  //     if (!aadharConsent) {
-  //       setIsConsentValid(false)
-  //       hasError = true
-  //     } else {
-  //       setIsConsentValid(true)
-  //     }
-  //     if (!hasError) {
-  //       fetchOtp()
-  //     }
-  //   }
-  // }, [isSubmitted])
+
 
   const onBlurHandler = () => {
     finalAadharCard = aadharCard

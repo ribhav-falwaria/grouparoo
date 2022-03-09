@@ -231,6 +231,7 @@
   "applicationFrom.exitConfirmation.title": "It will only take 5 minutes",
   "applicationFrom.exitConfirmation.subTitle" : "Are you sure you want to exit the application?",
   "applicationFrom.exitConfirmation.description" : "You can always come back and start from where you left off.",
-
+  "error.tryagain":"Try Again", 
+  "error.something.went.wrong":"Something happened!", 
   "app.exit": "Exit"
 }
