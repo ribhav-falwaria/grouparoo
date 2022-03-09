@@ -225,7 +225,7 @@
   "permissions.negative": "Deny",
   "permissions.grantAccess.title": "Grant Access",
   "permissions.grantAccess.content": "Change permissions in your device's app settings. Give Novo Loans access to SMS, Camera and Location.",
-  "permissions.gransAccess.goToSettings": "Go To Settings",
+  "permissions.grantAccess.gotoSettings": "Go To Settings",
   "permissions.exitConfirmation.title": "These permissions are important",
   "permissions.exitConfirmation.description" : "Are you sure you want to exit the App?",
   "applicationFrom.exitConfirmation.title": "It will only take 5 minutes",
