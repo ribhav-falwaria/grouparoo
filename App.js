@@ -1,15 +1,3 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the UI Kitten customermobileapp
- * https://github.com/akveo/react-native-ui-kitten
- *
- * Documentation: https://akveo.github.io/react-native-ui-kitten/docs
- *
- * @format
- */
-
 import React from 'react'
 
 import { Provider } from 'react-redux'
@@ -17,7 +5,8 @@ import { AppearanceProvider } from 'react-native-appearance'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components'
 import ErrorBoundary from 'react-native-error-boundary'
-
+import notifee from '@notifee/react-native'
+import messaging from '@react-native-firebase/messaging'
 import { EvaIconsPack } from '@ui-kitten/eva-icons'
 import * as eva from '@eva-design/eva'
 import RNOtpVerify from 'react-native-otp-verify'
@@ -28,7 +17,7 @@ import MainApp from './src/MainApp'
 import { LocalizationProvider } from './src/components/Translation'
 import store from './src/store'
 import { AppStorage } from './src/services/app-storage.service'
-import { checkNotificationPermissions } from './src/services/push.notifications'
+import { checkNotificationPermissions, onMessageReceived } from './src/services/push.notifications'
 import AppStateManager from './src/components/AppStateManager'
 import ErrorFallbackComponent from './src/screens/Errors/ErrorFallbackComponent'
 
@@ -37,7 +26,15 @@ const initialSetup = async () => {
   await AppStorage.toggleFirstTime()
   await AppStorage.togglePermissionRequested()
   await AppStorage.toggleIntroScreen()
+  await bootstrap()
   return enabled
+}
+async function bootstrap () {
+  const initialNotification = await notifee.getInitialNotification()
+  if (initialNotification) {
+    console.log('Notification caused application to open', initialNotification.notification)
+    console.log('Press action used to open the app', initialNotification.pressAction)
+  }
 }
 const App = props => {
   // Check for notification permissions and get the fcm token for the app
@@ -56,6 +53,9 @@ const App = props => {
     `)
     })
     .catch(error => console.log(error))
+  // Handle Notifications and background events using notifee.
+  messaging().onMessage(onMessageReceived)
+  messaging().setBackgroundMessageHandler(onMessageReceived)
   return (
     <>
       <IconRegistry icons={[EvaIconsPack]} />

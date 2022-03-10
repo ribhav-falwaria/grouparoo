@@ -1,30 +1,40 @@
+
 import React, { useContext } from 'react'
 import { View } from 'react-native'
-import { Icon, StyleService, useStyleSheet, Text } from '@ui-kitten/components'
-import {
-  widthPercentageToDP
-} from 'react-native-responsive-screen'
+import { Button, StyleService, useStyleSheet, Text } from '@ui-kitten/components'
 import { LocalizationContext } from '../../components/Translation'
-
-const PaymentSuccessView = () => {
-  const styles = useStyleSheet(themedStyles)
+import { PaymentSuccessIcon } from '../components/ThemedIcons'
+const PaymentSuccessView = ({ onRetry, onCancel }) => {
   const { translations } = useContext(LocalizationContext)
+  const styles = useStyleSheet(themedStyles)
   return (
-    <View>
-      <Icon name='checkmark-circle-2-outline' style={styles.iconStyle} />
-      <View>
-        <Text>
+    <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <PaymentSuccessIcon />
+        <Text category='h6' status='success'>
           {translations['repayment.repaySuccess']}
         </Text>
+      </View>
+      <View>
+        <View style={{ marginTop: 16 }}>
+          <Button onPress={onCancel} appearance='ghost'>
+            {translations['modal.ok']}
+          </Button>
+        </View>
       </View>
     </View>
   )
 }
 const themedStyles = StyleService.create({
-  iconStyle: {
-    width: widthPercentageToDP('50%'),
-    height: widthPercentageToDP('50%'),
-    color: 'color-success-500'
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0.8
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between'
   }
 })
 export default PaymentSuccessView
