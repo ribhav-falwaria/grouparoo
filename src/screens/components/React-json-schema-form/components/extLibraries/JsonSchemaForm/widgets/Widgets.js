@@ -27,6 +27,7 @@ import OKYCWidget from './OKYCWidget'
 import CIBILOtpWidget from './CIBILOtpWidget'
 import TermsAndConditionsWidget from './TermsAndConditionWidget'
 import EsignInputWidget from './EsignInputWidget'
+import EnachWidget from './EnachWidget'
 export const Widgets = {
   TextWidget,
   EmailWidget,
@@ -58,5 +59,6 @@ export const Widgets = {
   'np-kyc-widget': OKYCWidget,
   'np-cibil-otp-widget': CIBILOtpWidget,
   'np-terms-and-condition-widget': TermsAndConditionsWidget,
-  'np-esign-input-widget': EsignInputWidget
+  'np-esign-input-widget': EsignInputWidget,
+  'np-enach-widget': EnachWidget,
 }

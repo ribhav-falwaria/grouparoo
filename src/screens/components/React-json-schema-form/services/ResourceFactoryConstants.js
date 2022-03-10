@@ -18,6 +18,18 @@ class ResourceFactoryConstants {
       getStates: this.getPlatformApiUrl("getChildHierarchyElements"),
       getCountries: this.getPlatformApiUrl("getDatatypeMaster"),
     },
+    enach: {
+      createPlan: this.getCustomUrl(
+        this.adapterServiceUrl,
+        "payment/createPlan",
+        ""
+      ),
+      createSubscription: this.getCustomUrl(
+        this.adapterServiceUrl,
+        "payment/createSubscription",
+        ""
+      ),
+    },
     forms: {
       getSchemaAndStepsByName: this.getApiUrl("getSchemaAndStepsByName"),
       saveActionForm: this.getCustomUrl(

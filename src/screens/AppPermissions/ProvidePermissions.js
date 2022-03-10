@@ -90,6 +90,9 @@ const themedStyles = StyleService.create({
     paddingTop: 32,
     justifyContent: 'flex-end',
     flexDirection: 'row'
+  },
+  registerButton: {
+    marginLeft:5
   }
 })
 

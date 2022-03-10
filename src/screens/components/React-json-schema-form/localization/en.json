@@ -92,5 +92,25 @@
   "okyc.facematch.title": "Face Match",
   "okyc.facematch.failed": "Your selfie does not match your photo on Aadhaar",
   "okyc.facematch.success": "Your Aadhaar KYC successfully completed",
-  "okyc.selfie.uploadText": "Click to take your Selfie"
+  "okyc.selfie.uploadText": "Click to take your Selfie",
+  "esign.unexpected.error":"Unexpected error occurred. Please try again",
+  "esign.title":"E-Sign",
+  "esign.start.esign":"Start Esign Process",
+  "esign.redirect":"Redirecting to e-sign website to complete esign process",
+  "esign.successfull":" eSign has been done successfully.",
+  "enach.title":"eNach",
+  "enach.unexpected.error":"Unexpected error occurred. Please try again",
+  "enach.start":"eMandate",
+  "enach.redirect":"Redirecting to eMandate website to complete eMandate process",
+  "enach.successfull":" eMandate has been done successfully.",
+  "download.permission.title":"Storage Permission",
+  "download.permission.message":"Application needs access to your storage to download File",
+  "download.permission.granted":"Storage Permission Not Granted",
+  "download.downloading":"downloading file...",
+  "download.downloaded":"File Downloaded Successfully",
+  "download.success.title":"Download Confirmation",
+  "download.downloadText": "Download",
+  "text.okay":"OKAY",
+  "loan.agreement.consent.message":"I agree to the terms and conditions"
+
 }
