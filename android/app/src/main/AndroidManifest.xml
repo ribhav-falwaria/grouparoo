@@ -31,8 +31,17 @@
         android:launchMode="singleTask"
         android:windowSoftInputMode="adjustResize">
         <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
-            <category android:name="android.intent.category.LAUNCHER" />
+         <action android:name="android.intent.action.MAIN" />
+         <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+        <intent-filter>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.DEFAULT" />
+            <category android:name="android.intent.category.BROWSABLE" />
+        <!-- Accepts URIs that begin with "novopay://com.novoloan.customerapp/open -->
+        <data android:scheme="novopay"
+              android:host="com.novoloan.customerapp"
+              android:pathPrefix="/open" />
         </intent-filter>
       </activity>
     </application>

@@ -39,6 +39,19 @@ const ReactJsonSchemaUtil = {
       temp.push(file.name)
     }
     return temp
+  },
+  getQueryParams (textUrl) {
+    let queryParamObject={};
+    if (textUrl.indexOf('?') === -1) return pairs;
+    let paramString = textUrl.split('?')[1];
+    let params_arr = paramString.split('&');
+    for (let i = 0; i < params_arr.length; i++) {
+       let pair = params_arr[i].split('=');
+       if (pair && pair.length > 1 && pair[0] && pair[1]){
+        queryParamObject[pair[0]] = pair[1]
+     }
+    }
+    return queryParamObject;
   }
 }
 

@@ -1,138 +1,231 @@
-import { Button, Text } from '@ui-kitten/components'
-import React, { Fragment, useEffect, useState } from 'react'
-import { Alert, Linking } from 'react-native'
-import { useToast } from 'react-native-toast-notifications'
-import DataService from '../../../../services/DataService'
-import ResourceFactoryConstants from '../../../../services/ResourceFactoryConstants'
-import IconUtil from '../../../common/IconUtil'
-import RNFetchBlob from 'rn-fetch-blob'
-import LoadingSpinner from '../../../../../../components/LoadingSpinner'
-const EsignInputWidget = (props) => {
-  const toast = useToast()
-  const resourceFactoryConstants = new ResourceFactoryConstants()
-  const [loaderVisibility, setLoaderVisibility] = useState(false)
-  const [isEsignDone, setIsEsignDone] = useState(!!props.value)
-  const [file, setFile] = useState('')
-  const [appUrl, setAppUrl] = useState(null)
+import { Button, Text } from '@ui-kitten/components';
+import React, { Fragment, useContext, useEffect, useState } from 'react';
+import { Alert, Linking } from 'react-native';
+import Toast from 'react-native-toast-message';
+import DataService from '../../../../services/DataService';
+import ResourceFactoryConstants from '../../../../services/ResourceFactoryConstants';
+import IconUtil from '../../../common/IconUtil';
+import RNFetchBlob from 'rn-fetch-blob';
+import LoadingSpinner from '../../../../../../components/LoadingSpinner';
+import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil';
+import { LocalizationContext } from '../../../../translation/Translation';
+import crashlytics from '@react-native-firebase/crashlytics';
+import ErrorUtil from '../../../../../../Errors/ErrorUtil';
+import { useRequest } from 'ahooks';
+import DocumentUploadService from '../../../../services/DocumentUploadService';
+import isEmpty from 'lodash.isempty'
 
-  const fileUrl =
-    props?.schema?.url ||
-    'https://file-examples-com.github.io/uploads/2017/10/file-sample_150kB.pdf'
-
-  useEffect(async () => {
-    const initialUrl = await Linking.getInitialURL()
-    console.log('Initial Url is:==========================>', initialUrl)
-    setAppUrl(initialUrl || 'novopay://com.novoloan.customerapp/open')
-    Linking.addEventListener('url', handleUrl)
-  }, [])
-
-  const handleUrl = (event) => {
-    let temp = false
-    const returnUrl = event.url
-    const paramString = returnUrl.split('?')[1]
-    const queryString = new URLSearchParams(paramString)
-    for (const pair of queryString.entries()) {
-      if (pair[0] === 'esign_status' && pair[1] === 'success') {
-        setIsEsignDone(true)
-        props.onChange('Yes')
-        temp = true
-      }
-    }
-    if (!temp) {
-      toast.show('Unexpected error occurred. Please try again', {
-        type: 'danger'
-      })
-    }
-  }
-
-  useEffect(() => {
-    DataService.getDataV1(fileUrl, { responseType: 'blob' })
-      .then((response) => {
-        if (response.status === 200 && response.data) {
-          const reader = new FileReader()
-          reader.readAsDataURL(response.data)
-          reader.onloadend = function () {
-            const base64data = reader.result
-            setFile(base64data.split(',')[1])
-          }
-        } else {
-          console.error('Error occurred while fetching loan agreement file')
-        }
-      })
-      .catch((err) => {
-        console.error('Error occurred while fetching loan agreement file', err)
-      })
-  }, [])
-
-  const openLink = async (esignUrl) => {
-    const supported = await Linking.canOpenURL(esignUrl)
-    if (supported) {
-      await Linking.openURL(esignUrl)
-    } else {
-      Alert.alert(`Don't know how to open this URL: ${esignUrl}`)
-    }
-  }
-
-  const esignProcessHandler = () => {
-    if (!appUrl) {
-      console.error('App Url is not defined')
-      return
-    }
-    setLoaderVisibility(true)
-    RNFetchBlob.fetch(
+const uploadToAppWrite = async (file,url) => {
+  try {
+    const response = await RNFetchBlob.fetch(
       'POST',
-      resourceFactoryConstants.constants.eSign.uploadPdfForeSign,
+       url,
       {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
       },
       [
         { name: 'file', filename: 'agreement', data: file },
-        { name: 'page_no', data: '1' },
-        {
-          name: 'redirect_url',
-          data: encodeURIComponent(appUrl)
-        }
       ]
     )
-      .then((res) => {
-        if (res.respInfo.status === 200) {
-          const data = JSON.parse(res.data)
-          if (data.status === 'Uploaded Document') {
-            const esignUrl = data.url
-            Alert.alert(
-              'Information',
-              'Redirecting to e-sign website to complete esign process',
-              [
-                {
-                  text: 'Ok',
-                  onPress: () => {
-                    openLink(esignUrl)
-                  }
-                }
-              ]
-            )
-          } else {
-            console.err(
-              'Upload Failed while uploading to veri5Digital with message',
-              data.status
-            )
-          }
-        } else {
-          console.err(
-            'Upload Failed while uploading to veri5Digital with status code',
-            res.respInfo.status
-          )
-        }
-        setLoaderVisibility(false)
-      })
-      .catch((err) => {
-        toast.show(err.status, { type: 'danger' })
-        setLoaderVisibility(false)
-      })
+    if (response?.respInfo?.status === 200) {
+      const data = JSON.parse(response.data);
+      return {
+        uploadedDocId: data.fileId,
+        file
+      }
+    }
+    else {
+      throw new Error('UPLOAD_TO_APPWRITE_SERVER_FAILED')
+    }
+  } catch (e) {
+    if (e.message === 'UPLOAD_TO_APPWRITE_SERVER_FAILED') {
+      throw e
+    } else {
+      throw new Error('CANNOT_REACH_APPWRITE_SERVICE')
+    }
   }
+}
+
+const EsignInputWidget = (props) => {
+  const { translations } = useContext(LocalizationContext);
+  const resourceFactoryConstants = new ResourceFactoryConstants();
+  const [isEsignDone, setIsEsignDone] = useState(props.value ? true : false);
+  const [file, setFile] = useState('');
+  const [appUrl, setAppUrl] = useState(null);
+
+  const fileUrl =
+    props?.schema?.url ||
+    'https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf';
+
+  useEffect(async () => {
+    const initialUrl = await Linking.getInitialURL();
+    crashlytics().log(
+      ErrorUtil.createLog(
+        'Linking Url',
+        { initialUrl },
+        'useEffect',
+        'EsignInputWidget.js'
+      )
+    );
+    setAppUrl(initialUrl || 'novopay://com.novoloan.customerapp/open');
+  }, []);
+
+  const handleUrl = (event) => {
+    let temp = false;
+    const returnUrl = event.url;
+    const queryParamObject = ReactJsonSchemaUtil.getQueryParams(returnUrl);
+    for (const key in queryParamObject) {
+      if (key === 'esign_status' && queryParamObject[key] === 'success') {
+        setIsEsignDone(true);
+        temp = true;
+      }
+    }
+    if (!temp) {
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        props: {
+          title: translations['esign.title'],
+          description: translations['esign.unexpected.error'],
+        },
+      });
+    }
+  };
+
+  const useTodownFileBlob = useRequest(
+    async (fileUrl) => {
+      try {
+        const response = await DataService.getDataV1(fileUrl, {
+          responseType: 'blob',
+        });
+        if (response.status === 200 && response.data) {
+          const reader = new FileReader();
+          reader.readAsDataURL(response.data);
+          reader.onloadend = function () {
+            const base64data = reader.result;
+            setFile(base64data.split(',')[1]);
+          };
+        } else {
+          throw new Error('ERROR_WHILE_DOWNLOADING_BLOB');
+        }
+      } catch (error) {
+        throw error;
+      }
+    },
+    {
+      manual: true,
+      onError: (err) => {
+        crashlytics().log(
+          ErrorUtil.createError(
+            err,
+            err.message,
+            err.message,
+            undefined,
+            'useTodownFileBlob',
+            'EsignInputWidget.js'
+          )
+        );
+        throw err;
+      },
+    }
+  );
+
+  const useEsignProcessHandler = useRequest(async (url,file,appUrl)=>{
+    try {
+      const response = await RNFetchBlob.fetch(
+        'POST',
+         url,
+        {
+          'Content-Type': 'multipart/form-data',
+        },
+        [
+          { name: 'file', filename: 'agreement', data: file },
+          { name: 'page_no', data: '1' },
+          {
+            name: 'redirect_url',
+            data: encodeURIComponent(appUrl),
+          },
+        ]
+      )
+      debugger
+      if (response?.respInfo?.status === 200) {
+        const data = JSON.parse(response.data);
+        if (data.status === 'Uploaded Document') {
+          const esignUrl = data.url;
+          Alert.alert(
+            translations['esign.title'],
+            translations['esign.redirect'],
+            [
+              {
+                text: 'Ok',
+                onPress: () => {
+                  openLink(esignUrl);
+                },
+              },
+            ]
+          );
+        } else {
+          debugger
+          crashlytics().log(ErrorUtil.createLog('Upload Failed while uploading to veri5Digital with message',data,'useEsignProcessHandler','EsignInputWidget.js'))
+        }
+      }else{
+        throw new Error('UNEXPECTED_ERROR_WHILE_UPLOADING')
+      }
+    } catch (error) {
+      debugger
+      throw new Error('ERROR_REACHING_TO_ESIGN_UPLOAD_SERVER');
+    }
+  },
+  {manual:true})
+
+  const useUploadToAppwrite = useRequest(uploadToAppWrite,{manual:true,onSuccess: (res)=>{
+    props.onChange(res?.uploadedDocId)
+  },onError:(err)=>{
+    debugger
+    crashlytics().log(ErrorUtil.createError(err,err.message,err.message,undefined,"useUploadToAppwrite","EsignInputWidget.js"))
+    throw err
+  }})
+
+  useEffect(() => {
+      if(!props.value){
+        useTodownFileBlob.run(fileUrl);
+      }
+  }, []);
+
+  useEffect(async () => {
+    if (isEsignDone && !isEmpty(file) && !props.value) {
+      debugger
+      useUploadToAppwrite.run(file,resourceFactoryConstants.constants.lending.uploadFile)
+    }
+  }, [isEsignDone, JSON.stringify(file)]);
+
+  const openLink = async (esignUrl) => {
+    const supported = await Linking.canOpenURL(esignUrl);
+    if (supported) {
+      Linking.addEventListener('url', handleUrl);
+      await Linking.openURL(esignUrl);
+    } else {
+      crashlytics().log(
+        ErrorUtil.createLog(
+          'Can not open this url',
+           esignUrl,
+          'useTodownFileBlob',
+          'EsignInputWidget.js'
+        )
+      );
+    }
+  };
+
+  const esignProcessHandler = () => {
+    if (!appUrl) {
+      crashlytics().log(ErrorUtil.createLog('App Url is not defined',appUrl,'esignProcessHandler','EsignInputWidget'));
+      return;
+    }
+    useEsignProcessHandler.run( resourceFactoryConstants.constants.eSign.uploadPdfForeSign,file,appUrl);   
+  };
   return (
     <>
-      <LoadingSpinner visible={loaderVisibility} />
+      <LoadingSpinner visible={useEsignProcessHandler.loading || useTodownFileBlob.loading} />
       {!isEsignDone && (
         <Button
           appearance='outline'
@@ -149,16 +242,16 @@ const EsignInputWidget = (props) => {
           status='primary'
           style={{ marginTop: 5, fontWeight: 'bold' }}
         >
-          ESign has been done successfully.{' '}
+          {translations['esign.successfull']}
           <IconUtil.CheckIcon
             size={20}
             color='green'
-            style={{ marginLeft: 5 }}
+            style={{ marginLeft: 5,marginTop:5 }}
           />
         </Text>
       )}
     </>
-  )
-}
+  );
+};
 
-export default EsignInputWidget
+export default EsignInputWidget;

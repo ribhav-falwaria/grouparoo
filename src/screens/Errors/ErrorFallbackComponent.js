@@ -15,7 +15,7 @@ const ErrorFallbackComponent = ({ error, resetError }) => {
   const styles = useStyleSheet(themedStyles);
   return (
     <View style={styles.container}>
-      <Text category={"h1"}>{translations["error.tryagain"]}</Text>
+      <Text category={"h1"}>{translations["error.something.went.wrong"]}</Text>
       {/* <Text>{error.toString()}</Text> */}
       <Button onPress={resetError} status={"primary"}>{translations["error.tryagain"]}</Button>
     </View>

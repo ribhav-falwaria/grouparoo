@@ -62,6 +62,8 @@ const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
       .fetch("GET", url)
       .then((res) => {
         alert("File Downloaded Successfully.");
+      }).catch((err)=>{
+        console.log("Error while downloading",err);
       });
   };
 

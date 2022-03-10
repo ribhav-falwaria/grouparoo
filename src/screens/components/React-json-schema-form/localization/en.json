@@ -92,5 +92,10 @@
   "okyc.facematch.title": "Face Match",
   "okyc.facematch.failed": "Your selfie does not match your photo on Aadhaar",
   "okyc.facematch.success": "Your Aadhaar KYC successfully completed",
-  "okyc.selfie.uploadText": "Click to take your Selfie"
+  "okyc.selfie.uploadText": "Click to take your Selfie",
+  "esign.unexpected.error":"Unexpected error occurred. Please try again",
+  "esign.title":"E-Sign",
+  "esign.redirect":"Redirecting to e-sign website to complete esign process",
+  "esign.successfull":" eSign has been done successfully.",
+  "enach.title":"eNach"
 }
