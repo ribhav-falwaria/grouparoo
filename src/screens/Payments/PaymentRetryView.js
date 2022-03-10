@@ -1,34 +1,45 @@
 import React, { useContext } from 'react'
 import { View } from 'react-native'
-import { Icon, Button, StyleService, useStyleSheet, Text } from '@ui-kitten/components'
-import {
-  widthPercentageToDP
-} from 'react-native-responsive-screen'
+import { Button, StyleService, useStyleSheet, Text } from '@ui-kitten/components'
 import { LocalizationContext } from '../../components/Translation'
-
-const PaymentFailureView = ({ onRetry, onCancel }) => {
+import { PaymentRetryIcon } from '../components/ThemedIcons'
+const PaymentRetryView = ({ onRetry, onCancel }) => {
   const { translations } = useContext(LocalizationContext)
   const styles = useStyleSheet(themedStyles)
   return (
-    <View>
-      <Icon name='alert-circle-outline' style={styles.iconStyle} />
-      <Text>
-        {translations['repayment.repayTryAgain']}
-      </Text>
-      <Button onPress={onRetry}>
-        {translations['repayment.tryAgain']}
-      </Button>
-      <Button onPress={onCancel}>
-        {translations['modeal.cancel']}
-      </Button>
+    <View style={styles.container}>
+      <View style={styles.iconContainer}>
+        <PaymentRetryIcon />
+        <Text category='h6'>
+          {translations['repayment.repayTryAgain']}
+        </Text>
+      </View>
+
+      <View>
+        <View style={{ marginTop: 16 }}>
+          <Button onPress={onRetry}>
+            {translations['repayment.tryAgain']}
+          </Button>
+        </View>
+        <View style={{ marginTop: 16 }}>
+          <Button onPress={onCancel} appearance='ghost'>
+            {translations['modal.cancel']}
+          </Button>
+        </View>
+      </View>
     </View>
   )
 }
 const themedStyles = StyleService.create({
-  iconStyle: {
-    width: widthPercentageToDP('50%'),
-    height: widthPercentageToDP('50%'),
-    color: 'color-warning-500'
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 0.8
+  },
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between'
   }
 })
-export default PaymentFailureView
+export default PaymentRetryView

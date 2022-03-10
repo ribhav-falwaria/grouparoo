@@ -18,6 +18,7 @@ import { rupeeFormatter } from '../../utils/'
 
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
+import RupeeText from './RupeeText'
 
 const Loading = () => (
   <Placeholder
@@ -53,11 +54,11 @@ const RepaymentCard = ({ heading, loanId, Icon, onPress, onPaymentPress, loading
   const isRepayNow = nextInstallment.pastDueDays > 0
 
   const onPayPress = () => {
-    //FIXME: Need to change this after use case from nishant
+    // FIXME: Need to change this after use case from nishant
     onPaymentPress(loanId, 1000)
   }
   // Nothing to repay - no dpd
-  if (isRepayNow) {
+  if (!isRepayNow) {
     return null
   }
   return (
@@ -96,21 +97,30 @@ const RepaymentCard = ({ heading, loanId, Icon, onPress, onPaymentPress, loading
         <View style={styles.repaymentSchedule}>
           <View>
             <View style={styles.scheduleRowHead}>
-              <Text category='p1' status='default' style={styles.rowContent}>
-                {translations['repayment.installment']}
-              </Text>
-              <Text category='p1' status='default' style={styles.rowContent}>
-                {translations['repayment.overdue']}
-              </Text>
-            </View>
-            {dpdSchedule.map((schedule, ix) => (
-              <View key={`schedule-${ix}`} style={styles.scheduleRow}>
+              <View>
                 <Text category='p1' status='default' style={styles.rowContent}>
-                  {schedule.dueDate}
+                  {translations['repayment.installment']}
                 </Text>
-                <Text category='p1' status='danger' style={styles.scheduleText}>
-                  {rupeeFormatter(schedule.amount)}
+              </View>
+              <View>
+                <Text category='p1' status='default' style={styles.rowContent}>
+                  {translations['repayment.overdue']}
                 </Text>
+              </View>
+            </View>
+            {dpdSchedule.display.map((display, ix) => (
+              <View key={`schedule-${ix}`} style={styles.scheduleRow}>
+                <View>
+                  <Text category='p1' status='default' style={styles.rowContent}>
+                    {display.installmentDate}
+                  </Text>
+                </View>
+                <View>
+                  <Text category='s1' status='danger' style={styles.scheduleText}>
+                    <RupeeText />
+                    {display.installmentAmount}
+                  </Text>
+                </View>
               </View>
             ))}
           </View>
@@ -162,11 +172,12 @@ const themedStyles = StyleService.create({
   },
   scheduleRowHead: {
     flexDirection: 'row',
-    marginBottom: 4
+    marginBottom: 4,
+    justifyContent: 'space-between'
   },
-
   scheduleRow: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
   payNow: {
     width: '100%'

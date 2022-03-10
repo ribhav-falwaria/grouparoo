@@ -38,8 +38,8 @@ class MainApp extends React.Component {
     if(
       nextProps.isLoggedIn === this.props.isLoggedIn &&
       nextProps.isPermissionsRequested === this.props.isPermissionsRequested &&
-      nextProps.isFirstTime === this.props.isPermissionsRequested &&
-      nextProps.hasActiveLoan === this.props.isPermissionsRequested &&
+      nextProps.isFirstTime === this.props.isFirstTime &&
+      nextProps.hasActiveLoan === this.props.hasActiveLoan &&
       nextProps.isAllPermissionsValid === this.props.isPermissionsRequested &&
       nextProps.loading === this.props.isPermissionsRequested) {
         return false

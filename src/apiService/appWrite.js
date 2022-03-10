@@ -3,8 +3,14 @@ import { config } from '../config'
 import isUndefined from 'lodash.isundefined'
 import isNull from 'lodash.isnull'
 import isEmpty from 'lodash.isempty'
-import crashlytics from '@react-native-firebase/crashlytics';
+import crashlytics from '@react-native-firebase/crashlytics'
+import { Gzip } from '../utils'
 const sdk = new Appwrite()
+
+const unpackData = (b64Data) => {
+  const unzippedData = Gzip.unzip(b64Data)
+  return JSON.parse(unzippedData)
+}
 const isInvalidValue = (val) => {
   return isUndefined(val) || isNull(val) || val === 'np' || val === -1 || val.length === 0
 }
@@ -35,7 +41,7 @@ export const appApi = {
           appStateEvents
         )
       } catch (err) {
-        crashlytics().log(err.message);
+        crashlytics().log(err)
       }
     }
   },
@@ -46,7 +52,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.cashfreeSignatureFunctionId, signatureData)
           return executionDetails.$id
         } catch (e) {
-          crashlytics().recordError(e);
+          crashlytics().recordError(e)
           throw new Error('CANNOT_GET_VERIFY_EXECUTION_ID')
         }
       },
@@ -107,7 +113,7 @@ export const appApi = {
         const response = await sdk.database.listDocuments(config.appWrite.loanTypesCollectionId)
         return response.documents
       } catch (e) {
-        crashlytics().log(err)
+        crashlytics().log(e)
         throw new Error('CANNOT_GET_LOAN_TYPES')
       }
     }
@@ -126,7 +132,7 @@ export const appApi = {
       get: async (executionId) => {
         const responseWithStatus = await getCompletionStatus(config.appWrite.loanProductMetadataFunctionId, executionId)
         if (responseWithStatus.status === 'completed') {
-          const allProducts = JSON.parse(responseWithStatus.stdout)
+          const allProducts = unpackData(responseWithStatus.stdout)
           return allProducts
         } else {
           throw new Error('CANNOT_GET_ALL_PRODUCTS')
@@ -304,7 +310,7 @@ export const appApi = {
         try {
           const responseWithStatus = await getCompletionStatus(config.appWrite.lmsManagementFunctionId, executionId)
           if (responseWithStatus.status === 'completed') {
-            const allLoans = JSON.parse(responseWithStatus.stdout)
+            const allLoans = unpackData(responseWithStatus.stdout)
             return allLoans
           } else {
             throw new Error('CANNOT_GET_ALL_LOANS_FOR_CUSTOMER')
@@ -413,7 +419,7 @@ export const appApi = {
           const executionDetails = await sdk.functions.createExecution(config.appWrite.retrieveLoanOffersFunctionId, loanApplicationId)
           return executionDetails.$id
         } catch (err) {
-          crashlytics().log(e)
+          crashlytics().log(err)
           throw new Error('CANNOT_CREATE_LOAN_OFFER_EXECUTION')
         }
       },
@@ -427,7 +433,7 @@ export const appApi = {
             throw new Error('CANNOT_GET_LOAN_OFFER_DETAILS')
           }
         } catch (err) {
-          crashlytics().log(e)
+          crashlytics().log(err)
           throw new Error('CANNOT_GET_LOAN_OFFER_DETAILS')
         }
       }

@@ -2,7 +2,9 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useTheme, Icon } from '@ui-kitten/components'
 import styleConstants from '../styleConstants'
-
+import {
+  widthPercentageToDP
+} from 'react-native-responsive-screen'
 import MyLoanSvg from '../../assets/images/monetization_on_black_24dp'
 import RepaySvg from '../../assets/images/payments_black_24dp'
 import ReferralSvg from '../../assets/images/auto_awesome_black_24dp.svg'
@@ -31,6 +33,21 @@ export const CameraIcon = () => buildEvaIcon('video-outline')
 export const ContactListIcon = () => buildEvaIcon('list-outline')
 export const LocationIcon = () => buildEvaIcon('pin-outline')
 
+export const PaymentFailedIcon = () => {
+  const theme = useTheme()
+  const width = widthPercentageToDP('50%')
+  return buildEvaIcon('alert-circle-outline', theme['color-danger-500'], width, width)
+}
+export const PaymentRetryIcon = () => {
+  const theme = useTheme()
+  const width = widthPercentageToDP('50%')
+  return buildEvaIcon('alert-circle-outline', theme['color-warning-300'], width, width)
+}
+export const PaymentSuccessIcon = () => {
+  const theme = useTheme()
+  const width = widthPercentageToDP('50%')
+  return buildEvaIcon('checkmark-circle-2-outline', theme['color-danger-500'], width, width)
+}
 export const MyLoansIcon = () => buildIcon(MyLoanSvg)
 export const NetBankingIcon = () => buildIcon(BankIconSvg)
 export const RepaymentIcon = () => buildIcon(RepaySvg)

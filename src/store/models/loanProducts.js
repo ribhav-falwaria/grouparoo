@@ -99,6 +99,7 @@ const loanProducts = {
       products.forEach(pr => {
         state[pr.id] = pr
       })
+      state.schemeCodes = products.map(p => p.schemeCode)
       return state
     }
   },

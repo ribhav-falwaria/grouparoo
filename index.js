@@ -2,7 +2,6 @@
  * @format
  */
 import 'react-native-gesture-handler'
-import { gestureHandlerRootHOC } from 'react-native-gesture-handler'
 
 import 'react-native-get-random-values'
 import dayjs from 'dayjs'
@@ -13,7 +12,8 @@ import App from './App'
 import { name as appName } from './app.json'
 dayjs.locale('en-in')
 dayjs.extend(duration)
-AppRegistry.registerComponent(appName, () => gestureHandlerRootHOC(App))
+// AppRegistry.registerComponent(appName, () => gestureHandlerRootHOC(App))
+AppRegistry.registerComponent(appName, () => App)
 
 if (Platform.OS === 'web') {
   const rootTag =

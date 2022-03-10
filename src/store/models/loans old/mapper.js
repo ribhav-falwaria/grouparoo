@@ -93,56 +93,56 @@ const txnDetailsMap = {
 const basicDetailsMapper = {
   'amount_details.disbursed_amount': {
     key: 'loanAmount',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0
   },
   'amount_details.interest_due_amount': {
     key: 'outstanding.interestDueAmount',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   'amount_details.total_due_amount': {
     key: 'outstanding.totalDueAmount',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   'amount_details.principal_outstanding_amount': {
     key: 'outstanding.principalDueAmount',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   'amount_details.penal_due_amount': {
     key: 'outstanding.penalDueAmount',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   'installment_details.past_due_days': {
     key: 'outstanding.pastDueDays',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'installment_details.paid_installment_count': {
     key: 'outstanding.numInstallmentsPaid',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'installment_details.next_installment_due_date': {
     key: 'nextInstallmentDate',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'installment_details.installment_amount': {
     key: 'nextInstallmentAmount',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'account_details.last_payment_date': {
     key: 'lastPaymentDate',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'account_details.first_repayment_date': {
     key: 'firstRepaymentDate',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'disbursement_details.disbursement_amount': 'disbursementAmount',
   'disbursement_details.expected_disbursement_date': {
     key: 'expectedDisbursementDate',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'disbursement_details.actual_disbursement_date': {
     key: 'disbursementDate',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   },
   'disbursement_details.mode': {
     key: 'disbursementMode',
@@ -158,11 +158,11 @@ const basicDetailsMapper = {
   },
   'interest_details.upfront_interest_amount': {
     key: 'upfrontInterestAmount',
-    transform: (v) => v ? parseFloat(v) : 0
+    transform: (v) => v ? v.length > 0 ? parseFloat(v) : 0 : 0
   },
   'interest_details.effective_interest_rate': {
     key: 'interestRate',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   'repayment_details.interest_calculation_basis': {
     key: 'interestCalculationBasis',
@@ -171,7 +171,7 @@ const basicDetailsMapper = {
   },
   'repayment_details.maturity_date': {
     key: 'maturityDate',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0
   },
   'repayment_details.installment_type': {
     key: 'installmentType',
@@ -183,7 +183,7 @@ const basicDetailsMapper = {
   },
   'repayment_details.first_repayment_date': {
     key: 'firstRepaymentDate',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0
   },
   'loan_details.loan_status': {
     key: 'loanStatus',
@@ -198,7 +198,7 @@ const basicDetailsMapper = {
   },
   'loan_details.loan_term': {
     key: 'term',
-    transform: (v) => parseInt(v)
+    transform: (v) => v.length > 0 ? parseInt(v) : 0
   }
 }
 
@@ -206,11 +206,11 @@ const statementMapper = {
   'transaction_details.transaction_ref_no': 'txnId',
   'transaction_details.transaction_date': {
     key: 'txnDate',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0
   },
   'transaction_details.transaction_amount': {
     key: 'amount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   'transaction_details.transaction_type': {
     key: 'txnType',
@@ -222,67 +222,67 @@ const statementMapper = {
   },
   'transaction_details.balance_after_transaction': {
     key: 'closingBalance',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0
   }
 }
 const accountDetailMapper = {
   cr_dr_indicator: 'creditDebit',
   transaction_amount: {
     key: 'txnAmount',
-    transform: (v) => parseFloat(v)
+    transform: (v) => v.length > 0 ? parseFloat(v) : 0
   },
   narration: 'narration'
 }
 const scheduleMapper = {
   installment_amount: {
     key: 'installmentAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   // ACTUAL INTEREST  to be paid
   interest_actual_amount: {
     key: 'interestAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   interest_paid_amount: {
     key: 'interestPaidAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   // Dont use currently
   interest_overdue_amount: {
     key: 'interestOverdueAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   // Overdue amount if there is a grace period
   // actual principal to be paid
   principal_actual_amount: {
     key: 'principalAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   principal_outstanding_amount: {
     key: 'principalOutstanding',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   principal_paid_amount: {
     key: 'principalPaidAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   // Overdue amount if there is a grace period
   // Dont use currently
   principal_overdue_amount: {
     key: 'principalOverdueAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   penalties_accrued_amount: {
     key: 'penaltyAccruedAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   penalties_paid_amount: {
     key: 'penaltyPaidAmount',
-    transform: v => parseFloat(v)
+    transform: v => v.length > 0 ? parseFloat(v) : 0
   },
   installment_date: {
     key: 'installmentDate',
-    transform: v => parseInt(v)
+    transform: v => v.length > 0 ? parseInt(v) : 0(v)
   },
   is_settled: {
     key: 'isTxnSettled',
@@ -312,6 +312,7 @@ const prepareLoanDetails = (data) => {
     mappedRepaymentSchedule.push(schedule)
   })
   return {
+    loanApplicationId: basicDetails.loan_details.account_number,
     basicDetails: mappedBasicDetails,
     statement: mappedStatement,
     repayment: mappedRepaymentSchedule,

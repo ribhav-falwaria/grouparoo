@@ -68,7 +68,7 @@ const HomeScreen = ({ navigation, route }) => {
             <Component
               loanId={loan.loanApplicationId}
               Icon={AllIcons[item.icon]}
-              onPress={() => item.onPress(item)}
+              onPress={() => item.onPress(item, { loanId: loan.loanId })}
               heading={item.heading}
             />
           </View>
@@ -82,7 +82,7 @@ const HomeScreen = ({ navigation, route }) => {
             <Component
               loanApplicationId={loanApplication.loanApplicationId}
               Icon={AllIcons[item.icon]}
-              onPress={() => item.onPress(item)}
+              onPress={() => item.onPress(item, { loanApplicationId: loanApplication.loanApplicationId })}
               heading={item.heading}
             />
           </View>
@@ -94,7 +94,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={styles.componentStyle} key={`repayment-${ix}`}>
             <Component
               loanId={loan.loanApplicationId}
-              onPress={() => item.onPress(item, loan)}
+              onPress={() => item.onPress(item, { loanId: loan.loanId })}
               onPaymentPress={processPayment}
               Icon={AllIcons[item.icon]}
               heading={item.heading}
@@ -110,7 +110,7 @@ const HomeScreen = ({ navigation, route }) => {
             <Component
               loanId={loan.loanApplicationId}
               key={`nextemi-${ix}`}
-              onPress={() => item.onPress(item, loan)}
+              onPress={() => item.onPress(item, { loanId: loan.loanId })}
               onPaymentPress={processPayment}
               Icon={AllIcons[item.icon]}
               heading={item.heading}
@@ -124,13 +124,15 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }
 
-  const handleOnPress = item => {
+  const handleOnPress = (item, params) => {
     if (item.name === 'RepaymentsPending') {
-      navigation.navigate('Repayments', { loans })
+      navigation.navigate('Repayments', params)
     } else if (item.name === 'PendingApplications') {
-      navigation.navigate('LoanApplication', { loanApplications })
+      navigation.navigate('LoanApplication', params)
     } else if (item.name === 'MyLoans') {
-      navigation.navigate('MyLoans', { loans })
+      navigation.navigate('MyLoans', params)
+    } else if (item.name === 'NextEmi') {
+      navigation.navigate('MyLoans', params)
     }
   }
   homeListItems.forEach(hl => {

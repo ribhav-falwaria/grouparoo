@@ -40,7 +40,12 @@ const authentication = {
         const customer = await apiService.appApi.auth.login(email, password)
         const customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
         const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications(customerDetails.$id)
-        return dispatch.customer.setCustomer({ customer, isFirstTime, customerDetails, loanApplications })
+        await Promise.all([
+          dispatch.customer.setCustomer({ customer, isFirstTime, customerDetails, loanApplications }),
+          dispatch.loanProducts.getAllProducts(),
+          dispatch.loanTypes.getAllLoanTypes(),
+          dispatch.borrowingEntities.getBorrowingEntities()
+        ])
       } catch (e) {
         // FIXME: Endpoint to push errors
         return dispatch.appStates.setSigninError({ signinError: true })
