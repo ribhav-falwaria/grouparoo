@@ -26,7 +26,6 @@ const uploadToAppWrite = async (file,url) => {
         { name: 'file', filename: 'agreement', data: file },
       ]
     )
-    debugger
     if (response?.respInfo?.status === 200) {
       const data = JSON.parse(response.data);
       return {
@@ -35,11 +34,9 @@ const uploadToAppWrite = async (file,url) => {
       }
     }
     else {
-      debugger
       throw new Error('UPLOAD_TO_APPWRITE_SERVER_FAILED')
     }
   } catch (e) {
-    debugger
     if (e.message === 'UPLOAD_TO_APPWRITE_SERVER_FAILED') {
       throw e
     } else {
@@ -184,7 +181,6 @@ const EsignInputWidget = (props) => {
   const useUploadToAppwrite = useRequest(uploadToAppWrite,{manual:true,onSuccess: (res)=>{
     props.onChange(res?.uploadedDocId)
   },onError:(err)=>{
-    debugger
     crashlytics().log(ErrorUtil.createError(err,err.message,err.message,undefined,"useUploadToAppwrite","EsignInputWidget.js"))
     throw err
   }})

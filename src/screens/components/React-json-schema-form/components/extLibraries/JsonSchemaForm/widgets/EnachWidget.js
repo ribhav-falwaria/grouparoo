@@ -27,14 +27,12 @@ const createPlan = async (planObject) => {
       planObject
     );
     const data = res.data;
-    debugger
     if (data.status === "SUCCESS") {
       return true;
     } else {
       throw new Error("PLAN_CREATION_FAILED");
     }
   } catch (error) {
-    debugger
     throw error;
   }
 };
@@ -60,14 +58,12 @@ const createSubscription = async (
       }
     );
     const data = res.data;
-    debugger
     if (data.status === "SUCCESS") {
       return data.authLink;
     } else {
       throw new Error("SUBSCRIPTION_CREATION_FAILED");
     }
   } catch (error) {
-    debugger
     throw error;
   }
 };
@@ -157,7 +153,6 @@ const EnachWidget = (props) => {
   const useCreatePlan = useRequest(createPlan, {
     manual: true,
     onSuccess: () => {
-      debugger
       setIsRetryEnabled(false);
       setIsPlanCreated(true);
       useCreateSubscription.run(

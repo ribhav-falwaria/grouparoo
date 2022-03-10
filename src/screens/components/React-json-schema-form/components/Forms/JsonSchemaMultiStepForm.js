@@ -24,6 +24,7 @@ import merge from 'lodash/merge'
 import IconUtil from '../common/IconUtil'
 import crashlytics from '@react-native-firebase/crashlytics';
 import ErrorUtil from '../../../../Errors/ErrorUtil'
+import FormSuccess from './FormSuccess'
 const FIRST_STEP_INDEX = 1
 const finalformObject = {}
 const JsonSchemaMultiStepForm = ({
@@ -266,17 +267,7 @@ const JsonSchemaMultiStepForm = ({
         </View>
       )}
       {finalSaveMessageVisibility && (
-        <View style={themeStyles.finalMessage}>
-          <Text status='success'>
-            <IconUtil.CheckIcon size={35} color='green' />
-          </Text>
-          <Text style={themeStyles.successText} status='success'>
-            {translations.success}
-          </Text>
-          <Text category='s1' status='primary'>
-            {translations['final.submit.message']}
-          </Text>
-        </View>
+        <FormSuccess/>
       )}
     </>
   )
