@@ -12,7 +12,6 @@ import { LocalizationContext } from '../../../../translation/Translation';
 import crashlytics from '@react-native-firebase/crashlytics';
 import ErrorUtil from '../../../../../../Errors/ErrorUtil';
 import { useRequest } from 'ahooks';
-import DocumentUploadService from '../../../../services/DocumentUploadService';
 import isEmpty from 'lodash.isempty'
 
 const uploadToAppWrite = async (file,url) => {
@@ -27,6 +26,7 @@ const uploadToAppWrite = async (file,url) => {
         { name: 'file', filename: 'agreement', data: file },
       ]
     )
+    debugger
     if (response?.respInfo?.status === 200) {
       const data = JSON.parse(response.data);
       return {
@@ -35,9 +35,11 @@ const uploadToAppWrite = async (file,url) => {
       }
     }
     else {
+      debugger
       throw new Error('UPLOAD_TO_APPWRITE_SERVER_FAILED')
     }
   } catch (e) {
+    debugger
     if (e.message === 'UPLOAD_TO_APPWRITE_SERVER_FAILED') {
       throw e
     } else {
@@ -72,6 +74,7 @@ const EsignInputWidget = (props) => {
 
   const handleUrl = (event) => {
     let temp = false;
+    let isEsignCallBack = false;
     const returnUrl = event.url;
     const queryParamObject = ReactJsonSchemaUtil.getQueryParams(returnUrl);
     for (const key in queryParamObject) {
@@ -79,8 +82,11 @@ const EsignInputWidget = (props) => {
         setIsEsignDone(true);
         temp = true;
       }
+      if (key === 'esign_status'){
+        isEsignCallBack = true;
+      }
     }
-    if (!temp) {
+    if (!temp && isEsignCallBack) {
       Toast.show({
         type: 'error',
         position: 'bottom',
@@ -147,7 +153,6 @@ const EsignInputWidget = (props) => {
           },
         ]
       )
-      debugger
       if (response?.respInfo?.status === 200) {
         const data = JSON.parse(response.data);
         if (data.status === 'Uploaded Document') {
@@ -157,7 +162,7 @@ const EsignInputWidget = (props) => {
             translations['esign.redirect'],
             [
               {
-                text: 'Ok',
+                text: translations['text.okay'],
                 onPress: () => {
                   openLink(esignUrl);
                 },
@@ -165,14 +170,12 @@ const EsignInputWidget = (props) => {
             ]
           );
         } else {
-          debugger
           crashlytics().log(ErrorUtil.createLog('Upload Failed while uploading to veri5Digital with message',data,'useEsignProcessHandler','EsignInputWidget.js'))
         }
       }else{
         throw new Error('UNEXPECTED_ERROR_WHILE_UPLOADING')
       }
     } catch (error) {
-      debugger
       throw new Error('ERROR_REACHING_TO_ESIGN_UPLOAD_SERVER');
     }
   },
@@ -187,14 +190,11 @@ const EsignInputWidget = (props) => {
   }})
 
   useEffect(() => {
-      if(!props.value){
-        useTodownFileBlob.run(fileUrl);
-      }
+    useTodownFileBlob.run(fileUrl);
   }, []);
 
   useEffect(async () => {
     if (isEsignDone && !isEmpty(file) && !props.value) {
-      debugger
       useUploadToAppwrite.run(file,resourceFactoryConstants.constants.lending.uploadFile)
     }
   }, [isEsignDone, JSON.stringify(file)]);
@@ -233,7 +233,7 @@ const EsignInputWidget = (props) => {
           onPress={esignProcessHandler}
           style={{ marginTop: 5 }}
         >
-          Start Esign Process
+          {translations['esign.start.esign']}
         </Button>
       )}
       {isEsignDone && (

@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Text } from "@ui-kitten/components";
 import { Fragment } from "react";
 import { Platform, PermissionsAndroid, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import RNFetchBlob from "rn-fetch-blob";
 import ResourceFactoryConstants from "../../../../services/ResourceFactoryConstants";
-import { useToast } from "react-native-toast-notifications";
+import { LocalizationContext } from "../../../../translation/Translation";
+import crashlytics from '@react-native-firebase/crashlytics';
+import Toast from 'react-native-toast-message'
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
+
 const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
+  const {translations} = useContext(LocalizationContext)
   const resourceFactoryConstants = new ResourceFactoryConstants();
-  const toast = useToast();
   let url = uploadedDocId
     ? `${resourceFactoryConstants.constants.lending.downloadFile}${uploadedDocId}`
     : fileUrl;
@@ -20,20 +24,25 @@ const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           {
-            title: "Storage Permission Required",
-            message:
-              "Application needs access to your storage to download File",
+            title: translations["download.permission.title"],
+            message:translations["download.permission.message"],
           }
         );
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          // Start downloading
           downloadFile();
         } else {
-          toast.show("Storage Permission Not Granted", { type: "danger" });
+          Toast.show({
+            type: 'error',
+            position: 'bottom',
+            props: {
+              title: translations['download.permission.title'],
+              description: translations['download.permission.granted'],
+            },
+          });
         }
       } catch (err) {
-        // To handle permission related exception
-        console.log("++++" + err);
+        crashlytics().log(ErrorUtil.createLog(err.message,undefined,"checkPermission()","DownloadComponent.js"))
+        throw err;
       }
     }
   };
@@ -53,7 +62,7 @@ const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
           "/file_" +
           Math.floor(date.getTime() + date.getSeconds() / 2) +
           file_ext,
-        description: "downloading file...",
+        description: translations["download.downloading"],
         notification: true,
         useDownloadManager: true,
       },
@@ -61,9 +70,17 @@ const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
     config(options)
       .fetch("GET", url)
       .then((res) => {
-        alert("File Downloaded Successfully.");
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          props: {
+            title: translations['download.success.title'],
+            description: translations['download.downloaded'],
+          },
+        });
       }).catch((err)=>{
-        console.log("Error while downloading",err);
+        crashlytics().log(ErrorUtil.createError(err,err.message,"Error while downloading the file",url,"downloadFile()","DownloadComponent.js"))
+        throw err;
       });
   };
 
@@ -76,7 +93,7 @@ const DownloadComponent = ({ fileUrl, uploadedDocId, fileName }) => {
       <TouchableOpacity onPress={checkPermission}>
         <Text status="primary" style={styles.downloadText}>
           {/* Download {fileName ? fileName : ""} */}
-          Download
+          {translations["download.downloadText"]}
         </Text>
       </TouchableOpacity>
     </Fragment>

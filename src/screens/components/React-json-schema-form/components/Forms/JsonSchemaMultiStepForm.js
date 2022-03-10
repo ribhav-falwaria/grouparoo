@@ -23,6 +23,7 @@ import DataService from '../../services/DataService'
 import merge from 'lodash/merge'
 import IconUtil from '../common/IconUtil'
 import crashlytics from '@react-native-firebase/crashlytics';
+import ErrorUtil from '../../../../Errors/ErrorUtil'
 const FIRST_STEP_INDEX = 1
 const finalformObject = {}
 const JsonSchemaMultiStepForm = ({
@@ -147,6 +148,7 @@ const JsonSchemaMultiStepForm = ({
       requestDataToUpdate.progress = 'COMPLETE'
     }
    // requestDataToUpdate.loanApplicationId = tempId
+    crashlytics().log(ErrorUtil.createLog("Request body at this step",requestDataToUpdate,"saveOrUpdateFormData","JsonSchemaMultiStepForm.js"))
     DataService.postData(`${url}`, requestDataToUpdate)
       .then((res) => {
         res = res?.data

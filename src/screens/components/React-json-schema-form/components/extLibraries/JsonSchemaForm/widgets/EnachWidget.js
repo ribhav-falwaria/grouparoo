@@ -14,6 +14,7 @@ import { LocalizationContext } from "../../../../translation/Translation";
 import ReactJsonSchemaUtil from "../../../../services/ReactJsonSchemaFormUtil";
 import { useRequest } from "ahooks";
 import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 var moment = require("moment"); // require
 const resourceFactoryConstants = new ResourceFactoryConstants();
 
@@ -80,7 +81,6 @@ const EnachWidget = (props) => {
   const [isRetryEnabled, setIsRetryEnabled] = useState(false);
   const [authLink, setAuthLink] = useState();
   const { translations } = useContext(LocalizationContext);
-  const [loaderVisibility, setLoaderVisibility] = useState(false);
   const [isPlanCreated, setIsPlanCreated] = useState(false);
   const [isSubscriptionCreated, setIsSubscriptionCreated] = useState(
     props.value ? true : false
@@ -121,7 +121,6 @@ const EnachWidget = (props) => {
   }, []);
 
   const handleUrl = (event) => {
-    debugger
     let errMsg;
     let temp = false;
     let subRefId;
@@ -150,7 +149,7 @@ const EnachWidget = (props) => {
         },
       });
     }
-    if (subRefId && !temp) {
+    if (subRefId) {
       props.onChange(subRefId);
     }
   };
@@ -186,26 +185,37 @@ const EnachWidget = (props) => {
     },
   });
 
-  const openLink = async (esignUrl) => {
-    const supported = await Linking.canOpenURL(esignUrl);
+  const openLink = async (eNachUrl) => {
+    const supported = await Linking.canOpenURL(eNachUrl);
     if (supported) {
       Linking.addEventListener("url", handleUrl);
-      await Linking.openURL(esignUrl);
+      await Linking.openURL(eNachUrl);
     } else {
-      Alert.alert(`Don't know how to open this URL: ${esignUrl}`);
+      crashlytics().log(
+        ErrorUtil.createLog(
+          'Can not open this url',
+           eNachUrl,
+          'openLink',
+          'EnachWidget.js'
+        )
+      );
     }
   };
 
   const eMandateHandler = () => {
     if (isEmpty(authLink)) return;
-    Alert.alert("Information", "Redirecting to create e-mandate.", [
-      {
-        text: "Ok",
-        onPress: () => {
-          openLink(authLink);
+    Alert.alert(
+      translations['enach.title'],
+      translations['enach.redirect'],
+      [
+        {
+          text: translations['text.okay'],
+          onPress: () => {
+            openLink(authLink);
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
   return (
     <Fragment>

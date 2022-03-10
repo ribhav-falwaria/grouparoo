@@ -1,12 +1,13 @@
 import { Button, CheckBox, Spinner, Text } from "@ui-kitten/components";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import { StyleSheet, Dimensions, View } from "react-native";
 import isEmpty from "lodash.isempty";
-import Pdf from "react-native-pdf";
 import { WebView } from "react-native-webview";
 import DownloadComponent from "../common/DownloadComponent";
+import { LocalizationContext } from "../../../../translation/Translation";
 
 const LoanAgreementWidget = (props) => {
+  const { translations } = useContext(LocalizationContext)
   const { value, rawErrors, required } = props;
   const [isValid, setIsValid] = useState();
   useEffect(() => {
@@ -23,7 +24,6 @@ const LoanAgreementWidget = (props) => {
   return (
     <Fragment>
       <View style={styles.container}>
-        {/* <Pdf source={{ uri: url }} style={styles.pdf} /> */}
         {show && <Spinner />}
         <WebView
           style={{
@@ -44,7 +44,7 @@ const LoanAgreementWidget = (props) => {
         style={{ marginTop: 5 }}
         onChange={(checked) => props.onChange(checked ? "Yes" : undefined)}
       >
-        {"I agree to the terms and conditions."}
+        {translations['loan.agreement.consent.message']}
       </CheckBox>
     </Fragment>
   );
