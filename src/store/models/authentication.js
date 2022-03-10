@@ -40,7 +40,7 @@ const authentication = {
         const customer = await apiService.appApi.auth.login(email, password)
         const customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
         const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications(customerDetails.$id)
-        await Promise.all([
+        Promise.all([
           dispatch.customer.setCustomer({ customer, isFirstTime, customerDetails, loanApplications }),
           dispatch.loanProducts.getAllProducts(),
           dispatch.loanTypes.getAllLoanTypes(),
