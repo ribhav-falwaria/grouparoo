@@ -4,7 +4,7 @@ import isUndefined from 'lodash.isundefined'
 import { Image, View } from 'react-native'
 import {
   ListItem, Button, Divider, List, Text, StyleService,
-  useStyleSheet, Spinner
+  useStyleSheet, Spinner, useTheme
 } from '@ui-kitten/components'
 import dayjs from 'dayjs'
 import useAppState from 'react-native-appstate-hook'
@@ -12,13 +12,13 @@ import useAppState from 'react-native-appstate-hook'
 import { CreditCardIcon, NetBankingIcon } from '../components/ThemedIcons'
 import RNPgReactNativeSdk from 'react-native-pg-react-native-sdk'
 import { useRequest } from 'ahooks'
-import { nanoid } from 'nanoid'
+import { customAlphabet } from 'nanoid'
 
 import ScreenTitle from '../components/ScreenTitle'
 import { LocalizationContext } from '../../components/Translation'
 import { config } from '../../config'
 import apiService from '../../apiService'
-import { statusActions } from './utils'
+import statusActions from './utils'
 import PaymentSuccessView from './PaymentSuccessView'
 import PaymentFailureView from './PaymentFailureView'
 import PaymentRetryView from './PaymentRetryView'
@@ -26,7 +26,9 @@ import LoadingSpinner from '../components/LoadingSpinner'
 const METHOD_UPI = 'upi'
 const METHOD_WEB = 'web'
 const getOrderId = (loanId) => {
-  return `${loanId}-${nanoid()}`
+  const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 4)
+
+  return `${nanoid()}${loanId.substr(loanId.length - 4)}`
 }
 const getUpiChoices = async () => {
   const upiChoices = await RNPgReactNativeSdk.getUPIApps()
@@ -49,6 +51,7 @@ const Payments = ({ navigation, route }) => {
   // if (isUndefined(loanId) || isUndefined(amount)) {
   //   navigation.goBack()
   // }
+  const theme = useTheme()
   const { customerDetails } = useSelector(state => state.customer)
   useAppState({
     onBackground: () => apiService.appApi.stateEvents.send({
@@ -71,10 +74,13 @@ const Payments = ({ navigation, route }) => {
     const orderResult = JSON.parse(result)
     orderResult.loanApplicationId = loanId
     // FIXME: Put it back
-    const executionId = await apiService.appApi.cashfree.signatureVerify.execute(orderResult)
-    const verified = await apiService.appApi.cashfree.signatureVerify.get(executionId)
+    let verified = true
+    if (result.signature && result.signature.length > 0) {
+      const executionId = await apiService.appApi.cashfree.signatureVerify.execute(orderResult)
+      verified = await apiService.appApi.cashfree.signatureVerify.get(executionId)
+    }
     if (verified) {
-      const npStatus = statusActions[orderResult.txStatus]
+      const npStatus = statusActions[orderResult.txStatus]()
       setNpStatus(npStatus)
     } else {
       // tampered. try again
@@ -90,21 +96,22 @@ const Payments = ({ navigation, route }) => {
       }
       const paramData = {
         orderId: getOrderId(loanId),
-        orderAmount: amount.toString(),
+        orderAmount: amount,
         appId: config.CASHFREE_APP_ID,
         tokenData: cfToken,
         orderCurrency: 'INR',
         orderNote: `Overdue payment for loan Account ${loanId}`,
-        verifyExpiry: '100',
         customerPhone: customerDetails.primaryPhone,
-        customerEmail: customerDetails.primaryEmail
+        customerEmail: customerDetails.primaryEmail,
+        color1: theme['color-primary-default'],
+        color2: translations.formatString(translations['payments.for'], { loanId })
       }
       if (mode === METHOD_UPI) {
         paramData.id = id
-        paramData.paymentModes = ['dc', 'nb']
+        paramData.paymentModes = ['upi']
         RNPgReactNativeSdk.startPaymentUPI(paramData, env, handlePaymentCallback)
       } else if (mode === METHOD_WEB) {
-        paramData.paymentModes = ['upi']
+        paramData.paymentModes = ['dc', 'nb']
         RNPgReactNativeSdk.startPaymentWEB(paramData, env, handlePaymentCallback)
       }
     },
@@ -144,13 +151,13 @@ const Payments = ({ navigation, route }) => {
       if (item.id !== 'debitcard' && item.id !== 'netbanking') {
         return (
           <View style={styles.iconContainer}>
-            {useGeneratePaymentToken.loading ? <Spinner {...props} /> : <Image {...props} style={styles.iconStyle} source={{ uri: item.icon }} />}
+            {useGeneratePaymentToken.loading ? <Spinner size='tiny' /> : <Image {...props} style={styles.iconStyle} source={{ uri: item.icon }} />}
           </View>
         )
       } else {
         return (
           <View style={styles.iconContainer}>
-            {useGeneratePaymentToken.loading ? <Spinner {...props} /> : <item.Icon />}
+            {useGeneratePaymentToken.loading ? <Spinner size='tiny' /> : <item.Icon />}
           </View>
         )
       }
@@ -259,6 +266,11 @@ const themedStyles = StyleService.create({
   iconStyle: {
     width: 26,
     height: 26
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center'
   },
   footer: {
     flex: 1,

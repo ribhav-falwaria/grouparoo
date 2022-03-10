@@ -68,14 +68,25 @@ const loans = {
     },
     getDpdSchedule: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
-      const notRepaid = loan.repayment
+      const schedule = loan.repayment
         .filter(
           schedule => !schedule.isTxnSettled
         )
-        .filter(
-          schedule => dayjs().diff(dayjs(parseInt(schedule.installmentDate)), 'day', true) > 1
-        )
-      return notRepaid
+        // .filter(
+        //   schedule => {
+        //     console.log(dayjs().diff(dayjs(parseInt(schedule.installmentDate)), 'day', true))
+        //     return dayjs().diff(dayjs(parseInt(schedule.installmentDate)), 'day', true) > 1
+        //   }
+        // )
+      const display = schedule.map((np, ix) => ({
+        installmentDate: dayjs(np.installmentDate).format(config.APP_DATE_FORMAT),
+        installmentAmount: rupeeFormatter(np.installmentAmount),
+        ix
+      }))
+      return {
+        schedule,
+        display
+      }
     },
     getNextInstallment: select => (rootState, { loanId }) => {
       const loan = select.loans.getById(rootState, loanId)
@@ -356,6 +367,7 @@ const loans = {
         return state
       }
       allLoans.forEach(al => {
+        al.loanId = al.loanApplicationId
         state[al.loanApplicationId] = al
       })
       return state
@@ -366,7 +378,8 @@ const loans = {
       const { customer } = rootState
       try {
         const executionId = await apiService.appApi.loans.getAllLoans.execute(customer.customerDetails.$id)
-        const allLoans = await apiService.appApi.loans.getAllLoans.get(executionId)
+        let allLoans = await apiService.appApi.loans.getAllLoans.get(executionId)
+        allLoans = allLoans.filter(al => rootState.loanProducts.schemeCodes.indexOf(al.basicDetails.schemeCode) > -1)
         dispatch.loans.addAllLoans({ allLoans })
       } catch (e) {
         console.log(e.stack)

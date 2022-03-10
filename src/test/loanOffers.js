@@ -10,7 +10,6 @@ export default [{
 }
 ]
 
-
 export const loanOfferPart2 = [{
   heading: 'Short Period Loans',
   estimatedInterestRate: 15,

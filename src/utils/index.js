@@ -1,5 +1,6 @@
+import Gzip, { Base64 } from './Gzip'
 import isUndefined from 'lodash.isundefined'
-export const rupeeFormatter = x => {
+const rupeeFormatter = x => {
   if (isUndefined(x)) {
     return
   }
@@ -16,6 +17,12 @@ export const rupeeFormatter = x => {
   const res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree + afterPoint
   return `${res}`
 }
-export const calculateEmi = (loanAmount, tenure, repaymentUnit) => {
+const calculateEmi = (loanAmount, tenure, repaymentUnit) => {
   return 1000
+}
+export {
+  Gzip,
+  Base64,
+  rupeeFormatter,
+  calculateEmi
 }
