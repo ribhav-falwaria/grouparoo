@@ -30,7 +30,7 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
             source={require('../assets/images/image-app-icon.png')}
           />
           <Text style={styles.profileName} category='h6'>
-            Kitten Tricks
+            Novopay Money
           </Text>
         </View>
       </Layout>
