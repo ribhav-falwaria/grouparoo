@@ -46,7 +46,7 @@ export const PaymentRetryIcon = () => {
 export const PaymentSuccessIcon = () => {
   const theme = useTheme()
   const width = widthPercentageToDP('50%')
-  return buildEvaIcon('checkmark-circle-2-outline', theme['color-danger-500'], width, width)
+  return buildEvaIcon('checkmark-circle-2-outline', theme['color-success-500'], width, width)
 }
 export const MyLoansIcon = () => buildIcon(MyLoanSvg)
 export const NetBankingIcon = () => buildIcon(BankIconSvg)

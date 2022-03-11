@@ -4,9 +4,7 @@ import isEmpty from 'lodash.isempty'
 import {
   useStyleSheet,
   StyleService,
-  Button,
-  Text
-} from '@ui-kitten/components'
+  Button} from '@ui-kitten/components'
 import dayjs from 'dayjs'
 import useAppState from 'react-native-appstate-hook'
 import { config } from '../../../../../config'
@@ -22,7 +20,7 @@ import ResourceFactoryConstants from '../../services/ResourceFactoryConstants'
 import DataService from '../../services/DataService'
 import merge from 'lodash/merge'
 import IconUtil from '../common/IconUtil'
-import crashlytics from '@react-native-firebase/crashlytics';
+import crashlytics from '@react-native-firebase/crashlytics'
 import ErrorUtil from '../../../../Errors/ErrorUtil'
 import FormSuccess from './FormSuccess'
 const FIRST_STEP_INDEX = 1
@@ -133,7 +131,7 @@ const JsonSchemaMultiStepForm = ({
           requestBody[appConstants.communicationAddressField] =
           kycData?.data?.address
         }
-      } else if (field === appConstants.okycField && isKycDone === 'Yes') {
+      } else if (field === appConstants.okycField && !isEmpty(kycData)) {
         requestBody.kycData = kycData
       }
     }
@@ -148,8 +146,8 @@ const JsonSchemaMultiStepForm = ({
     } else if (status === 'complete') {
       requestDataToUpdate.progress = 'COMPLETE'
     }
-   // requestDataToUpdate.loanApplicationId = tempId
-    crashlytics().log(ErrorUtil.createLog("Request body at this step",requestDataToUpdate,"saveOrUpdateFormData","JsonSchemaMultiStepForm.js"))
+    // requestDataToUpdate.loanApplicationId = tempId
+    crashlytics().log(ErrorUtil.createLog('Request body at this step', requestDataToUpdate, 'saveOrUpdateFormData', 'JsonSchemaMultiStepForm.js'))
     DataService.postData(`${url}`, requestDataToUpdate)
       .then((res) => {
         res = res?.data
@@ -173,7 +171,7 @@ const JsonSchemaMultiStepForm = ({
         setLoaderVisibility(false)
       })
       .catch((err) => {
-        crashlytics().recordError(err);
+        crashlytics().recordError(err)
         setLoaderVisibility(false)
         throw err
       })
@@ -267,7 +265,7 @@ const JsonSchemaMultiStepForm = ({
         </View>
       )}
       {finalSaveMessageVisibility && (
-        <FormSuccess/>
+        <FormSuccess />
       )}
     </>
   )

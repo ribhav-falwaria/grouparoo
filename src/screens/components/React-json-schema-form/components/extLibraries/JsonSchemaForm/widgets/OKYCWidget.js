@@ -1,26 +1,27 @@
-import React, { useState, useContext } from "react";
-import { Text } from "@ui-kitten/components";
-import { useDispatch} from "react-redux";
-import { useRequest } from "ahooks";
-import IconUtil from "../../../common/IconUtil";
-import OKYCComponent from "../common/OKYCComponent";
-import { LocalizationContext } from "../../../../translation/Translation";
+import React, { useState, useContext } from 'react'
+import { Text } from '@ui-kitten/components'
+import { useDispatch } from 'react-redux'
+import { useRequest } from 'ahooks'
+import IconUtil from '../../../common/IconUtil'
+import OKYCComponent from '../common/OKYCComponent'
+import { LocalizationContext } from '../../../../translation/Translation'
+import FormSuccess from '../../../Forms/FormSuccess'
 
 const OKYCWidget = (props) => {
-  const dispatch = useDispatch();
-  const { translations } = useContext(LocalizationContext);
-  const [isKycDone, setIsKycDone] = useState(false);
-  const [isAadharDataFetched, setIsAadharDataFetched] = useState(false);
+  const dispatch = useDispatch()
+  const { translations } = useContext(LocalizationContext)
+  const [isKycDone, setIsKycDone] = useState(false)
+  const [isAadharDataFetched, setIsAadharDataFetched] = useState(false)
   const useSaveAdhaarData = useRequest(
     async (kycData) =>
       await dispatch.formDetails.setaadharData({
         kycData: kycData,
-        kycMatchData: kycData.kycMatchData,
+        kycMatchData: kycData.kycMatchData
       }),
     {
       manual: true
     }
-  );
+  )
   const onOtpSuccessHandler = (kycData) => {
     props.onChange('Yes')
     setIsKycDone(true)
@@ -33,14 +34,9 @@ const OKYCWidget = (props) => {
         <OKYCComponent onOtpSuccess={onOtpSuccessHandler} />
       )}
       {(isKycDone || props.value === 'Yes') && (
-        <Text>
-          {translations['okyc.facematch.success']}
-          <IconUtil.CheckIcon 
-          style={{ marginLeft: 10 }} 
-          />
-        </Text>
+        <FormSuccess description={translations['okyc.facematch.success']} isButtonVisible={false} />
       )}
     </>
-  );
-};
+  )
+}
 export default OKYCWidget
