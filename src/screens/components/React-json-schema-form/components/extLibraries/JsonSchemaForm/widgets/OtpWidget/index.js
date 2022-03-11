@@ -11,6 +11,7 @@ import ReactJsonSchemaUtil from '../../../../../services/ReactJsonSchemaFormUtil
 import { useToast } from 'react-native-toast-notifications'
 import DataService from '../../../../../services/DataService'
 import ResourceFactoryConstants from '../../../../../services/ResourceFactoryConstants'
+import FormSuccess from '../../../../Forms/FormSuccess'
 const NUM_RETRIES = 5
 const NUM_SEC_WAIT = 60000 // 60 seconds
 const OTP_VALID_WINDOW = 300000 // 5 minutes
@@ -20,6 +21,7 @@ const padNum = (num, pad) => {
 }
 
 const Otp = (props) => {
+  const { translations } = useContext(LocalizationContext)
   const { onChange } = props
   const toast = useToast()
   const [loaderVisibility, setLoaderVisibility] = useState(false)
@@ -78,9 +80,7 @@ const Otp = (props) => {
           formRef={props.formContext}
         />
       )}
-      {primaryPhone === verifiedPhoneNumber && (
-        <Text>Mobile has been verified successfully.</Text>
-      )}
+      {primaryPhone === verifiedPhoneNumber && <FormSuccess description={translations['mobile.otp.validate']} isButtonVisible={false} />}
     </>
   )
 }

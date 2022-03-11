@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useCallback } from 'react'
+import React, { useState, useContext } from 'react'
 import isEmpty from 'lodash.isempty'
 import { useRequest } from 'ahooks'
 import Toast from 'react-native-toast-message'
@@ -13,6 +13,8 @@ import DataService from '../../../../services/DataService'
 import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
 import { LocalizationContext } from '../../../../translation/Translation'
 import OtpComponent from '../../../../../OtpComponent'
+import crashlytics from '@react-native-firebase/crashlytics'
+import ErrorUtil from '../../../../../../Errors/ErrorUtil'
 
 let finalAadharCard
 const WAIT_RESEND_MS = 2 * 60 * 1000
@@ -31,11 +33,9 @@ const generateOtp = async (appId, aadharNumber) => {
     if (data.status === 'SUCCESS') {
       return true
     } else {
-      console.log(data.message)
       throw new Error('CANNOT_GENERATE_AADHAR_OTP')
     }
   } catch (err) {
-    console.log(err)
     if (err.message === 'CANNOT_GENERATE_AADHAR_OTP') {
       throw err
     } else {
@@ -58,29 +58,26 @@ const verifyOtp = async (appId, otp, shareCode, panData) => {
     const data = res.data
     if (data.status === 'SUCCESS') {
       const kycData = data.data
-      let kycMatchData;
-      if (!isEmpty(kycData) && !isEmpty(panData)){
+      let kycMatchData
+      if (!isEmpty(kycData) && !isEmpty(panData)) {
         kycMatchData = await matchKycData(panData, kycData)
         kycData.kycMatchData = kycMatchData
       }
       return kycData
     } else {
-      console.log(data.message)
       throw new Error('CANNOT_VALIDATE_AADHAR_OTP')
     }
   } catch (err) {
-    console.log(err)
-    //AADHAAR_AND_PAN_NOT_MATCHING
+    // AADHAAR_AND_PAN_NOT_MATCHING
     const msg = err.message
     if (msg === 'CANNOT_VALIDATE_AADHAR_OTP' ||
       msg === 'NAME_MATCH_FAILED' ||
       msg === 'IDENTITY_MATCH_FAILED' || msg === 'CAN_NOT_REACH__AADHAR_PAN_MATCH_SERVER'
     ) {
       throw err
-    } else if (err.name === "AADHAAR_AND_PAN_NOT_MATCHING"){
-      throw err;
-    }
-     else {
+    } else if (err.name === 'AADHAAR_AND_PAN_NOT_MATCHING') {
+      throw err
+    } else {
       throw new Error('CANNOT_REACH_AADHAR_SERVER_FOR_OTP_VERIFY')
     }
   }
@@ -104,10 +101,10 @@ const matchKycData = async (panData, kycData) => {
       // }
       return matchData
     } else {
-      throw new Error("AADHAAR_AND_PAN_NOT_MATCHING",res.data.message)
+      throw new Error('AADHAAR_AND_PAN_NOT_MATCHING', res.data.message)
     }
   } catch (e) {
-     throw new Error("CAN_NOT_REACH__AADHAR_PAN_MATCH_SERVER");
+    throw new Error('CAN_NOT_REACH__AADHAR_PAN_MATCH_SERVER')
   }
 }
 
@@ -130,8 +127,18 @@ const OKYCComponent = (props) => {
   const useOtpVerfy = useRequest(verifyOtp, {
     manual: true,
     onError: (error) => {
+      crashlytics().log(ErrorUtil.createError(error, error.message, error.message, undefined, 'useOtpVerify', 'OKYCComponent.js'))
       if (error.message === 'CANNOT_REACH_AADHAR_SERVER_FOR_OTP_VERIFY') {
         throw error
+      } else if (error.message === 'AADHAAR_AND_PAN_NOT_MATCHING') {
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          props: {
+            title: translations['aadhar.otpVerify.title'],
+            description: translations['aadhar.pan.match.fail']
+          }
+        })
       } else {
         Toast.show({
           type: 'error',
@@ -203,7 +210,6 @@ const OKYCComponent = (props) => {
       useGenerateOtp.run(appId, finalAadharCard)
     }
   }
-
 
   const onBlurHandler = () => {
     finalAadharCard = aadharCard
@@ -279,7 +285,7 @@ const OKYCComponent = (props) => {
               otpValid={otpVerified}
               numSecondsWaitForResend={WAIT_RESEND_MS}
               otpValidWindow={OTP_VALID_MS}
-              size={"small"}
+              size='small'
             />
           </View>
           <View style={styles.rowMargin}>

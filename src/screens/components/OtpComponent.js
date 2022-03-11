@@ -17,7 +17,7 @@ const OtpComponent = ({
   otpValid,
   numSecondsWaitForResend,
   otpValidWindow,
-  size = "normal"
+  size = 'normal'
 }) => {
   const { translations } = useContext(LocalizationContext)
   const styles = useStyleSheet(themedStyles)
@@ -41,7 +41,7 @@ const OtpComponent = ({
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}
     >
-      <View style={size === "small" ? styles.otpContainerSmall : styles.otpContainer}>
+      <View style={size === 'small' ? styles.otpContainerSmall : styles.otpContainer}>
         <Text style={styles.content} category='p1'>
           {translations.formatString(translations['otp.sentOtpToMobile'], {
             primaryPhone
@@ -55,7 +55,7 @@ const OtpComponent = ({
           codeInputHighlightStyle={styles.underlineStyleHighLighted}
           onCodeFilled={verifyCode}
         />
-        <View style={size === "small" ? styles.actionRowSmall : styles.actionRow}>
+        <View style={size === 'small' ? styles.actionRowSmall : styles.actionRow}>
           <TimeoutComponent
             validWindow={otpValidWindow}
             startTime={Date.now()}
