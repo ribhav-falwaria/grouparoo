@@ -96,7 +96,7 @@ const Payments = ({ navigation, route }) => {
       }
       const paramData = {
         orderId: getOrderId(loanId),
-        orderAmount: amount,
+        orderAmount: amount.toString(),
         appId: config.CASHFREE_APP_ID,
         tokenData: cfToken,
         orderCurrency: 'INR',
@@ -112,7 +112,11 @@ const Payments = ({ navigation, route }) => {
         RNPgReactNativeSdk.startPaymentUPI(paramData, env, handlePaymentCallback)
       } else if (mode === METHOD_WEB) {
         paramData.paymentModes = ['dc', 'nb']
-        RNPgReactNativeSdk.startPaymentWEB(paramData, env, handlePaymentCallback)
+        try {
+          RNPgReactNativeSdk.startPaymentWEB(paramData, env, handlePaymentCallback)
+        } catch (e) {
+          console.log(e)
+        }
       }
     },
     onError: (error) => {
@@ -235,13 +239,14 @@ const Payments = ({ navigation, route }) => {
         </>
       )}
       {isSuccess && (
-        <PaymentSuccessView />
+        <PaymentSuccessView onCancel={onCancel} />
       )}
       {isFailure && (
         <PaymentFailureView onCancel={onCancel} />
       )}
       {isTryAgain && (
-        <PaymentRetryView onRetry={onRetry} onCancel={onCancel} />
+        <PaymentSuccessView onCancel={onCancel} />
+        // <PaymentRetryView onRetry={onRetry} onCancel={onCancel} />
       )}
     </View>
   )

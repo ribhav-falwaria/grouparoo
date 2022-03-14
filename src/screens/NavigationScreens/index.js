@@ -214,7 +214,11 @@ export const OnboardNavigationScreens = options => {
       return v
     }, {})
   const isReadyForApplication = isPermissionsRequested && isAllPermissionsValid
-  return isReadyForApplication ? onboardNavigations.ApplicationForm : onboardNavigations.Permissions
+  if (!isReadyForApplication) {
+    return onboardNavigations.Permissions
+  } else {
+    return isReadyForApplication ? onboardNavigations.ApplicationForm : onboardNavigations.ApplicationForm
+  }
 }
 
 export const AuthNavigationScreens = ({

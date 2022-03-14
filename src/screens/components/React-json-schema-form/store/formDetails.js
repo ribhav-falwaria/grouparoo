@@ -45,8 +45,8 @@ const formDetails = {
       return state
     },
     setLoanAmount: (state, loanAmount) => {
-        state.loanAmount = loanAmount
-        return state;
+      state.loanAmount = loanAmount
+      return state
     },
     setItrFiles: (state, files) => {
       state.itrFiles = files

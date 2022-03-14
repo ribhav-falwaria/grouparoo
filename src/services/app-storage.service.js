@@ -8,11 +8,26 @@ const FCM_TOKEN = 'fcmToken'
 const SHOW_INTRO_SCREEN = 'introScreen'
 const PERMISSIONS_REQUESTED = 'permissionsRequested'
 const LOAN_APPLICATION_HELP = 'loanApplicationHelp'
+const LOAN_AGREEMENT_HELP = 'loanAgreementHelp'
 export class AppStorage {
   static async getMapping (fallback) {
     return AsyncStorage.getItem(MAPPING_KEY).then(mapping => {
       return mapping || fallback
     })
+  }
+
+  static async getLoanAgreementHelpShown () {
+    const isShown = await AsyncStorage.getItem(LOAN_AGREEMENT_HELP)
+    if (isUndefined(isShown) || isNull(isShown)) {
+      await this.setLoanApplicationHelpShown(false)
+      return false
+    } else {
+      return isShown === 'true'
+    }
+  }
+
+  static async setLoanAgreementnHelpShown (pr) {
+    return AsyncStorage.setItem(LOAN_AGREEMENT_HELP, pr.toString())
   }
 
   static async getLoanApplicationHelpShown () {

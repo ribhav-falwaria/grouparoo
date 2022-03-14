@@ -11,8 +11,8 @@ const PaymentSuccessView = ({ onRetry, onCancel }) => {
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         <PaymentSuccessIcon />
-        <Text category='h6' status='success'>
-          {translations['repayment.repaySuccess']}
+        <Text category='h2' status='success'>
+          {translations['repayment.success']}
         </Text>
       </View>
       <View>

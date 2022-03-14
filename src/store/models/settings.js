@@ -15,13 +15,15 @@ const settings = {
     },
     isMobileValid: false,
     validatedMobileNumber: '',
-    loanAppHelpShown: false
+    loanAppHelpShown: false,
+    loanAgreementHelpShown: false
   },
   selectors: {
     getLanguage: () => (rootState) => rootState.settings.language,
     getIsMobileValid: () => (rootState) => rootState.settings.isMobileValid,
     getValidMobileNumber: () => (rootState) => rootState.settings.validatedMobileNumber,
-    getIsApplicationHelpShown: () => (rootState) => rootState.settings.loanAppHelpShown
+    getIsApplicationHelpShown: () => (rootState) => rootState.settings.loanAppHelpShown,
+    getIsAgreementHelpShown: () => (rootState) => rootState.settings.loanAppHelpShown
   },
   reducers: {
     setLanguage: (state, language) => {
@@ -36,6 +38,10 @@ const settings = {
     setApplicationHelp: (state, loanAppHelpShown) => {
       state.loanAppHelpShown = loanAppHelpShown
       return state
+    },
+    setAgreementnHelp: (state, loanAgreementHelpShown) => {
+      state.loanAgreementHelpShown = loanAgreementHelpShown
+      return state
     }
   },
   effects: (dispatch) => ({
@@ -46,6 +52,10 @@ const settings = {
     async loadLoanApplicationHelpShown (_, rootState) {
       const loanAppHelpShown = await AppStorage.getLoanApplicationHelpShown()
       dispatch.settings.setApplicationHelp(loanAppHelpShown)
+    },
+    async getIsAgreementHelpShown (_, rootState) {
+      const loanAppHelpShown = await AppStorage.getLoanAgreementHelpShown()
+      dispatch.settings.setAgreementnHelp(loanAppHelpShown)
     }
   })
 }

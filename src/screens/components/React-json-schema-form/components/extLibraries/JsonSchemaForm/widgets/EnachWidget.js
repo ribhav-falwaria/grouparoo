@@ -1,41 +1,36 @@
-import { Button, Text } from "@ui-kitten/components";
-import React, { Fragment, useContext, useEffect, useState } from "react";
-import { Alert } from "react-native";
-import { useToast } from "react-native-toast-notifications";
-import DataService from "../../../../services/DataService";
-import ResourceFactoryConstants from "../../../../services/ResourceFactoryConstants";
-import { Linking, View, StyleSheet } from "react-native";
-import isEmpty from "lodash.isempty";
-import { useSelector } from "react-redux";
-import LoadingSpinner from "../../../../../LoadingSpinner";
-import IconUtil from "../../../common/IconUtil";
-import Toast from "react-native-toast-message";
-import { LocalizationContext } from "../../../../translation/Translation";
-import ReactJsonSchemaUtil from "../../../../services/ReactJsonSchemaFormUtil";
-import { useRequest } from "ahooks";
-import crashlytics from "@react-native-firebase/crashlytics";
-import ErrorUtil from "../../../../../../Errors/ErrorUtil";
-var moment = require("moment"); // require
-const resourceFactoryConstants = new ResourceFactoryConstants();
+import { Button, Text } from '@ui-kitten/components'
+import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { Alert, Linking, View, StyleSheet } from 'react-native'
+import { useToast } from 'react-native-toast-notifications'
+import DataService from '../../../../services/DataService'
+import ResourceFactoryConstants from '../../../../services/ResourceFactoryConstants'
+import isEmpty from 'lodash.isempty'
+import { useSelector } from 'react-redux'
+import LoadingSpinner from '../../../../../LoadingSpinner'
+import IconUtil from '../../../common/IconUtil'
+import Toast from 'react-native-toast-message'
+import { LocalizationContext } from '../../../../translation/Translation'
+import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
+import { useRequest } from 'ahooks'
+import crashlytics from '@react-native-firebase/crashlytics'
+import ErrorUtil from '../../../../../../Errors/ErrorUtil'
+import dayjs from 'dayjs'
+const resourceFactoryConstants = new ResourceFactoryConstants()
 
 const getRandomId = () => String(Math.floor(100000 + Math.random() * 900000))
 
 const createPlan = async (planObject) => {
-  try {
-    const res = await DataService.postData(
-      resourceFactoryConstants.constants.enach.createPlan,
-      planObject
-    );
-    const data = res.data;
-    if (data.status === "SUCCESS") {
-      return true;
-    } else {
-      throw new Error("PLAN_CREATION_FAILED");
-    }
-  } catch (error) {
-    throw error;
+  const res = await DataService.postData(
+    resourceFactoryConstants.constants.enach.createPlan,
+    planObject
+  )
+  const data = res.data
+  if (data.status === 'SUCCESS') {
+    return true
+  } else {
+    throw new Error('PLAN_CREATION_FAILED')
   }
-};
+}
 
 const createSubscription = async (
   formName,
@@ -45,116 +40,112 @@ const createSubscription = async (
   expiresOn,
   appUrl
 ) => {
-  try {
-    const res = await DataService.postData(
-      resourceFactoryConstants.constants.enach.createSubscription,
-      {
-        subscriptionId: `${formName}_${getRandomId()}`,
-        planId: planId,
-        customerEmail: "nplending@gmail.com",
-        customerPhone: primaryPhone || "93465577484",
-        expiresOn: expiresOn,
-        returnUrl: appUrl,
-      }
-    );
-    const data = res.data;
-    if (data.status === "SUCCESS") {
-      return data.authLink;
-    } else {
-      throw new Error("SUBSCRIPTION_CREATION_FAILED");
+  const res = await DataService.postData(
+    resourceFactoryConstants.constants.enach.createSubscription,
+    {
+      subscriptionId: `${formName}_${getRandomId()}`,
+      planId: planId,
+      customerEmail: 'nplending@gmail.com',
+      customerPhone: primaryPhone || '93465577484',
+      expiresOn: expiresOn,
+      returnUrl: appUrl
     }
-  } catch (error) {
-    throw error;
+  )
+  const data = res.data
+  if (data.status === 'SUCCESS') {
+    return data.authLink
+  } else {
+    throw new Error('SUBSCRIPTION_CREATION_FAILED')
   }
-};
+}
 
 const EnachWidget = (props) => {
   const applicationId = useSelector(
     (state) => state?.formDetails?.formData?.loanApplicationId
-  );
-  const jsonSchema = useSelector((state) => state?.formDetails?.schema);
-  const formName = jsonSchema?.formName;
-  const [isRetryEnabled, setIsRetryEnabled] = useState(false);
-  const [authLink, setAuthLink] = useState();
-  const { translations } = useContext(LocalizationContext);
-  const [isPlanCreated, setIsPlanCreated] = useState(false);
+  )
+  const jsonSchema = useSelector((state) => state?.formDetails?.schema)
+  const formName = jsonSchema?.formName
+  const [isRetryEnabled, setIsRetryEnabled] = useState(false)
+  const [authLink, setAuthLink] = useState()
+  const { translations } = useContext(LocalizationContext)
+  const [isPlanCreated, setIsPlanCreated] = useState(false)
   const [isSubscriptionCreated, setIsSubscriptionCreated] = useState(
-    props.value ? true : false
-  );
-  const [appUrl, setAppUrl] = useState(null);
-  const [planId, setPlanId] = useState(getRandomId());
+    !!props.value
+  )
+  const [appUrl, setAppUrl] = useState(null)
+  const [planId, setPlanId] = useState(getRandomId())
   const primaryPhone = useSelector(
     (state) => state.formDetails.formData.primaryPhone
-  );
+  )
 
   const planObject = {
     planId: planId,
     planName: `${formName}_${getRandomId()}`,
-    type: "PERIODIC",
+    type: 'PERIODIC',
     amount: 100,
-    intervalType: "month",
-    intervals: 12,
-  };
+    intervalType: 'month',
+    intervals: 12
+  }
 
-  const expiresOn = `${moment()
-    .add(30 * planObject.intervals, "days")
-    .format("YYYY-MM-DD")} 23:59:59`;
+  const expiresOn = `${dayjs()
+    .add(30 * planObject.intervals, 'day')
+    .format('YYYY-MM-DD')} 23:59:59`
 
-  const expiresOnForUi = `${moment()
-    .add(30 * planObject.intervals, "days")
-    .format("DD-MMM-YYYY")}`;
+  const expiresOnForUi = `${dayjs()
+    .add(30 * planObject.intervals, 'day')
+    .format('DD-MMM-YYYY')}`
 
   // Automatically Starts creating Plan
   useEffect(() => {
     if (!props.value) {
-      useCreatePlan.run(planObject);
+      useCreatePlan.run(planObject)
     }
-  }, []);
+  }, [])
 
   useEffect(async () => {
-    const initialUrl = await Linking.getInitialURL();
-    setAppUrl(initialUrl || "novopay://com.novoloan.customerapp/open");
-  }, []);
+    const initialUrl = await Linking.getInitialURL()
+    setAppUrl(initialUrl || 'novopay://com.novoloan.customerapp/open')
+  }, [])
 
   const handleUrl = (event) => {
-    let errMsg;
-    let temp = false;
-    let subRefId;
-    const returnUrl = event.url;
-    const queryParamObject = ReactJsonSchemaUtil.getQueryParams(returnUrl);
+    let errMsg
+    let temp = false
+    let subRefId
+    const returnUrl = event.url
+    const queryParamObject = ReactJsonSchemaUtil.getQueryParams(returnUrl)
     for (const key in queryParamObject) {
-      if (key === "cf_status" && queryParamObject[key] != "ERROR") {
-        setIsSubscriptionCreated(true);
-        temp = true;
+      if (key === 'cf_status' && queryParamObject[key] != 'ERROR') {
+        setIsSubscriptionCreated(true)
+        temp = true
       }
-      if (key === "cf_message") {
-        errMsg = queryParamObject[key];
+      if (key === 'cf_message') {
+        errMsg = queryParamObject[key]
       }
-      if (key === "cf_subReferenceId") {
-        subRefId = queryParamObject[key];
+      if (key === 'cf_subReferenceId') {
+        subRefId = queryParamObject[key]
       }
     }
     // TODO: Need to Fix, it is getting cath by other handler too
     if (!temp && errMsg) {
       Toast.show({
-        type: "error",
-        position: "bottom",
+        type: 'error',
+        position: 'bottom',
         props: {
-          title: translations["enach.title"],
-          description: errMsg,
-        },
-      });
+          title: translations['enach.title'],
+          description: errMsg
+        }
+      })
     }
     if (subRefId) {
-      props.onChange(subRefId);
+      props.onChange(subRefId)
     }
-  };
+  }
 
   const useCreatePlan = useRequest(createPlan, {
     manual: true,
     onSuccess: () => {
-      setIsRetryEnabled(false);
-      setIsPlanCreated(true);
+      setIsRetryEnabled(false)
+      setIsPlanCreated(true)
       useCreateSubscription.run(
         formName,
         planId,
@@ -162,43 +153,43 @@ const EnachWidget = (props) => {
         primaryPhone,
         expiresOn,
         appUrl
-      );
+      )
     },
     onError: (error) => {
-      setIsRetryEnabled(true);
-      throw error;
-    },
-  });
+      setIsRetryEnabled(true)
+      throw error
+    }
+  })
 
   const useCreateSubscription = useRequest(createSubscription, {
     manual: true,
     onSuccess: (authLink) => {
-      setAuthLink(authLink);
+      setAuthLink(authLink)
     },
     onError: (error) => {
-      throw error;
-    },
-  });
+      throw error
+    }
+  })
 
   const openLink = async (eNachUrl) => {
-    const supported = await Linking.canOpenURL(eNachUrl);
+    const supported = await Linking.canOpenURL(eNachUrl)
     if (supported) {
-      Linking.addEventListener("url", handleUrl);
-      await Linking.openURL(eNachUrl);
+      Linking.addEventListener('url', handleUrl)
+      await Linking.openURL(eNachUrl)
     } else {
       crashlytics().log(
         ErrorUtil.createLog(
           'Can not open this url',
-           eNachUrl,
+          eNachUrl,
           'openLink',
           'EnachWidget.js'
         )
-      );
+      )
     }
-  };
+  }
 
   const eMandateHandler = () => {
-    if (isEmpty(authLink)) return;
+    if (isEmpty(authLink)) return
     Alert.alert(
       translations['enach.title'],
       translations['enach.redirect'],
@@ -206,95 +197,95 @@ const EnachWidget = (props) => {
         {
           text: translations['text.okay'],
           onPress: () => {
-            openLink(authLink);
-          },
-        },
+            openLink(authLink)
+          }
+        }
       ]
-    );
-  };
+    )
+  }
   return (
-    <Fragment>
+    <>
       <LoadingSpinner visible={useCreatePlan.loading || useCreateSubscription.loading} />
       {isRetryEnabled && (
         <Button
-          appearance="outline"
+          appearance='outline'
           onPress={() => {
             setPlanId((prev) =>
               String(Math.floor(100000 + Math.random() * 900000))
-            );
-            createPlanHandler();
+            )
+            createPlanHandler()
           }}
         >
           Retry
         </Button>
       )}
       {isPlanCreated && !isSubscriptionCreated && !isRetryEnabled && (
-        <Fragment>
+        <>
           <View style={styles.row}>
-            <Text category={"h6"} style={styles.label}>
+            <Text category='h6' style={styles.label}>
               Plan Type
             </Text>
-            <Text appearance={"hint"}>
-              {planObject.type === "PERIODIC" ? "Periodic" : "No Data"}
+            <Text appearance='hint'>
+              {planObject.type === 'PERIODIC' ? 'Periodic' : 'No Data'}
             </Text>
           </View>
           <View style={styles.row}>
-            <Text category={"h6"} style={styles.label}>
+            <Text category='h6' style={styles.label}>
               Interval Type
             </Text>
-            <Text appearance={"hint"}>
-              {planObject.intervalType === "month" ? "Monthly" : "No Data"}
+            <Text appearance='hint'>
+              {planObject.intervalType === 'month' ? 'Monthly' : 'No Data'}
             </Text>
           </View>
           <View style={styles.row}>
-            <Text category={"h6"} style={styles.label}>
+            <Text category='h6' style={styles.label}>
               Amount
             </Text>
-            <Text appearance={"hint"}>₹ {planObject.amount}</Text>
+            <Text appearance='hint'>₹ {planObject.amount}</Text>
           </View>
           <View style={styles.row}>
-            <Text category={"h6"} style={styles.label}>
+            <Text category='h6' style={styles.label}>
               No Of Intervals
             </Text>
-            <Text appearance={"hint"}>{planObject.intervals}</Text>
+            <Text appearance='hint'>{planObject.intervals}</Text>
           </View>
           <View style={styles.row}>
-            <Text category={"h6"} style={styles.label}>
+            <Text category='h6' style={styles.label}>
               Expires On
             </Text>
-            <Text appearance={"hint"}>{expiresOnForUi}</Text>
+            <Text appearance='hint'>{expiresOnForUi}</Text>
           </View>
           <View style={styles.row}>
-            <Button appearance="outline" onPress={eMandateHandler}>
+            <Button appearance='outline' onPress={eMandateHandler}>
               e-Mandate
             </Button>
           </View>
-        </Fragment>
+        </>
       )}
       {isSubscriptionCreated && (
         <Text
-          appearance={"default"}
-          status={"primary"}
-          style={{ marginTop: 5, fontWeight: "bold" }}
+          appearance='default'
+          status='primary'
+          style={{ marginTop: 5, fontWeight: 'bold' }}
         >
-          Subscription has been created successfully.{" "}
+          Subscription has been created successfully.{' '}
           <IconUtil.CheckIcon
-            name="checkmark-sharp"
+            name='checkmark-sharp'
             size={20}
-            color="green"
+            color='green'
             style={{ marginLeft: 5 }}
           />
         </Text>
       )}
-    </Fragment>
-  );
-};
+    </>
+  )
+}
 const styles = StyleSheet.create({
   row: {
-    marginVertical: 5,
+    marginVertical: 5
   },
   label: {
-    marginTop: 2,
-  },
-});
-export default EnachWidget;
+    marginTop: 2
+  }
+})
+export default EnachWidget

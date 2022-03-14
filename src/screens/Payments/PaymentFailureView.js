@@ -10,11 +10,13 @@ const PaymentFailureView = ({ onRetry, onCancel }) => {
     <View style={styles.container}>
       <View style={styles.iconContainer}>
         <PaymentFailedIcon />
-        <Text category='h6'>
+        <Text category='h2' status='danger'>
+          {translations['repayment.failed']}
+        </Text>
+        <Text category='s1'>
           {translations['repayment.repayFailed']}
         </Text>
       </View>
-
       <View>
         <View style={{ marginTop: 16 }}>
           <Button onPress={onRetry}>

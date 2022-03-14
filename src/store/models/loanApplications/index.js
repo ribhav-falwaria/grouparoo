@@ -3,18 +3,33 @@ import isEmpty from 'lodash.isempty'
 import isUndefined from 'lodash.isundefined'
 import apiService from '../../../apiService'
 
+const addLoanAplication = (state, loanApplication) => {
+  if (loanApplication.status === 'active') {
+    state.activeLoanApplicationIds = [loanApplication.loanApplicationId, ...state.activeLoanApplicationIds]
+    if (isEmpty(state.applications)) {
+      // This is the first application
+      state.currentLoanApplicationId = loanApplication.loanApplicationId
+    }
+  }
+  state.applications[loanApplication.loanApplicationId] = loanApplication
+  return state
+}
 const addLoanApplications = (state, { loanApplications }) => {
   if (!isEmpty(loanApplications)) {
     const activeLoanApplicationIds = []
     if (!isUndefined(loanApplications)) {
       loanApplications.forEach(la => {
-        state.applications[la.loanApplicationId] = la
+        const { data, ...rest } = la
+        data.processState = 'cpvCompleted'
+        state.applications[data.loanApplicationId] = data
+        state.applicationStage[data.loanApplicationId] = rest
         if (la.status === 'ACTIVE') {
-          activeLoanApplicationIds.push(la.loanApplicationId)
+          activeLoanApplicationIds.push(la.data.loanApplicationId)
         }
       })
       if (loanApplications.length === 1) {
-        state.currentLoanApplicationId = loanApplications[0].loanApplicationId
+        // set the latest as active
+        state.currentLoanApplicationId = loanApplications[0].data.loanApplicationId
       }
       state.activeLoanApplicationIds = activeLoanApplicationIds
       return state
@@ -28,9 +43,13 @@ const loanApplications = {
   state: {
     activeLoanApplicationIds: [],
     currentLoanApplicationId: undefined,
-    applications: {}
+    applications: {},
+    applicationStage: {}
   },
   selectors: {
+    getLoanApplicationStage: select => (rootState, { loanApplicationId }) => {
+      return rootState.loanApplications.applicationStage[loanApplicationId]
+    },
     getCurrentLoanApplication: select => (rootState) => {
       const loanApplications = rootState.loanApplications
       if (!isUndefined(loanApplications.currentLoanApplicationId)) {
@@ -41,7 +60,7 @@ const loanApplications = {
     hasAnyLoanApplication: select => (rootState) => {
       return !isEmpty(rootState.loanApplications.applications)
     },
-    getApplicationById: select => (rootState, { id }) => {
+    getApplicationById: select => (rootState, id) => {
       const loanApplication = rootState.loanApplications.applications[id]
       return loanApplication
     },
@@ -70,15 +89,17 @@ const loanApplications = {
   reducers: {
     // Called only while registering or signing in. Server has the true data
     'customer/setCustomer': addLoanApplications,
+    setFormData: (state, { allFormData }) => {
+      state.formData = allFormData
+    },
     addLoanApplication: (state, { loanApplication }) => {
-      if (loanApplication.status === 'active') {
-        state.activeLoanApplicationIds = [loanApplication.loanApplicationId, ...state.activeLoanApplicationIds]
-        if (isEmpty(state.applications)) {
-          // This is the first application
-          state.currentLoanApplicationId = loanApplication.loanApplicationId
-        }
+      state = addLoanAplication(state, loanApplication)
+      return state
+    },
+    addLoanApplications: (state, { loanApplications }) => {
+      for (let r = 0; r < loanApplications.length; r++) {
+        state = addLoanAplication(state, loanApplications[r])
       }
-      state.applications[loanApplication.loanApplicationId] = loanApplication
       return state
     },
     setCurrentLoanApplication: (state, loanApplicationId) => {
@@ -97,6 +118,18 @@ const loanApplications = {
         }
       })
       return state
+    },
+    updateLoanApplicationStage: (state, { data, currentStep, status }) => {
+      state.applications[data.loanApplicationId] = data
+      state.applicationStage[data.loanApplicationId].currentStep = currentStep
+      state.applicationStage[data.loanApplicationId].status = status
+      return state
+    },
+    setLoanAgreementId: (state, { loanApplicationId, loanAgreementId }) => {
+      const loanApplication = state.applications[loanApplicationId]
+      loanApplication.loanAgreementId = loanAgreementId
+      state.applications[loanApplicationId] = Object.assign({}, loanApplication)
+      return state
     }
   },
   effects: (dispatch) => ({
@@ -104,7 +137,7 @@ const loanApplications = {
       const { id, customerDetails } = rootState.customer
       const formData = {
         primaryName: customerDetails.fullName,
-        // primaryEmail: customerDetails.primaryEmail,
+        email: customerDetails.primaryEmail,
         primaryPhone: customerDetails.primaryPhone,
         isPrimaryPhoneVerified: 'yes',
         loanApplicationId,
@@ -112,7 +145,12 @@ const loanApplications = {
         customerId: customerDetails.$id
       }
       try {
-        const loanApplication = await apiService.appApi.loanApplication.create(formData, id)
+        const data = await apiService.appApi.loanApplication.create(formData, id)
+        const loanApplication = {
+          data,
+          currentStep: 0,
+          progress: 'INCOMPLETE'
+        }
         dispatch.loanApplications.addLoanApplication({ loanApplication })
       } catch (e) {
         console.log(e)
@@ -124,6 +162,16 @@ const loanApplications = {
       if (!isUndefined(loanApplication)) {
         await apiService.appApi.loans.deleteLoanApplication(rootState)
         dispatch.loanApplications.deleteLoanApplication({ loanApplicationId })
+      }
+    },
+    async generateLoanAgreement ({ loanApplicationId }, rootState) {
+      try {
+        const executionId = await apiService.appApi.loanApplication.loanAgreement.execute(loanApplicationId)
+        const loanAgreementId = await apiService.appApi.loanApplication.loanAgreement.execute(executionId)
+        dispatch.loanApplications.setLoanAgreementId({ loanAgreementId, loanApplicationId })
+      } catch (e) {
+        console.log(e)
+        throw new Error('CANNOT_GET_LOAN_AGREEMENT_ID')
       }
     }
   })

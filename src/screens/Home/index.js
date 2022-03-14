@@ -82,7 +82,7 @@ const HomeScreen = ({ navigation, route }) => {
             <Component
               loanApplicationId={loanApplication.loanApplicationId}
               Icon={AllIcons[item.icon]}
-              onPress={() => item.onPress(item, { loanApplicationId: loanApplication.loanApplicationId })}
+              onPress={() => item.onPress(item, { loanApplicationId: loanApplication.loanApplicationId, isAgreement: true })}
               heading={item.heading}
             />
           </View>
@@ -128,7 +128,7 @@ const HomeScreen = ({ navigation, route }) => {
     if (item.name === 'RepaymentsPending') {
       navigation.navigate('Repayments', params)
     } else if (item.name === 'PendingApplications') {
-      navigation.navigate('LoanApplication', params)
+      navigation.navigate('ApplicationForm', params)
     } else if (item.name === 'MyLoans') {
       navigation.navigate('MyLoans', params)
     } else if (item.name === 'NextEmi') {

@@ -8762,6 +8762,11 @@ react-native-restart@^0.0.22:
   resolved "https://registry.yarnpkg.com/react-native-restart/-/react-native-restart-0.0.22.tgz#81fcb7f31e35951d85410c68b9556acf3ab88705"
   integrity sha512-XwCqAMAKsO8yCM3xACPFKvkDQZe41lcavOuO0gUEu803IuTLtciualCq/qs83ryRDCDh1jkXYRqFjsGjLMCN3Q==
 
+react-native-risk-sdk@^1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/react-native-risk-sdk/-/react-native-risk-sdk-1.2.4.tgz#d137a76c2b21cf7dd30c2937e8fc22510efd3fb4"
+  integrity sha512-8nWIRyR2OPiEe18r8qwyQ+lht93lF9mf7gjLJexSm57oLpsWviXHjyc/B/aT1TDefHkHj/GLWxzVjr5actngtA==
+
 react-native-safe-area-context@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/react-native-safe-area-context/-/react-native-safe-area-context-3.2.0.tgz#06113c6b208f982d68ab5c3cebd199ca93db6941"

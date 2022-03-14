@@ -11,7 +11,7 @@ export default ({
   const styles = useStyleSheet(themedStyles)
   return (
     <View style={styles.heading}>
-      <Text category='h3' status='default' style={styles.headingText}>{title}</Text>
+      <Text category='h3' style={styles.headingText}>{title}</Text>
       <Text style={styles.content} category='s1' apparance='hint'>{description}</Text>
     </View>
   )

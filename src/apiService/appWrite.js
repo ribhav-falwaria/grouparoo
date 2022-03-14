@@ -183,6 +183,7 @@ export const appApi = {
         return user
       } catch (e) {
         crashlytics().log(e)
+        console.log(e)
         throw new Error('CANNOT_CREATE_SESSION')
       }
     },
@@ -323,6 +324,66 @@ export const appApi = {
     }
   },
   loanApplication: {
+    getAllLoanApplications: {
+      execute: async (customerId) => {
+        const payload = JSON.stringify({}) // JSON.stringify({ customerId })
+        try {
+          const executionDetails = await sdk.functions.createExecution(config.appWrite.retrieveLoanApplicationFunctionId, payload)
+          return executionDetails.$id
+        } catch (e) {
+          crashlytics().log(e)
+          console.log(e)
+          throw new Error('CANNOT_EXECUTE_LOAN_FORMDATA_FUNCION_ID')
+        }
+      },
+      get: async (executionId) => {
+        try {
+          const responseWithStatus = await getCompletionStatus(config.appWrite.retrieveLoanApplicationFunctionId, executionId)
+          if (responseWithStatus.status === 'completed') {
+            const allLoanApplications = unpackData(responseWithStatus.stdout)
+            if (allLoanApplications.length > 0) {
+              return allLoanApplications.map(la => JSON.parse(la))
+            } else {
+              return []
+            }
+          } else {
+            throw new Error('CANNOT_COMPLETE_LOAN_FORM_DATA')
+          }
+        } catch (e) {
+          crashlytics().log(e)
+          throw new Error('CANNOT_EXECUTE_LOAN_FORM_DATA')
+        }
+      }
+    },
+    loanAgreement: {
+      execute: async (loanApplicationId) => {
+        try {
+          const payload = JSON.stringify({ loanApplicationId })
+          const executionDetails = await sdk.functions.createExecution(config.appWrite.loanAgreementFunctionId, payload)
+          return executionDetails.$id
+        } catch (e) {
+          crashlytics().log(e)
+          throw new Error('CANNOT_EXECUTE_LOAN_AGREEMENT_FUNCION_ID')
+        }
+      },
+      get: async (executionId) => {
+        try {
+          const responseWithStatus = await getCompletionStatus(config.appWrite.loanAgreementFunctionId, executionId)
+          if (responseWithStatus.status === 'completed') {
+            const { status, fileId } = JSON.parse(responseWithStatus.stdout)
+            if (status === 'FAILED') {
+              throw new Error('CANNOT_GENERATE_LOAN_DOCUMENT_ID')
+            }
+            return fileId
+          } else {
+            throw new Error('CANNOT_CALL_LOAN_DOCUMENT_ID')
+          }
+        } catch (e) {
+          crashlytics().log(e)
+          throw new Error('CANNOT_GET_LOAN_AGREEMENT_ID')
+        }
+      }
+    },
     createLoanApplicationId: {
       execute: async () => {
         try {
@@ -367,7 +428,7 @@ export const appApi = {
         throw new Error('CANNOT_GET_LOAN_APPLICATION')
       }
     },
-    getAllLoanApplications: async (customerId) => {
+    getAllLoanApplicationsOld: async (customerId) => {
       const { appWrite } = config
       const loanAppQuery = [
         Query.equal('customerId', customerId)

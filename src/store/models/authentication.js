@@ -1,4 +1,6 @@
 import { AppStorage } from '../../services/app-storage.service'
+import isUndefined from 'lodash.isundefined'
+import crashlytics from '@react-native-firebase/crashlytics'
 import apiService from '../../apiService'
 import { config } from '../../config'
 import { getAppFcmToken } from '../../services/push.notifications'
@@ -38,16 +40,18 @@ const authentication = {
       try {
         const isFirstTime = await AppStorage.getIsFirstTime('default')
         const customer = await apiService.appApi.auth.login(email, password)
-        const customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
-        const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications(customerDetails.$id)
-        Promise.all([
-          dispatch.customer.setCustomer({ customer, isFirstTime, customerDetails, loanApplications }),
-          dispatch.loanProducts.getAllProducts(),
-          dispatch.loanTypes.getAllLoanTypes(),
-          dispatch.borrowingEntities.getBorrowingEntities()
-        ])
+        await commonAuthenticateSteps(dispatch, customer, isFirstTime)
+        // const customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
+        // const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications(customerDetails.$id)
+        // Promise.all([
+        //   dispatch.customer.setCustomer({ customer, isFirstTime, customerDetails, loanApplications }),
+        //   dispatch.loanProducts.getAllProducts(),
+        //   dispatch.loanTypes.getAllLoanTypes(),
+        //   dispatch.borrowingEntities.getBorrowingEntities()
+        // ])
       } catch (e) {
         // FIXME: Endpoint to push errors
+        console.log(e)
         return dispatch.appStates.setSigninError({ signinError: true })
       }
     },
@@ -60,21 +64,7 @@ const authentication = {
       try {
         const customer = await apiService.appApi.user.get()
         await AppStorage.setFirstTime(false)
-        const customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
-        const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications(customerDetails.$id)
-
-        return Promise.all([
-          dispatch.customer.setCustomer({
-            customer,
-            customerDetails,
-            loanApplications,
-            prefs: customer.prefs,
-            isFirstTime: false
-          }),
-          dispatch.loanProducts.getAllProducts(),
-          dispatch.loanTypes.getAllLoanTypes(),
-          dispatch.borrowingEntities.getBorrowingEntities()
-        ])
+        await commonAuthenticateSteps(dispatch, customer, isFirstTime)
       } catch (e) {
         // Not logged in or not registered.
         console.log(e)
@@ -113,6 +103,7 @@ const authentication = {
           langauage: 'en',
           theme: 'light'
         })
+        customer.prefs = prefs
         try {
           let customerDetails
           customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
@@ -129,17 +120,13 @@ const authentication = {
               userId: customer.$id,
               name: formData.fullName,
               primaryEmail: formData.email,
+              email: formData.email,
               primaryPhone: formData.primaryPhone,
               isPrimaryPhoneVerified: formData.isPrimaryPhoneVerified || 'no',
               fcmId
             }, customer.$id)
           }
-          Promise.all([
-            dispatch.customer.setCustomer({ customer, customerDetails, prefs, isFirstTime: false, loanApplications: [] }),
-            dispatch.loanProducts.getAllProducts(),
-            dispatch.loanTypes.getAllLoanTypes(),
-            dispatch.borrowingEntities.getBorrowingEntities()
-          ])
+          commonAuthenticateSteps(dispatch, customer, isFirstTime, customerDetails)
         } catch (e) {
           console.log(e.stack)
           throw new Error('CANNOT_CREATE_CUSTOMER_DETAILS')
@@ -148,4 +135,43 @@ const authentication = {
     }
   })
 }
+const commonAuthenticateSteps = async (dispatch, customer, isFirstTime, customerDetails) => {
+  if (isUndefined(customerDetails)) {
+    customerDetails = await apiService.appApi.customer.getCustomerByUserId(customer.$id)
+  }
+  const loanApplications = await getAllLoanApplications(customerDetails.$id)
+  await Promise.all([
+    dispatch.customer.setCustomer({
+      customer,
+      isFirstTime,
+      customerDetails,
+      loanApplications,
+      prefs: customer.prefs
+    }),
+    dispatch.loanProducts.getAllProducts(),
+    dispatch.loanTypes.getAllLoanTypes(),
+    dispatch.borrowingEntities.getBorrowingEntities()
+  ])
+  if (isUndefined(loanApplications) || loanApplications.length === 0) {
+    // Create a new loan application for this user and set it
+    const loanApplicationId = await createLoanApplication()
+    return dispatch.loanApplications.createLoanApplication({ loanApplicationId })
+  }
+}
+const getAllLoanApplications = async (customerId) => {
+  try {
+    const executionId = await apiService.appApi.loanApplication.getAllLoanApplications.execute(customerId)
+    const loanApplications = await apiService.appApi.loanApplication.getAllLoanApplications.get(executionId)
+    return loanApplications
+  } catch (err) {
+    crashlytics().log(err)
+    throw err
+  }
+}
+const createLoanApplication = async () => {
+  const executionId = await apiService.appApi.loanApplication.createLoanApplicationId.execute()
+  const loanApplicationId = await apiService.appApi.loanApplication.createLoanApplicationId.get(executionId)
+  return loanApplicationId
+}
+
 export default authentication
