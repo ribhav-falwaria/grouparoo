@@ -1,34 +1,23 @@
 import React from 'react'
-import { StyleSheet, View, Text, Image, Dimensions } from 'react-native'
+import { StyleSheet, Text, ImageBackground, Dimensions, View } from 'react-native'
 import AppIntroSlider from 'react-native-app-intro-slider'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import Clock from '../../assets/images/Clock.svg'
-import Tick from '../../assets/images/Tick.svg'
-import Success from '../../assets/images/Success.svg'
-const window = Dimensions.get('window')
 const slides = [
   {
     key: 1,
-    title: 'Welcome to LendR',
-    text: 'Smart Loans for \nSmart Businesses'
+    imageSource: require('../../assets/images/intro/1.jpg')
   },
   {
     key: 2,
-    title: 'Apply for Loans \nin under 5 Minutes',
-    text: "We're designed with you in mind, \nso we'll just need the basics about \nyour business to make a decision.",
-    image: () => <Clock />
+    imageSource: require('../../assets/images/intro/2.jpg')
   },
   {
     key: 3,
-    title: 'Get Instant \nLoan Approvals',
-    text: 'We give you an instant offer, \nregardless of whether you need a \ncash injection today or long-term credit.',
-    image: () => <Tick />
+    imageSource: require('../../assets/images/intro/3.jpg')
   },
   {
     key: 4,
-    title: 'Loan Disbursed \nwithin 24 Hours',
-    text: 'When your application is approved, \nwe pay out right away.',
-    image: () => <Success />
+    imageSource: require('../../assets/images/intro/4.jpg')
   }
 ]
 
@@ -36,37 +25,22 @@ const AppIntro = ({ navigation }) => {
   const _renderItem = ({ item }) => {
     return (
       <>
-        {item.key === 1 && (
-          <View style={styles.container}>
-            <View style={styles.background}>
-              <Image
-                style={styles.icon}
-                source={require('../../assets/images/Logo-NP-Icon.png')}
-              />
+        {(item.key === 1 || item.key === 2 || item.key === 3 || item.key === 4) && (
+          <ImageBackground source={item.imageSource} resizeMode='stretch' style={styles.image}>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.bottomButton} onPress={_onDone}>
+                <Text style={styles.buttonText}>Get Started</Text>
+              </TouchableOpacity>
             </View>
-          </View>
+          </ImageBackground>
         )}
-        {(item.key === 2 || item.key === 3 || item.key === 4) && (
-          <View style={{ flex: 1, alignItems: 'center', marginTop: 80 }}>
-            {item.image()}
-          </View>
-        )}
-        <View style={{ flex: 1, alignItems: 'center' }}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.text}>{item.text}</Text>
-        </View>
-        <View>
-          <TouchableOpacity style={styles.bottomButton} onPress={_onDone}>
-            <Text style={styles.buttonText}>Get Started</Text>
-          </TouchableOpacity>
-        </View>
       </>
     )
   }
 
   const _onDone = () => {
     //  Need to fix it later
-    navigation.navigate("SignIn");
+    navigation.navigate('SignIn')
   }
 
   return (
@@ -75,18 +49,20 @@ const AppIntro = ({ navigation }) => {
       showNextButton={false}
       showSkipButton={false}
       activeDotStyle={{
-        width: 8,
-        height: 8,
+        width: 10,
+        height: 10,
         marginLeft: 16,
-        backgroundColor: '#3334a2',
+        backgroundColor: '#CCCCFF',
         marginBottom: 120
       }}
       dotStyle={{
-        width: 8,
-        height: 8,
+        width: 10,
+        height: 10,
         marginLeft: 16,
-        backgroundColor: '#d8d8d8',
-        marginBottom: 120
+        backgroundColor: 'transparent',
+        marginBottom: 120,
+        borderWidth: 1,
+        borderColor: '#CCCCFF'
       }}
       renderItem={_renderItem}
       data={slides}
@@ -98,23 +74,14 @@ const AppIntro = ({ navigation }) => {
 export default AppIntro
 
 const styles = StyleSheet.create({
-  title: {
-    textAlign: 'center',
-    fontSize: 24,
-    color: '#3334a2',
-    fontWeight: 'bold'
-  },
   image: {
-    marginTop: 44
-  },
-  text: {
-    paddingTop: 32,
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#3334a2'
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center'
   },
   bottomButton: {
-    backgroundColor: '#3334a2',
+    backgroundColor: '#CCCCFF',
     borderRadius: 12,
     alignSelf: 'center',
     justifyContent: 'center',
@@ -123,35 +90,14 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   buttonText: {
-    color: 'white',
+    color: '#3E2B1D',
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold'
   },
-  container: {
-    flex: 0.8,
-    alignSelf: 'center',
-    width: window.width,
-    overflow: 'hidden',
-    height: window.width,
-    marginBottom: 56
-  },
-  background: {
-    borderRadius: window.width,
-    width: window.width * 2,
-    height: window.width * 2,
-    marginLeft: -(window.width / 2),
-    position: 'absolute',
-    bottom: 0,
-    overflow: 'hidden',
-    backgroundColor: '#3334a2'
-  },
-  icon: {
-    height: 100,
-    width: 100,
-    position: 'absolute',
-    bottom: 48,
-    alignSelf: 'center',
-    alignItems: 'center'
+  buttonContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'flex-end'
   }
 })
