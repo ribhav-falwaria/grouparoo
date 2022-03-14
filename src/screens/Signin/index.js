@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import {
   Button,
@@ -19,7 +19,7 @@ import styleConstants from '../styleConstants'
 const loginUser = async (dispatch, { email, password }) => {
   await dispatch.authentication.signInUser({ email, password })
 }
-
+let isSignInBtnPressed = false
 const SignIn = ({ navigation, route }) => {
   const [email, setEmail] = React.useState()
   const [password, setPassword] = React.useState()
@@ -29,22 +29,39 @@ const SignIn = ({ navigation, route }) => {
   const dispatch = useDispatch()
   const state = useSelector(state => state)
   const styles = useStyleSheet(themedStyles)
+  const [isEmailValid, setIsEmailValid] = useState(true)
   const loginUserRequest = useRequest(loginUser, {
     manual: true
   })
-  if (loginUserRequest.error) {
-    console.log('error')
-  }
   const selection = store.select(models => ({
     isLoggedIn: models.authentication.isUserLoggedIn,
     showLoginError: models.appStates.getSigninError
   }))
+  const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    )
+  }
+  useEffect(() => {
+    if (isSignInBtnPressed && validateEmail(email)) {
+      setIsEmailValid(true)
+    }
+  }, [isSignInBtnPressed, email])
   const {
     isLoggedIn,
     showLoginError
   } = selection(state)
   const onSignInButtonPress = async () => {
-    await loginUserRequest.run(dispatch, { email, password })
+    isSignInBtnPressed = true
+    const isValidMail = validateEmail(email.trim())
+    if (!isValidMail) {
+      setIsEmailValid(false)
+    } else {
+      await loginUserRequest.run(dispatch, { email: email.trim(), password: password.trim() })
+    }
+  }
+  const renderError = () => {
+    return (<Text status='danger' category='p1'>{translations['auth.invalid.email']}</Text>)
   }
   const onSignUpButtonPress = () => {
     navigation.navigate('SignUp', {})
@@ -81,6 +98,7 @@ const SignIn = ({ navigation, route }) => {
           status={showError && 'danger'}
           onChangeText={setEmail}
           accessoryRight={FormIcons.FormEmailIcon}
+          caption={!isEmailValid ? renderError : <></>}
         />
         <Input
           style={styles.passwordInput}

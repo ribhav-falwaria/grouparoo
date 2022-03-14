@@ -8,13 +8,17 @@ const appStates = {
       return rootState.appStates.signinError
     }
   },
-  effects: {
-    setSigninError: (state, { signinError }) => {
-      state = Object.assign({}, state)
+  reducers: {
+    UpdateSignInError: (state, { signinError }) => {
       state.signinError = signinError
       return state
     }
-  }
+  },
+  effects: dispatch => ({
+    setSigninError: ({ signinError }, state) => {
+      dispatch.appStates.UpdateSignInError({ signinError })
+    }
+  })
 }
 
 export default appStates

@@ -1,7 +1,7 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { View } from 'react-native'
 import { useRequest } from 'ahooks'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Button,
   Input,
@@ -14,6 +14,7 @@ import ScreenTitle from '../components/ScreenTitle'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
+import Toast from 'react-native-toast-message'
 
 const registerUser = async (dispatch, { password, formData }) => {
   const registerResoponse = await dispatch.authentication.registerOrUpdateUser({
@@ -33,8 +34,23 @@ const SetPassword = ({ navigation, route }) => {
   const [disabled, setDisabled] = React.useState(false)
   const { translations } = useContext(LocalizationContext)
   const title = route.params?.title || translations['auth.Password']
-
+  const isAccountExists = useSelector(state => state.authentication.accountExists)
+  const isLoggedIn = useSelector(state => state.authentication.isLoggedIn)
   const styles = useStyleSheet(themedStyles)
+  useEffect(() => {
+    if (isAccountExists && !isLoggedIn) {
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        props: {
+          title: translations['app.set.password'],
+          description: translations['app.signUp.account.exists']
+        }
+      })
+      navigation.navigate('SignIn')
+    }
+  }, [isAccountExists, isLoggedIn])
+
   const onSignInButtonPress = async () => {
     setDisabled(true)
     await createAccount.run(dispatch, {
