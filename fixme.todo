@@ -9,3 +9,4 @@
 10. Image upload need animation to ease jerking
 11. Range widget is a generiv widget. need to have loan Amount widget that derives from range widget.
 12. Standardise spelling of aadhaar across the app. There are many different spellings for variables, keys and text. We should use aadhaar
+12. FormDetails state should be per loanApplicationId. All the help shown app states should be according to loanApplicatonId. 

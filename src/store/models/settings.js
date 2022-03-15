@@ -56,6 +56,10 @@ const settings = {
     async getIsAgreementHelpShown (_, rootState) {
       const loanAppHelpShown = await AppStorage.getLoanAgreementHelpShown()
       dispatch.settings.setAgreementnHelp(loanAppHelpShown)
+    },
+    async setAgreementHelpShown (agreementHelpShown, rootState) {
+      await AppStorage.setLoanAgreementnHelpShown(agreementHelpShown)
+      dispatch.settings.setAgreementnHelp(agreementHelpShown)
     }
   })
 }

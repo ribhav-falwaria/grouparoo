@@ -20,7 +20,8 @@ const addLoanApplications = (state, { loanApplications }) => {
     if (!isUndefined(loanApplications)) {
       loanApplications.forEach(la => {
         const { data, ...rest } = la
-        data.processState = 'cpvCompleted'
+        // FIXME: remove this when done
+        rest.processState = 'cpvCompleted'
         state.applications[data.loanApplicationId] = data
         state.applicationStage[data.loanApplicationId] = rest
         if (la.status === 'ACTIVE') {
@@ -127,7 +128,7 @@ const loanApplications = {
     },
     setLoanAgreementId: (state, { loanApplicationId, loanAgreementId }) => {
       const loanApplication = state.applications[loanApplicationId]
-      loanApplication.loanAgreementId = loanAgreementId
+      loanApplication.loanAgreementUrl = loanAgreementId
       state.applications[loanApplicationId] = Object.assign({}, loanApplication)
       return state
     }

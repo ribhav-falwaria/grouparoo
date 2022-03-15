@@ -34,6 +34,10 @@ const ApplicationForm = ({ navigation, route }) => {
   const loanApplicationStage = store.select.loanApplications.getLoanApplicationStage(state, { loanApplicationId })
   const isCpv = loanApplicationStage.progress === config.LOAN_APP_PROGRESS_COMPLETE && loanApplicationStage.processState === config.APP_STAGE_CPV_INITIATED
   const isAgreement = loanApplicationStage.progress === config.LOAN_APP_PROGRESS_COMPLETE && loanApplicationStage.processState === config.APP_STAGE_CPV_COMPLETE
+  const isHelpShown = store.select.settings.getIsApplicationHelpShown(state)
+  const isAgreementHelpShown = store.select.settings.getIsAgreementHelpShown(state)
+  const showApplicationForm = (isHelpShown && !isAgreement) || (isAgreement && isAgreementHelpShown)
+
   const BackIcon = (props) => (
     <Icon {...props} name='arrow-back' />
   )
@@ -52,7 +56,7 @@ const ApplicationForm = ({ navigation, route }) => {
   const onPressAgeement = () => {
     dispatch.settings.setAgreementHelpShown(true)
   }
-  if (isCpv || isAgreement) {
+  if ((isCpv || isAgreement) && !isAgreementHelpShown) {
     return (
       <ApplicationStage
         loanApplicationId={loanApplicationId}
@@ -61,9 +65,6 @@ const ApplicationForm = ({ navigation, route }) => {
       />
     )
   }
-  const isHelpShown = store.select.settings.getIsApplicationHelpShown(state)
-  const isAgreementHelpShown = store.select.settings.getIsAgreementHelpShown(state)
-  const showApplicationForm = (isHelpShown && !isAgreement) || (isAgreement && isAgreementHelpShown)
   if (!isUndefined(currentLoanApplication)) {
     return (
       <>

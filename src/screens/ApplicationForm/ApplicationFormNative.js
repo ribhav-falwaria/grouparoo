@@ -57,8 +57,7 @@ const mapStateToProps = (state) => {
 }
 const mapDispatchToProps = (dispatch) => ({
   getCustomerJwt: () => dispatch.customer.getCustomerJwt(),
-  generateLoanAgreementLink: (loanApplicationId) => dispatch.loanApplications.generateLoanAgreement(loanApplicationId)
-
+  generateLoanAgreementLink: (loanApplicationId) => dispatch.loanApplications.generateLoanAgreement({ loanApplicationId })
 })
 const Component = connect(mapStateToProps, mapDispatchToProps)(ApplicationFormNative)
 export default withStyles(Component, themes => ({
