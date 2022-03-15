@@ -2,6 +2,8 @@ import React, { Component } from "react";
 import * as types from "../types";
 import { View } from "react-native";
 import { Text } from "@ui-kitten/components";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 import {
   orderProperties,
   retrieveSchema,
@@ -160,7 +162,7 @@ class ObjectField extends Component {
       onFocus,
       registry = getDefaultRegistry(),
     } = this.props;
-    
+
     const { rootSchema, fields, formContext } = registry;
     const { SchemaField, TitleField, DescriptionField } = fields;
     const schema = retrieveSchema(this.props.schema, rootSchema, formData);
@@ -171,6 +173,17 @@ class ObjectField extends Component {
       const properties = Object.keys(schema.properties || {});
       orderedProperties = orderProperties(properties, uiSchema["ui:order"]);
     } catch (err) {
+      crashlytics().log(
+        ErrorUtil.createError(
+          err,
+          err.message,
+          err.message,
+          undefined,
+          "ObjectField()",
+          "ObjectField.js"
+        )
+      );
+
       return (
         <View>
           <Text status="danger">

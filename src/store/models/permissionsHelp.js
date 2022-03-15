@@ -1,129 +1,176 @@
-import orderBy from 'lodash.orderby'
-import { PERMISSIONS } from 'react-native-permissions'
-import { checkPermissions } from '../../services/permissions'
-import { config } from '../../config'
-import { AppStorage } from '../../services/app-storage.service'
+import orderBy from "lodash.orderby";
+import { PERMISSIONS } from "react-native-permissions";
+import { checkPermissions } from "../../services/permissions";
+import { config } from "../../config";
+import { AppStorage } from "../../services/app-storage.service";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../screens/Errors/ErrorUtil";
 const permissionsHelp = {
-  name: 'permissionsHelp',
+  name: "permissionsHelp",
   state: {
     isPermissionsRequested: false,
     helpContent: {
-      title: 'help.permissions.title',
-      description: 'help.permissions.content',
-      helpSteps: [{
-        order: 1,
-        title: 'help.camera.title',
-        content: 'help.camera.content',
-        icon: 'CameraIcon'
-      },
-      {
-        order: 2,
-        title: 'help.sms.title',
-        content: 'help.sms.content',
-        icon: 'SmsIcon'
-      },
-      {
-        order: 3,
-        title: 'help.location.title',
-        content: 'help.location.content',
-        icon: 'LocationIcon'
-      },
-      {
-        order: 4,
-        title: 'help.phone.title',
-        content: 'help.phone.content',
-        icon: 'DeviceIcon'
-      },
-      {
-        order: 5,
-        title: 'help.contacts.title',
-        content: 'help.contacts.content',
-        icon: 'ContactListIcon'
-      }]
+      title: "help.permissions.title",
+      description: "help.permissions.content",
+      helpSteps: [
+        {
+          order: 1,
+          title: "help.camera.title",
+          content: "help.camera.content",
+          icon: "CameraIcon",
+        },
+        {
+          order: 2,
+          title: "help.sms.title",
+          content: "help.sms.content",
+          icon: "SmsIcon",
+        },
+        {
+          order: 3,
+          title: "help.location.title",
+          content: "help.location.content",
+          icon: "LocationIcon",
+        },
+        {
+          order: 4,
+          title: "help.phone.title",
+          content: "help.phone.content",
+          icon: "DeviceIcon",
+        },
+        {
+          order: 5,
+          title: "help.contacts.title",
+          content: "help.contacts.content",
+          icon: "ContactListIcon",
+        },
+      ],
     },
     rationale: {
       [PERMISSIONS.ANDROID.ACCESS_BACKGROUND_LOCATION]: {
-        title: 'permissions.background.title',
-        message: 'permissions.background.message',
-        buttonPositive: 'permissions.positive',
-        buttonNegative: 'permissions.negative'
+        title: "permissions.background.title",
+        message: "permissions.background.message",
+        buttonPositive: "permissions.positive",
+        buttonNegative: "permissions.negative",
       },
       [PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]: {
-        title: 'permissions.location.title',
-        message: 'permissions.location.message',
-        buttonPositive: 'permissions.positive',
-        buttonNegative: 'permissions.negative'
+        title: "permissions.location.title",
+        message: "permissions.location.message",
+        buttonPositive: "permissions.positive",
+        buttonNegative: "permissions.negative",
       },
       [PERMISSIONS.ANDROID.CAMERA]: {
-        title: 'permissions.camera.title',
-        message: 'permissions.camera.message',
-        buttonPositive: 'permissions.positive',
-        buttonNegative: 'permissions.negative'
+        title: "permissions.camera.title",
+        message: "permissions.camera.message",
+        buttonPositive: "permissions.positive",
+        buttonNegative: "permissions.negative",
       },
       [PERMISSIONS.ANDROID.READ_SMS]: {
-        title: 'permissions.sms.title',
-        message: 'permissions.sms.message',
-        buttonPositive: 'permissions.positive',
-        buttonNegative: 'permissions.negative'
-      }
+        title: "permissions.sms.title",
+        message: "permissions.sms.message",
+        buttonPositive: "permissions.positive",
+        buttonNegative: "permissions.negative",
+      },
     },
-    permissions: {
-    }
+    permissions: {},
   },
   selectors: {
-    getIsPermissionsRequested: () => rootState => rootState.permissionsHelp.isPermissionsRequested,
-    getHelpSteps: () => rootState => {
-      return orderBy(rootState.permissionsHelp.helpContent.helpSteps, ['order'], ['asc'])
+    getIsPermissionsRequested: () => (rootState) =>
+      rootState.permissionsHelp.isPermissionsRequested,
+    getHelpSteps: () => (rootState) => {
+      return orderBy(
+        rootState.permissionsHelp.helpContent.helpSteps,
+        ["order"],
+        ["asc"]
+      );
     },
-    getHelpTitle: () => rootState => {
+    getHelpTitle: () => (rootState) => {
       return {
         title: rootState.permissionsHelp.helpContent.title,
-        description: rootState.permissionsHelp.helpContent.description
-      }
+        description: rootState.permissionsHelp.helpContent.description,
+      };
     },
-    getPermissions: () => rootState => {
-      return rootState.permissionsHelp.permissions
+    getPermissions: () => (rootState) => {
+      return rootState.permissionsHelp.permissions;
     },
-    getPermissionsRationale: () => rootState => {
-      return rootState.permissionsHelp.rationale
+    getPermissionsRationale: () => (rootState) => {
+      return rootState.permissionsHelp.rationale;
     },
-    allPermissionsValid: () => rootState => {
-      let allowed = true
-      const acceptedResults = config.permissions.acceptedResults
+    allPermissionsValid: () => (rootState) => {
+      let allowed = true;
+      const acceptedResults = config.permissions.acceptedResults;
       // Camera permission Needed
-      const { permissionsHelp: { permissions } } = rootState
-      if (acceptedResults.indexOf(permissions[PERMISSIONS.ANDROID.CAMERA]) === -1) {
-        allowed = false
-        return allowed
+      const {
+        permissionsHelp: { permissions },
+      } = rootState;
+      if (
+        acceptedResults.indexOf(permissions[PERMISSIONS.ANDROID.CAMERA]) === -1
+      ) {
+        allowed = false;
+        return allowed;
       }
-      if (acceptedResults.indexOf(permissions[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]) === -1) {
-        allowed = false
-        return allowed
+      if (
+        acceptedResults.indexOf(
+          permissions[PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION]
+        ) === -1
+      ) {
+        allowed = false;
+        return allowed;
       }
-      if (acceptedResults.indexOf(permissions[PERMISSIONS.ANDROID.READ_SMS]) === -1) {
-        allowed = false
-        return allowed
+      if (
+        acceptedResults.indexOf(permissions[PERMISSIONS.ANDROID.READ_SMS]) ===
+        -1
+      ) {
+        allowed = false;
+        return allowed;
       }
-      return allowed
-    }
+      return allowed;
+    },
   },
   reducers: {
-    updatePermissions: (state, { permissionStatuses, isPermissionsRequested }) => {
-      state.permissions = permissionStatuses
-      state.isPermissionsRequested = isPermissionsRequested
-      return Object.assign({}, state)
-    }
+    updatePermissions: (
+      state,
+      { permissionStatuses, isPermissionsRequested }
+    ) => {
+      state.permissions = permissionStatuses;
+      state.isPermissionsRequested = isPermissionsRequested;
+      return Object.assign({}, state);
+    },
   },
   effects: (dispatch) => ({
-    async checkRequiredPermissions (_, rootState) {
-      const isPermissionsRequested = await AppStorage.getPermissionsRequested()
-      const permissionStatuses = await checkPermissions()
-      dispatch.permissionsHelp.updatePermissions({ permissionStatuses, isPermissionsRequested })
+    async checkRequiredPermissions(_, rootState) {
+      crashlytics().log(
+        ErrorUtil.createLog(
+          " checkRequiredPermissions method starts here",
+          { _, rootState },
+          "checkRequiredPermissions()",
+          "permissionsHelp.js"
+        )
+      );
+      const isPermissionsRequested = await AppStorage.getPermissionsRequested();
+      const permissionStatuses = await checkPermissions();
+      dispatch.permissionsHelp.updatePermissions({
+        permissionStatuses,
+        isPermissionsRequested,
+      });
     },
-    async updatePermissionStatuses ({ permissionStatuses, isPermissionsRequested }, rootState) {
-      await AppStorage.setPermissionsRequested(isPermissionsRequested)
-      dispatch.permissionsHelp.updatePermissions({ permissionStatuses, isPermissionsRequested })
-    }
-  })
-}
-export default permissionsHelp
+    async updatePermissionStatuses(
+      { permissionStatuses, isPermissionsRequested },
+      rootState
+    ) {
+      crashlytics().log(
+        ErrorUtil.createLog(
+          " updatePermissionStatuses method starts here",
+          { permissionStatuses, isPermissionsRequested, rootState },
+          "updatePermissionStatuses()",
+          "permissionsHelp.js"
+        )
+      );
+      await AppStorage.setPermissionsRequested(isPermissionsRequested);
+      dispatch.permissionsHelp.updatePermissions({
+        permissionStatuses,
+        isPermissionsRequested,
+      });
+    },
+  }),
+};
+export default permissionsHelp;

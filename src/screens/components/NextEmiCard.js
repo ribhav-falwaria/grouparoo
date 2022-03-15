@@ -1,22 +1,19 @@
-import React, { useContext } from 'react'
-import { View } from 'react-native'
-import { useStore, useSelector } from 'react-redux'
-import {
-  Card,
-  Text,
-  StyleService,
-  useStyleSheet
-} from '@ui-kitten/components'
+import React, { useContext } from "react";
+import { View } from "react-native";
+import { useStore, useSelector } from "react-redux";
+import { Card, Text, StyleService, useStyleSheet } from "@ui-kitten/components";
 import {
   Placeholder,
   PlaceholderMedia,
   PlaceholderLine,
-  Fade
-} from 'rn-placeholder'
-import { rupeeFormatter } from '../../utils/'
+  Fade,
+} from "rn-placeholder";
+import { rupeeFormatter } from "../../utils/";
 
-import { LocalizationContext } from '../../components/Translation'
-import styleConstants from '../styleConstants'
+import { LocalizationContext } from "../../components/Translation";
+import styleConstants from "../styleConstants";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 
 const Loading = () => (
   <Placeholder
@@ -29,123 +26,130 @@ const Loading = () => (
     <PlaceholderLine width={30} />
     <PlaceholderLine width={30} />
   </Placeholder>
-)
+);
 
-const RepaymentCard = ({ heading, loanId, Icon, onPress, onPaymentPress, loading }) => {
+const RepaymentCard = ({
+  heading,
+  loanId,
+  Icon,
+  onPress,
+  onPaymentPress,
+  loading,
+}) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "RepaymentCard method starts here",
+      { heading, loanId, Icon, onPress, onPaymentPress, loading },
+      "RepaymentCard()",
+      "NextEmiCard.js"
+    )
+  );
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
-  const store = useStore()
-  const state = useSelector(state => state)
-  const selector = store.select(models => ({
+  const store = useStore();
+  const state = useSelector((state) => state);
+  const selector = store.select((models) => ({
     productName: models.loans.getProductName,
     loanAccountNumber: models.loans.getLoanAccountNumber,
-    nextInstallment: models.loans.getNextInstallment
-  }))
+    nextInstallment: models.loans.getNextInstallment,
+  }));
   const { nextInstallment, loanAccountNumber } = selector(state, {
-    loanId
-  })
+    loanId,
+  });
 
-  const styles = useStyleSheet(themedStyles)
-  const { translations } = useContext(LocalizationContext)
-  const isRepayNow = nextInstallment.pastDueDays > 0
+  const styles = useStyleSheet(themedStyles);
+  const { translations } = useContext(LocalizationContext);
+  const isRepayNow = nextInstallment.pastDueDays > 0;
   // Nothing to show cuase the borrower is in dpd
   if (isRepayNow) {
-    return null
+    return null;
   }
   return (
     <Card style={styles.cardContainer} onPress={onPress}>
       <View style={styles.cardTitleContainer}>
         <View style={styles.cardTitleContainer}>
           <Icon />
-          <Text
-            category='h6'
-            status='primary'
-            appearance='default'
-          >
+          <Text category="h6" status="primary" appearance="default">
             {translations[heading]}
           </Text>
         </View>
         <View>
-          <Text
-            category='h6'
-            status='primary'
-            appearance='default'
-          >
-            <Text category='p1' status='basic'>{'₹ '}</Text>
+          <Text category="h6" status="primary" appearance="default">
+            <Text category="p1" status="basic">
+              {"₹ "}
+            </Text>
             {rupeeFormatter(nextInstallment.total)}
           </Text>
         </View>
       </View>
       <View style={styles.contentContainer}>
-        <Text style={styles.content} category='p1' appearance='hint'>
-          {`${translations['loan.loanAccountNumber']} : `}
+        <Text style={styles.content} category="p1" appearance="hint">
+          {`${translations["loan.loanAccountNumber"]} : `}
         </Text>
-        <Text category='s1'>
-          {loanAccountNumber}
-        </Text>
+        <Text category="s1">{loanAccountNumber}</Text>
       </View>
       <View style={styles.contentContainer}>
-        <Text style={styles.content} category='p1' appearance='hint'>
-          {`${translations['repayment.installmentDate']} : `}
+        <Text style={styles.content} category="p1" appearance="hint">
+          {`${translations["repayment.installmentDate"]} : `}
         </Text>
-        <Text category='s1'>
+        <Text category="s1">
           {`${nextInstallment.installmentDate}  (${nextInstallment.humanize})`}
         </Text>
       </View>
     </Card>
-  )
-}
+  );
+};
 const themedStyles = StyleService.create({
   cardContainer: {
-    ...styleConstants.cardContainer
+    ...styleConstants.cardContainer,
   },
   headRow: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   cardTitleContainer: {
     ...styleConstants.cardTitleContainer,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   contentContainer: {
     ...styleConstants.contentContainer,
-    flexDirection: 'row',
-    alignItems: 'center'
+    flexDirection: "row",
+    alignItems: "center",
   },
   heading: {
-    ...styleConstants.heading
+    ...styleConstants.heading,
   },
   subHeading: {
-    ...styleConstants.subHeading
+    ...styleConstants.subHeading,
   },
   headingAmount: {
-    marginLeft: 'auto'
+    marginLeft: "auto",
   },
   content: {
-    ...styleConstants.content
+    ...styleConstants.content,
   },
   rowContent: {
     ...styleConstants.content,
-    width: 100
+    width: 100,
   },
   repaymentSchedule: {
-    flexDirection: 'column',
-    alignItems: 'baseline'
+    flexDirection: "column",
+    alignItems: "baseline",
   },
   scheduleRowHead: {
-    flexDirection: 'row',
-    marginBottom: 4
+    flexDirection: "row",
+    marginBottom: 4,
   },
 
   scheduleRow: {
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   payNow: {
-    marginLeft: 'auto',
-    width: 150
-  }
-})
+    marginLeft: "auto",
+    width: 150,
+  },
+});
 
-export default RepaymentCard
+export default RepaymentCard;

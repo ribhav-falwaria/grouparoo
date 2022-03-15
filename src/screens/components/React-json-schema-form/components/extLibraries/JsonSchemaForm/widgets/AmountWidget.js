@@ -2,6 +2,8 @@ import React from "react";
 import MaskedInput from "../../textMask/text-input-mask";
 import { Text } from "@ui-kitten/components";
 import { useFormContext } from "../FormContext";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const AmountWidget = ({
   id,
@@ -21,6 +23,31 @@ const AmountWidget = ({
   rawErrors = [],
   required,
 }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "AmountWidget method starts here ",
+      {
+        id,
+        readonly,
+        disabled,
+        label,
+        value,
+        onChange,
+        onBlur,
+        onFocus,
+        autofocus,
+        options,
+        multiline,
+        secureEntry,
+        schema,
+        textContentType,
+        rawErrors,
+        required,
+      },
+      "AmountWidget()",
+      "AmountWidget.js"
+    )
+  );
   const { theme } = useFormContext();
   const hasErrors = rawErrors.length > 0;
   return (

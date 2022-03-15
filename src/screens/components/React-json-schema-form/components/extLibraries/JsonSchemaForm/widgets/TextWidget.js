@@ -1,7 +1,9 @@
-import React from 'react'
-import { Input } from '@ui-kitten/components'
+import React from "react";
+import { Input } from "@ui-kitten/components";
 
-import { useFormContext } from '../FormContext'
+import { useFormContext } from "../FormContext";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const TextWidget = ({
   id,
@@ -17,12 +19,37 @@ const TextWidget = ({
   multiline,
   secureEntry,
   schema,
-  textContentType = 'none',
+  textContentType = "none",
   rawErrors = [],
-  required
+  required,
 }) => {
-  const { theme } = useFormContext()
-  const hasErrors = rawErrors.length > 0
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "TextWidget method starts here ",
+      {
+        id,
+        readonly,
+        disabled,
+        label,
+        value,
+        onChange,
+        onBlur,
+        onFocus,
+        autofocus,
+        options,
+        multiline,
+        secureEntry,
+        schema,
+        textContentType,
+        rawErrors,
+        required,
+      },
+      "TextWidget()",
+      "TextWidget.js"
+    )
+  );
+  const { theme } = useFormContext();
+  const hasErrors = rawErrors.length > 0;
 
   return (
     <Input
@@ -30,22 +57,24 @@ const TextWidget = ({
       placeholder={label}
       autoFocus={autofocus}
       editable={!disabled && !readonly}
-      keyboardType={schema.type === 'number' ? 'numeric' : 'default'}
-      value={value ? value.toString() : ''}
+      keyboardType={schema.type === "number" ? "numeric" : "default"}
+      value={value ? value.toString() : ""}
       secureTextEntry={secureEntry}
       textContentType={textContentType}
-      onChangeText={newText => onChange(newText === '' ? options.emptyValue : newText)}
+      onChangeText={(newText) =>
+        onChange(newText === "" ? options.emptyValue : newText)
+      }
       onBlur={() => {
-        onBlur(id, value)
+        onBlur(id, value);
       }}
       onFocus={() => {
-        onFocus(id, value)
+        onFocus(id, value);
       }}
       selectionColor={theme.highlightColor}
       placeholderTextColor={theme.placeholderTextColor}
-      status={(hasErrors) && 'danger'}
+      status={hasErrors && "danger"}
     />
-  )
-}
+  );
+};
 
-export default TextWidget
+export default TextWidget;

@@ -1,5 +1,7 @@
-import React from 'react'
-import * as types from '../types'
+import React from "react";
+import * as types from "../types";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 import {
   getWidget,
@@ -7,10 +9,18 @@ import {
   isSelect,
   optionsList,
   getDefaultRegistry,
-  hasWidget
-} from '../utils'
+  hasWidget,
+} from "../utils";
 
-function StringField (props) {
+function StringField(props) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "StringField method starts here ",
+      { props },
+      "StringField()",
+      "StringField.js"
+    )
+  );
   const {
     schema,
     name,
@@ -25,19 +35,21 @@ function StringField (props) {
     onBlur,
     onFocus,
     registry = getDefaultRegistry(),
-    rawErrors
-  } = props
-  const { title, format } = schema
-  const { widgets, formContext } = registry
-  const enumOptions = isSelect(schema) && optionsList(schema)
-  let defaultWidget = enumOptions ? 'select' : 'text'
+    rawErrors,
+  } = props;
+  const { title, format } = schema;
+  const { widgets, formContext } = registry;
+  const enumOptions = isSelect(schema) && optionsList(schema);
+  let defaultWidget = enumOptions ? "select" : "text";
   if (format && hasWidget(schema, format, widgets)) {
-    defaultWidget = format
+    defaultWidget = format;
   }
-  const { widget = defaultWidget, placeholder = '', ...options } = getUiOptions(
-    uiSchema
-  )
-  const Widget = getWidget(schema, widget, widgets)
+  const {
+    widget = defaultWidget,
+    placeholder = "",
+    ...options
+  } = getUiOptions(uiSchema);
+  const Widget = getWidget(schema, widget, widgets);
   return (
     <Widget
       options={{ ...options, enumOptions }}
@@ -58,18 +70,18 @@ function StringField (props) {
       placeholder={placeholder}
       rawErrors={rawErrors}
     />
-  )
+  );
 }
 
-if (process.env.NODE_ENV !== 'production') {
-  StringField.propTypes = types.fieldProps
+if (process.env.NODE_ENV !== "production") {
+  StringField.propTypes = types.fieldProps;
 }
 
 StringField.defaultProps = {
   uiSchema: {},
   disabled: false,
   readonly: false,
-  autofocus: false
-}
+  autofocus: false,
+};
 
-export default StringField
+export default StringField;

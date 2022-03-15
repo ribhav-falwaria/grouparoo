@@ -1,7 +1,9 @@
-import React from 'react'
-import MaskedInput from '../../textMask/text-input-mask'
-import { Text } from '@ui-kitten/components'
-import { useFormContext } from '../FormContext'
+import React from "react";
+import MaskedInput from "../../textMask/text-input-mask";
+import { Text } from "@ui-kitten/components";
+import { useFormContext } from "../FormContext";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const MobileWidget = ({
   id,
@@ -17,43 +19,70 @@ const MobileWidget = ({
   multiline,
   secureEntry,
   schema,
-  textContentType = 'none',
+  textContentType = "none",
   rawErrors = [],
-  required
+  required,
 }) => {
-  const { theme } = useFormContext()
-  const hasErrors = rawErrors.length > 0
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "MobileWidget method starts here ",
+      {
+        id,
+        readonly,
+        disabled,
+        label,
+        value,
+        onChange,
+        onBlur,
+        onFocus,
+        autofocus,
+        options,
+        multiline,
+        secureEntry,
+        schema,
+        textContentType,
+        rawErrors,
+        required,
+      },
+      "MobileWidget()",
+      "MobileWidget.js"
+    )
+  );
+  const { theme } = useFormContext();
+  const hasErrors = rawErrors.length > 0;
 
   return (
     <MaskedInput
-      type='cel-phone'
+      type="cel-phone"
       options={{
-        maskType: 'MBL',
+        maskType: "MBL",
         withDDD: true,
-        dddMask: ''
+        dddMask: "",
       }}
       includeRawValueInChangeText
       multiline={multiline}
       placeholder={label}
       autoFocus={autofocus}
       editable={!disabled && !readonly}
-      keyboardType={schema.type === 'number' ? 'numeric' : 'default'}
-      value={value ? value.toString() : ''}
+      keyboardType={schema.type === "number" ? "numeric" : "default"}
+      value={value ? value.toString() : ""}
       secureTextEntry={secureEntry}
       textContentType={textContentType}
-      onChangeText={(newText, rawText) => onChange(rawText === '' ? options.emptyValue : rawText)}
+      onChangeText={(newText, rawText) =>
+        onChange(rawText === "" ? options.emptyValue : rawText)
+      }
       onBlur={() => {
-        onBlur(id, value)
+        onBlur(id, value);
       }}
       onFocus={() => {
-        onFocus(id, value)
+        onFocus(id, value);
       }}
       selectionColor={theme.highlightColor}
       placeholderTextColor={theme.placeholderTextColor}
-      status={(hasErrors) && 'danger'}
+      status={hasErrors && "danger"}
       accessoryLeft={() => <Text>+91</Text>}
     />
-  )
-}
+  );
+};
 
-export default MobileWidget
+export default MobileWidget;

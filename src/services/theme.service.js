@@ -1,7 +1,13 @@
-import React from 'react';
-import { Appearance, AppearancePreferences, ColorSchemeName } from 'react-native-appearance';
-import { AppStorage } from './app-storage.service';
+import React from "react";
+import {
+  Appearance,
+  AppearancePreferences,
+  ColorSchemeName,
+} from "react-native-appearance";
+import { AppStorage } from "./app-storage.service";
 
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../screens/Errors/ErrorUtil";
 // export type Mapping = 'eva' | 'material';
 // export type Theme = 'light' | 'dark' | 'brand';
 
@@ -56,8 +62,15 @@ export class Theming {
    * - value to be set in `MappingContext.Provider`
    * - and `mapping` and `customMapping` to be set in `ApplicationProvider`.
    */
-  static useMapping = (mappings,
-                       mapping) => {
+  static useMapping = (mappings, mapping) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "useMapping method starts here",
+        { undefmappings, mappingined },
+        "useMapping()",
+        "theme.service.js"
+      )
+    );
 
     /**
      * Currently, there is no way to switch during the run time,
@@ -66,11 +79,27 @@ export class Theming {
      * Writes mapping to AsyncStorage and reloads an app
      */
     const setCurrentMapping = (nextMapping) => {
+      crashlytics().log(
+        ErrorUtil.createLog(
+          "setCurrentMapping method starts here",
+          { nextMapping },
+          "setCurrentMapping()",
+          "theme.service.js"
+        )
+      );
       AppStorage.setMapping(nextMapping);
     };
 
     const isEva = () => {
-      return mapping === 'eva';
+      crashlytics().log(
+        ErrorUtil.createLog(
+          "isEva method starts here",
+          undefined,
+          "isEva()",
+          "theme.service.js"
+        )
+      );
+      return mapping === "eva";
     };
 
     const mappingContext = {
@@ -100,15 +129,14 @@ export class Theming {
    * - value to be set in `ThemeContext.Provider`
    * - and theme to be set in `ApplicationProvider`.
    */
-  static useTheming (themes, mapping, theme) {
-
+  static useTheming(themes, mapping, theme) {
     const [currentTheme, setCurrentTheme] = React.useState(theme);
 
     React.useEffect(() => {
       const subscription = Appearance.addChangeListener((preferences) => {
         const appearanceTheme = Theming.createAppearanceTheme(
           preferences.colorScheme,
-          theme,
+          theme
         );
         setCurrentTheme(appearanceTheme);
       });
@@ -117,11 +145,30 @@ export class Theming {
     }, []);
 
     const isDarkMode = () => {
-      return currentTheme === 'dark';
+      crashlytics().log(
+        ErrorUtil.createLog(
+          "isDarkMode method starts here",
+          undefined,
+          "isDarkMode()",
+          "theme.service.js"
+        )
+      );
+      return currentTheme === "dark";
     };
 
     const createTheme = (upstreamTheme) => {
-      return { ...themes[mapping][currentTheme], ...themes[mapping][upstreamTheme][currentTheme] };
+      crashlytics().log(
+        ErrorUtil.createLog(
+          "createThememethod starts here",
+          { upstreamTheme },
+          "createTheme()",
+          "theme.service.js"
+        )
+      );
+      return {
+        ...themes[mapping][currentTheme],
+        ...themes[mapping][upstreamTheme][currentTheme],
+      };
     };
 
     const themeContext = {
@@ -135,23 +182,28 @@ export class Theming {
     };
 
     return [themeContext, themes[mapping][currentTheme]];
-  };
+  }
 
-  static useTheme (upstreamTheme) {
+  static useTheme(upstreamTheme) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "useTheme starts here",
+        { upstreamTheme },
+        "useTheme()",
+        "theme.service.js"
+      )
+    );
     const themeContext = React.useContext(Theming.ThemeContext);
     return themeContext.createTheme(upstreamTheme);
-  };
+  }
 
-  static createAppearanceTheme (appearance, preferredTheme) {
-    if (appearance === 'no-preference') {
+  static createAppearanceTheme(appearance, preferredTheme) {
+    if (appearance === "no-preference") {
       return preferredTheme;
     }
     return appearance;
-  };
+  }
 }
 
-Theming.MappingContext = React.createContext(null)
-Theming.ThemeContext = React.createContext(null)
-
-
-
+Theming.MappingContext = React.createContext(null);
+Theming.ThemeContext = React.createContext(null);

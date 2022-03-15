@@ -10,8 +10,18 @@ import ResourceFactoryConstants from "../../../../services/ResourceFactoryConsta
 import DocumentPicker from "react-native-document-picker";
 import DataService from "../../../../services/DataService";
 import DocumentUploadComponent from "../common/DocumentUploadComponent";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const getNewFileAdded = (newFiles, oldFiles = []) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getNewFileAdded method starts here ",
+      { newFiles, oldFiles },
+      "getNewFileAdded()",
+      "ITRUploadField.js"
+    )
+  );
   if (newFiles.length === 0) {
     return [];
   }
@@ -28,6 +38,14 @@ const getNewFileAdded = (newFiles, oldFiles = []) => {
 };
 
 const uploadITR = async (dispatch, files) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "uploadITR method starts here ",
+      { dispatch, files },
+      "uploadITR()",
+      "ITRUploadField.js"
+    )
+  );
   try {
     let uploadedDocIds = [];
     for (let r = 0; r < files.length; r++) {
@@ -43,11 +61,29 @@ const uploadITR = async (dispatch, files) => {
     await dispatch.formDetails.setItrFiles(files);
     return { uploadedDocIds };
   } catch (e) {
+    crashlytics().log(
+      ErrorUtil.createError(
+        e,
+        e.message,
+        e.message,
+        { dispatch, files },
+        "uploadITR()",
+        "ITRUploadField.js"
+      )
+    );
     console.log("Inside uploadITR() exception occured", e);
     throw new Error("CANNOT_REACH_ITR_VALIDATION_SERVICE");
   }
 };
 const uploadToAppWrite = async (file) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "uploadToAppWrite method starts here ",
+      { file },
+      "uploadToAppWrite()",
+      "ITRUploadField.js"
+    )
+  );
   const documentUploadService = new DocumentUploadService();
   if (isEmpty(file)) {
     return;
@@ -65,11 +101,29 @@ const uploadToAppWrite = async (file) => {
       throw new Error("UPLOAD_ITR_TO_DOC_SERVER_FAILED");
     }
   } catch (err) {
+    crashlytics().log(
+      ErrorUtil.createError(
+        err,
+        err.message,
+        err.message,
+        { file },
+        "uploadToAppWrite()",
+        "ITRUploadField.js"
+      )
+    );
     console.log("Inside uploadToAppWrite(), exception caught", err);
     throw new Error("CANNOT_REACH_ITR_UPLOAD_SERVER");
   }
 };
 const ITRUploadField = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ITRUploadField method starts here ",
+      { props },
+      "ITRUploadField()",
+      "ITRUploadField.js"
+    )
+  );
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
   const store = useStore();
@@ -105,6 +159,17 @@ const ITRUploadField = (props) => {
       });
     },
     onError: (error, params) => {
+      crashlytics().log(
+        ErrorUtil.createError(
+          error,
+          error.message,
+          error.message,
+          { error, params },
+          "ITRUploadField()",
+          "ITRUploadField.js"
+        )
+      );
+
       console.log("Inside onError() method", error);
       setIsUploadDone(true);
       if (
@@ -126,6 +191,14 @@ const ITRUploadField = (props) => {
     },
   });
   const removeFile = (file) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "removeFile method starts here ",
+        { file },
+        "removeFile()",
+        "ITRUploadField.js"
+      )
+    );
     if (!isEmpty(file) > 0) {
       useRemoveFile.run(file);
       // remove from props
@@ -135,6 +208,14 @@ const ITRUploadField = (props) => {
   };
 
   const onFileChange = (allFiles) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onFileChange method starts here ",
+        { allFiles },
+        "onFileChange()",
+        "ITRUploadField.js"
+      )
+    );
     setIsUploadDone(false);
     const newFilesAdded = getNewFileAdded(allFiles, itrFiles);
     if (newFilesAdded.length > 0) {

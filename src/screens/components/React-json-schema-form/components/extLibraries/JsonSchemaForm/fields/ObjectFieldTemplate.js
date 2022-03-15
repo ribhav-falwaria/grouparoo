@@ -1,24 +1,36 @@
-import React from 'react'
-import { View } from 'react-native'
-import DescriptionField from './DescriptionField'
-import RootTitleField from './RootTitleField'
-import { StyleService, useStyleSheet } from '@ui-kitten/components'
-import TitleDescriptionField from './TitleDescriptionField'
+import React from "react";
+import { View } from "react-native";
+import DescriptionField from "./DescriptionField";
+import RootTitleField from "./RootTitleField";
+import { StyleService, useStyleSheet } from "@ui-kitten/components";
+import TitleDescriptionField from "./TitleDescriptionField";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 const ObjectFieldTemplate = ({
   description,
   title,
   properties,
   required,
-  uiSchema
+  uiSchema,
 }) => {
-  const styles = useStyleSheet(themedStyles)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ObjectFieldTemplate method starts here ",
+      { description, title, properties, required, uiSchema },
+      "ObjectFieldTemplate()",
+      "ObjectFieldTemplate.js"
+    )
+  );
+  const styles = useStyleSheet(themedStyles);
   return (
     <View>
       <View style={styles.formTitleContainer}>
-        {uiSchema['ui:title'] || title ? (
+        {uiSchema["ui:title"] || title ? (
           <RootTitleField title={title} required={required} />
         ) : null}
-        {description ? <TitleDescriptionField description={description} /> : null}
+        {description ? (
+          <TitleDescriptionField description={description} />
+        ) : null}
       </View>
       <View style={styles.contentContainer}>
         {properties.map((element, index) => (
@@ -26,15 +38,15 @@ const ObjectFieldTemplate = ({
         ))}
       </View>
     </View>
-  )
-}
+  );
+};
 const themedStyles = StyleService.create({
   formTitleContainer: {
-    marginBottom: 16
+    marginBottom: 16,
   },
   contentContainer: {
-    marginVertical: 8
-  }
-})
+    marginVertical: 8,
+  },
+});
 
-export default ObjectFieldTemplate
+export default ObjectFieldTemplate;

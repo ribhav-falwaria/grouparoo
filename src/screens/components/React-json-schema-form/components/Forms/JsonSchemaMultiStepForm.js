@@ -1,30 +1,29 @@
-import React, { useState, useContext } from 'react'
-import { View } from 'react-native'
-import isEmpty from 'lodash.isempty'
-import {
-  useStyleSheet,
-  StyleService,
-  Button} from '@ui-kitten/components'
-import dayjs from 'dayjs'
-import useAppState from 'react-native-appstate-hook'
-import { config } from '../../../../../config'
-import apiService from '../../../../../apiService'
-import JSonSchemaForm from './JsonSchemaForm'
-import { getSchemaForStep, findStepForFormData } from './utils'
-import SpinnerButton from '../../../SpinnerButton'
-import styleConstants from '../../styleConstants'
-import { LocalizationContext } from '../../translation/Translation'
-import appConstants from '../../constants/appConstants'
-import { useSelector } from 'react-redux'
-import ResourceFactoryConstants from '../../services/ResourceFactoryConstants'
-import DataService from '../../services/DataService'
-import merge from 'lodash/merge'
-import IconUtil from '../common/IconUtil'
-import crashlytics from '@react-native-firebase/crashlytics'
-import ErrorUtil from '../../../../Errors/ErrorUtil'
-import FormSuccess from './FormSuccess'
-const FIRST_STEP_INDEX = 1
-const finalformObject = {}
+import React, { useState, useContext } from "react";
+import { View } from "react-native";
+import isEmpty from "lodash.isempty";
+import { useStyleSheet, StyleService, Button } from "@ui-kitten/components";
+import dayjs from "dayjs";
+import useAppState from "react-native-appstate-hook";
+import { config } from "../../../../../config";
+import apiService from "../../../../../apiService";
+import JSonSchemaForm from "./JsonSchemaForm";
+import { getSchemaForStep, findStepForFormData } from "./utils";
+import SpinnerButton from "../../../SpinnerButton";
+import styleConstants from "../../styleConstants";
+import { LocalizationContext } from "../../translation/Translation";
+import appConstants from "../../constants/appConstants";
+import { useSelector } from "react-redux";
+import ResourceFactoryConstants from "../../services/ResourceFactoryConstants";
+import DataService from "../../services/DataService";
+import merge from "lodash/merge";
+import IconUtil from "../common/IconUtil";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../Errors/ErrorUtil";
+import FormSuccess from "./FormSuccess";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
+const FIRST_STEP_INDEX = 1;
+const finalformObject = {};
 const JsonSchemaMultiStepForm = ({
   formData,
   schema,
@@ -36,92 +35,131 @@ const JsonSchemaMultiStepForm = ({
   setLiveValidate,
   formId,
   stepSchemaName,
-  token
+  token,
 }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "JsonSchemaMultiStepForm method starts here",
+      {
+        formData,
+        schema,
+        uiSchema,
+        errorSchema,
+        steps,
+        onChange,
+        liveValidate,
+        setLiveValidate,
+        formId,
+        stepSchemaName,
+        token,
+      },
+      "JsonSchemaMultiStepForm()",
+      "JsonSchemaMultiStepForm.js"
+    )
+  );
   useAppState({
-    onBackground: () => apiService.appApi.stateEvents.send({
-      customerId,
-      appStatus: 'background',
-      createdOn: dayjs().valueOf(),
-      eventTypeId: config.EVENT_DROPOFF
-    })
-  })
-  const tempId = useSelector((state) => state?.formDetails?.tempId)
-  const customerId = useSelector((state) => state?.customer?.customerDetails?.$id)
+    onBackground: () =>
+      apiService.appApi.stateEvents.send({
+        customerId,
+        appStatus: "background",
+        createdOn: dayjs().valueOf(),
+        eventTypeId: config.EVENT_DROPOFF,
+      }),
+  });
+  const tempId = useSelector((state) => state?.formDetails?.tempId);
+  const customerId = useSelector(
+    (state) => state?.customer?.customerDetails?.$id
+  );
 
   const [finalSaveMessageVisibility, setFinalSaveMessageValidity] =
-    useState(false)
-  const resourseFactoryConstants = new ResourceFactoryConstants()
-  const styles = useStyleSheet(themeStyles)
+    useState(false);
+  const resourseFactoryConstants = new ResourceFactoryConstants();
+  const styles = useStyleSheet(themeStyles);
   const isPanVerified = useSelector(
     (state) => state?.formDetails?.isPanVerified
-  )
+  );
   const isUdyamVerified = useSelector(
     (state) => state?.formDetails?.isUdyamVerified
-  )
+  );
   const isGstVerified = useSelector(
     (state) => state?.formDetails?.isGSTVerified
-  )
+  );
   const isBankStatementVerified = useSelector(
     (state) => state?.formDetails?.isBankStatementVerified
-  )
+  );
   const isKycDone = useSelector(
     (state) => state?.formDetails?.formData[appConstants.okycField]
-  )
-  const kycData = useSelector((state) => state?.formDetails?.kycData)
+  );
+  const kycData = useSelector((state) => state?.formDetails?.kycData);
 
-  const gstnData = useSelector((state) => state?.formDetails?.gstnData)
-  const panData = useSelector((state) => state?.formDetails?.panData)
+  const gstnData = useSelector((state) => state?.formDetails?.gstnData);
+  const panData = useSelector((state) => state?.formDetails?.panData);
 
-  const udyamData = useSelector((state) => state?.formDetails?.udyamData)
-  let thisFormRef
-  const { translations } = useContext(LocalizationContext)
-  const thisStep = findStepForFormData(steps, formData)
-  const [currentStep, setCurrentStep] = useState(thisStep)
-  const [isSubmit, setIsSubmit] = useState(false)
-  const [newErrorSchema, setNewErrorSchema] = useState(errorSchema)
-  const [loaderVisibility, setLoaderVisibility] = useState(false)
-  const totalSteps = Object.keys(steps).length
-  const step = steps[currentStep.toString()]
-  step.liveValidate = isSubmit
+  const udyamData = useSelector((state) => state?.formDetails?.udyamData);
+  let thisFormRef;
+  const { translations } = useContext(LocalizationContext);
+  const thisStep = findStepForFormData(steps, formData);
+  const [currentStep, setCurrentStep] = useState(thisStep);
+  const [isSubmit, setIsSubmit] = useState(false);
+  const [newErrorSchema, setNewErrorSchema] = useState(errorSchema);
+  const [loaderVisibility, setLoaderVisibility] = useState(false);
+  const totalSteps = Object.keys(steps).length;
+  const step = steps[currentStep.toString()];
+  step.liveValidate = isSubmit;
   const onSubmit = (form, stepIndex) => {
-    setLiveValidate(false)
-    const { errors, errorSchema, formData } = form
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onSubmit method starts here",
+        { form, stepIndex },
+        "onSubmit()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    setLiveValidate(false);
+    const { errors, errorSchema, formData } = form;
     if (errors && errors.length > 0) {
-      return
+      return;
     }
-    setIsSubmit(true)
+    setIsSubmit(true);
     // If all well, move to next step
     if (isEmpty(errors)) {
       saveOrUpdateFormData(
         formData,
-        stepIndex === totalSteps ? 'complete' : 'inprogress',
+        stepIndex === totalSteps ? "complete" : "inprogress",
         stepIndex,
         token
-      )
+      );
     } else {
-      setNewErrorSchema(errorSchema)
+      setNewErrorSchema(errorSchema);
     }
-  }
+  };
 
   const addRequiredData = (requestBody, currentStep, stepsSchema) => {
-    const stepFields = stepsSchema[currentStep].stepFields
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "addRequiredData method starts here",
+        { requestBody, currentStep, stepsSchema },
+        "addRequiredData()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    const stepFields = stepsSchema[currentStep].stepFields;
     for (const field of stepFields) {
       if (field === appConstants.panCardInputFieldName) {
         requestBody[appConstants.isPANVerified] =
-          isPanVerified === 'Yes' ? 'Yes' : 'No'
-        requestBody.panData = panData
+          isPanVerified === "Yes" ? "Yes" : "No";
+        requestBody.panData = panData;
       } else if (field === appConstants.udyamInputFieldName) {
         requestBody[appConstants.isUdyamVerified] =
-          isUdyamVerified === 'Yes' ? 'Yes' : 'No'
-        requestBody.udyamData = udyamData
+          isUdyamVerified === "Yes" ? "Yes" : "No";
+        requestBody.udyamData = udyamData;
       } else if (field === appConstants.gstnInputFieldName) {
-        requestBody.gstnData = gstnData
+        requestBody.gstnData = gstnData;
         requestBody[appConstants.isGSTVerified] =
-          isGstVerified === 'Yes' ? 'Yes' : 'No'
+          isGstVerified === "Yes" ? "Yes" : "No";
       } else if (field === appConstants.bankStatementUploadFieldName) {
         requestBody[appConstants.isBankStatementVerified] =
-          isBankStatementVerified === 'Yes' ? 'Yes' : 'No'
+          isBankStatementVerified === "Yes" ? "Yes" : "No";
       } else if (
         field === appConstants.isCommunicationAddSameAsPermanentAddress
       ) {
@@ -129,90 +167,145 @@ const JsonSchemaMultiStepForm = ({
           requestBody[appConstants.isCommunicationAddSameAsPermanentAddress]
         ) {
           requestBody[appConstants.communicationAddressField] =
-          kycData?.data?.address
+            kycData?.data?.address;
         }
       } else if (field === appConstants.okycField && !isEmpty(kycData)) {
-        requestBody.kycData = kycData
+        requestBody.kycData = kycData;
       }
     }
-  }
+  };
 
   const saveOrUpdateFormData = (formData, status, stepIndex, token) => {
-    setLoaderVisibility(true)
-    const requestDataToUpdate = getRequestPayload(formId, formData, token)
-    const url = resourseFactoryConstants.constants.forms.saveActionForm
-    if (status === 'inprogress') {
-      requestDataToUpdate.progress = 'INCOMPLETE'
-    } else if (status === 'complete') {
-      requestDataToUpdate.progress = 'COMPLETE'
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "saveOrUpdateFormData method starts here",
+        { formData, status, stepIndex, token },
+        "saveOrUpdateFormData()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    setLoaderVisibility(true);
+    const requestDataToUpdate = getRequestPayload(formId, formData, token);
+    const url = resourseFactoryConstants.constants.forms.saveActionForm;
+    if (status === "inprogress") {
+      requestDataToUpdate.progress = "INCOMPLETE";
+    } else if (status === "complete") {
+      requestDataToUpdate.progress = "COMPLETE";
     }
     // requestDataToUpdate.loanApplicationId = tempId
-    crashlytics().log(ErrorUtil.createLog('Request body at this step', requestDataToUpdate, 'saveOrUpdateFormData', 'JsonSchemaMultiStepForm.js'))
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "Request body at this step",
+        requestDataToUpdate,
+        "saveOrUpdateFormData",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
     DataService.postData(`${url}`, requestDataToUpdate)
       .then((res) => {
-        res = res?.data
-        if (res?.status === 'SUCCESS') {
+        res = res?.data;
+        if (res?.status === "SUCCESS") {
           if (currentStep === totalSteps) {
             // Put Condition if any special page need to be redirected
-            setFinalSaveMessageValidity(true)
-            setLoaderVisibility(false)
+            setFinalSaveMessageValidity(true);
+            setLoaderVisibility(false);
           } else {
-            setCurrentStep(stepIndex + 1)
+            setCurrentStep(stepIndex + 1);
           }
         } else {
           if (currentStep > totalSteps) {
-            setFinalSaveMessageValidity(true)
-            setLoaderVisibility(false)
-            return
+            setFinalSaveMessageValidity(true);
+            setLoaderVisibility(false);
+            return;
           }
-          crashlytics().log(res.message)
-          throw new Error('CANNOT_POST_TO_NOCODE_SERVER')
+          crashlytics().log(res.message);
+          throw new Error("CANNOT_POST_TO_NOCODE_SERVER");
         }
-        setLoaderVisibility(false)
+        setLoaderVisibility(false);
       })
       .catch((err) => {
-        crashlytics().recordError(err)
-        setLoaderVisibility(false)
-        throw err
-      })
-  }
+        crashlytics().recordError(err);
+        setLoaderVisibility(false);
+        throw err;
+      });
+  };
 
   const getRequestPayload = (formId, formData, token) => {
-    const requestData = {}
-    requestData.formName = formId
-    requestData.stepSchemaName = stepSchemaName
-    requestData.currentStep = currentStep.toString()
-    requestData.data = formData
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "getRequestPayload merthod starts here",
+        { formId, formData, token },
+        "getRequestPayload()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    const requestData = {};
+    requestData.formName = formId;
+    requestData.stepSchemaName = stepSchemaName;
+    requestData.currentStep = currentStep.toString();
+    requestData.data = formData;
     // add some optional data
-    addRequiredData(requestData.data, currentStep, steps)
+    addRequiredData(requestData.data, currentStep, steps);
     // add some optional data
     requestData.param = {
-      jwt: token
-    }
+      jwt: token,
+    };
     // Saving as backup
-    merge(finalformObject, requestData)
-    return finalformObject
-  }
+    merge(finalformObject, requestData);
+    return finalformObject;
+  };
 
   const setFormRef = (ref) => {
-    thisFormRef = ref
-  }
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "setFormRef merthod starts here",
+        { ref },
+        "setFormRef()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    thisFormRef = ref;
+  };
   const onPrevious = () => {
-    const step = currentStep - 1
-    setCurrentStep(step)
-  }
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onPrevious merthod starts here",
+        undefined,
+        "onPrevious()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    const step = currentStep - 1;
+    setCurrentStep(step);
+  };
   const onNext = () => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onNext merthod starts here",
+        undefined,
+        "onNext()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
     // Force a form Submit
-    thisFormRef.submit()
-  }
+    thisFormRef.submit();
+  };
   const onError = (errorSchema) => {
-    setNewErrorSchema(errorSchema)
-  }
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onError merthod starts here",
+        { errorSchema },
+        "onError()",
+        "JsonSchemaMultiStepForm.js"
+      )
+    );
+    setNewErrorSchema(errorSchema);
+  };
   const { newSchema, newUiSchema } = getSchemaForStep({
     schema,
     uiSchema,
-    step
-  })
+    step,
+  });
 
   return (
     <>
@@ -235,11 +328,11 @@ const JsonSchemaMultiStepForm = ({
             <Button
               style={styles.buttonStyle}
               onPress={onPrevious}
-              status='basic'
+              status="basic"
               disabled={currentStep === FIRST_STEP_INDEX}
               accessoryLeft={() => <IconUtil.BackIcon />}
             >
-              {translations['form.previous']}
+              {translations["form.previous"]}
             </Button>
 
             {currentStep < totalSteps && (
@@ -249,7 +342,7 @@ const JsonSchemaMultiStepForm = ({
                 onPress={onNext}
                 Icon={IconUtil.NextIcon}
               >
-                {translations['form.next']}
+                {translations["form.next"]}
               </SpinnerButton>
             )}
             {currentStep === totalSteps && (
@@ -258,49 +351,47 @@ const JsonSchemaMultiStepForm = ({
                 loading={loaderVisibility}
                 onPress={onNext}
               >
-                {translations['form.submit']}
+                {translations["form.submit"]}
               </SpinnerButton>
             )}
           </View>
         </View>
       )}
-      {finalSaveMessageVisibility && (
-        <FormSuccess />
-      )}
+      {finalSaveMessageVisibility && <FormSuccess />}
     </>
-  )
-}
+  );
+};
 
 const themeStyles = StyleService.create({
   successText: {
-    fontWeight: 'bold',
-    fontSize: 25
+    fontWeight: "bold",
+    fontSize: 25,
   },
   successDescriptionText: {
-    fontSize: 20
+    fontSize: 20,
   },
   finalMessage: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttonStyle: {
-    width: '48.5%'
+    width: "48.5%",
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     verticalPadding: 8,
-    justifyContent: 'space-between',
-    backgroundColor: 'background-basic-color-1',
-    height: 50
+    justifyContent: "space-between",
+    backgroundColor: "background-basic-color-1",
+    height: 50,
   },
   container: {
     ...styleConstants.contentContainer,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'space-between'
-  }
-})
+    flexDirection: "column",
+    justifyContent: "space-between",
+  },
+});
 
-export default JsonSchemaMultiStepForm
+export default JsonSchemaMultiStepForm;

@@ -1,52 +1,62 @@
-import React, { useRef, useState, useEffect } from 'react'
-import { View, StyleSheet, Animated } from 'react-native'
+import React, { useRef, useState, useEffect } from "react";
+import { View, StyleSheet, Animated } from "react-native";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../Errors/ErrorUtil";
 
 // setInterval custom hook by Dan Abramov
-function useInterval (callback, delay) {
-  const savedCallback = useRef()
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
 
   // Remember the latest callback.
   useEffect(() => {
-    savedCallback.current = callback
-  }, [callback])
+    savedCallback.current = callback;
+  }, [callback]);
 
   // Set up the interval.
   useEffect(() => {
-    function tick () {
-      savedCallback.current()
+    function tick() {
+      savedCallback.current();
     }
     if (delay !== null) {
-      const id = setInterval(tick, delay)
-      return () => clearInterval(id)
+      const id = setInterval(tick, delay);
+      return () => clearInterval(id);
     }
-  }, [delay])
+  }, [delay]);
 }
 
 const HorizontalProgressBar = ({ progressNum, auto }) => {
-  const animation = useRef(new Animated.Value(0))
-  const [progress, setProgress] = useState(progressNum || 0)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "HorizontalProgressBar method starts here",
+      { progressNum, auto },
+      "HorizontalProgressBar()",
+      "HorizontalProgressBar.js"
+    )
+  );
+  const animation = useRef(new Animated.Value(0));
+  const [progress, setProgress] = useState(progressNum || 0);
   if (auto) {
     useInterval(() => {
       // update progress until 100
       if (progress < 100) {
-        setProgress(progress + 5)
+        setProgress(progress + 5);
       }
-    }, 500)
+    }, 500);
   }
 
   useEffect(() => {
     Animated.timing(animation.current, {
       toValue: progress,
       duration: 100,
-      useNativeDriver: false
-    }).start()
-  }, [progress])
+      useNativeDriver: false,
+    }).start();
+  }, [progress]);
 
   const width = animation.current.interpolate({
     inputRange: [0, 100],
-    outputRange: ['0%', '100%'],
-    extrapolate: 'clamp'
-  })
+    outputRange: ["0%", "100%"],
+    extrapolate: "clamp",
+  });
 
   return (
     <View style={styles.container}>
@@ -54,28 +64,28 @@ const HorizontalProgressBar = ({ progressNum, auto }) => {
         <Animated.View
           style={[
             StyleSheet.absoluteFill,
-            { backgroundColor: '#8BED4F', width }
+            { backgroundColor: "#8BED4F", width },
           ]}
         />
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default HorizontalProgressBar
+export default HorizontalProgressBar;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#ecf0f1',
-    marginHorizontal: -36
+    backgroundColor: "#ecf0f1",
+    marginHorizontal: -36,
   },
   progressBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     height: 8,
-    width: '100%',
-    backgroundColor: '#fff',
-    borderColor: '#fff',
+    width: "100%",
+    backgroundColor: "#fff",
+    borderColor: "#fff",
     borderWidth: 2,
-    borderRadius: 5
-  }
-})
+    borderRadius: 5,
+  },
+});

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet } from "react-native";
 import PropTypes from "prop-types";
 import _pick from "lodash/pick";
 import _get from "lodash/get";
@@ -18,9 +18,10 @@ import {
 } from "./utils";
 import validateFormData, { toErrorList } from "./validate";
 import { mergeObjects } from "./utils";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../Errors/ErrorUtil";
 
 export default class Form extends Component {
-
   constructor(props) {
     super(props);
     this.state = this.getStateFromProps(props, props.formData);
@@ -60,6 +61,14 @@ export default class Form extends Component {
     const additionalMetaSchemas = props.additionalMetaSchemas;
 
     const getCurrentErrors = () => {
+      crashlytics().log(
+        ErrorUtil.createLog(
+          "getCurrentErrors method starts here",
+          { errors },
+          "getCurrentErrors()",
+          "Form.js"
+        )
+      );
       if (props.noValidate) {
         return { errors: [], errorSchema: {} };
       } else if (!props.liveValidate) {
@@ -177,7 +186,7 @@ export default class Form extends Component {
 
     let data = _pick(formData, fields);
     if (Array.isArray(formData)) {
-      return Object.keys(data).map(key => data[key]);
+      return Object.keys(data).map((key) => data[key]);
     }
 
     return data;
@@ -185,9 +194,9 @@ export default class Form extends Component {
 
   getFieldNames = (pathSchema, formData) => {
     const getAllPaths = (_obj, acc = [], paths = [""]) => {
-      Object.keys(_obj).forEach(key => {
+      Object.keys(_obj).forEach((key) => {
         if (typeof _obj[key] === "object") {
-          let newPaths = paths.map(path => `${path}.${key}`);
+          let newPaths = paths.map((path) => `${path}.${key}`);
           // If an object is marked with additionalProperties, all its keys are valid
           if (_obj[key].__rjsf_additionalProperties && _obj[key].$name !== "") {
             acc.push(_obj[key].$name);
@@ -195,7 +204,7 @@ export default class Form extends Component {
             getAllPaths(_obj[key], acc, newPaths);
           }
         } else if (key === "$name" && _obj[key] !== "") {
-          paths.forEach(path => {
+          paths.forEach((path) => {
             path = path.replace(/^\./, "");
             const formValue = _get(formData, path);
             // adds path to fieldNames if it points to a value
@@ -295,7 +304,7 @@ export default class Form extends Component {
     }
   };
 
-  onSubmit = event => {
+  onSubmit = (event) => {
     event.preventDefault();
     if (event.target !== event.currentTarget) {
       return;
@@ -382,6 +391,14 @@ export default class Form extends Component {
   getRegistry() {
     // For BC, accept passed SchemaField and TitleField props and pass them to
     // the "fields" registry one.
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "getRegistry method starts here",
+        undefined,
+        "getRegistry()",
+        "Form.js"
+      )
+    );
     const { fields, widgets } = getDefaultRegistry();
     return {
       fields: { ...fields, ...this.props.fields },
@@ -396,6 +413,14 @@ export default class Form extends Component {
   }
 
   submit() {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "submit method starts here",
+        undefined,
+        "submit()",
+        "Form.js"
+      )
+    );
     if (this.formElement) {
       this.formElement.dispatchEvent(
         new CustomEvent("submit", {
@@ -403,6 +428,14 @@ export default class Form extends Component {
         })
       );
     }
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "submit method ends here",
+        undefined,
+        "submit()",
+        "Form.js"
+      )
+    );
   }
 
   render() {
@@ -451,9 +484,10 @@ export default class Form extends Component {
         acceptCharset={acceptcharset}
         noValidate={noHtml5Validate}
         onSubmit={this.onSubmit}
-        ref={form => {
+        ref={(form) => {
           this.formElement = form;
-        }}>
+        }}
+      >
         {this.renderErrors()}
         <_SchemaField
           schema={schema}
@@ -469,9 +503,7 @@ export default class Form extends Component {
           registry={registry}
           disabled={disabled}
         />
-        <View style={styles.buttonContainer} >
-          {children}
-        </View>
+        <View style={styles.buttonContainer}>{children}</View>
       </FormTag>
     );
   }
@@ -530,6 +562,6 @@ if (process.env.NODE_ENV !== "production") {
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    justifyContent: 'flex-end'
-  }
-})
+    justifyContent: "flex-end",
+  },
+});

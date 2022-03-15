@@ -1,9 +1,11 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import { Text } from '@ui-kitten/components'
-import TitleField from './TitleField'
-import DescriptionField from './DescriptionField'
-import { useFormContext } from '../FormContext'
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import { Text } from "@ui-kitten/components";
+import TitleField from "./TitleField";
+import DescriptionField from "./DescriptionField";
+import { useFormContext } from "../FormContext";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const FieldTemplate = ({
   label,
@@ -12,10 +14,26 @@ const FieldTemplate = ({
   rawErrors = [],
   rawHelp,
   required,
-  rawDescription
+  rawDescription,
 }) => {
-  const { theme } = useFormContext()
-  const hasErrors = rawErrors?.length > 0
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "FieldTemplate method starts here ",
+      {
+        label,
+        children,
+        displayLabel,
+        rawErrors,
+        rawHelp,
+        required,
+        rawDescription,
+      },
+      "FieldTemplate()",
+      "FieldTemplate.js"
+    )
+  );
+  const { theme } = useFormContext();
+  const hasErrors = rawErrors?.length > 0;
   return (
     <View style={styles.container}>
       {displayLabel && label ? (
@@ -32,24 +50,28 @@ const FieldTemplate = ({
             style={[
               styles.description,
               styles.error,
-              { color: theme.errorColor }
+              { color: theme.errorColor },
             ]}
           >
-            {'\u2022'} {error}
+            {"\u2022"} {error}
           </Text>
         ))}
-      {rawHelp?.length > 0 && <Text category='c1' appearence='hint' status='info'>{rawHelp}</Text>}
+      {rawHelp?.length > 0 && (
+        <Text category="c1" appearence="hint" status="info">
+          {rawHelp}
+        </Text>
+      )}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20
+    marginBottom: 20,
   },
   error: {
-    marginTop: 5
-  }
-})
+    marginTop: 5,
+  },
+});
 
-export default FieldTemplate
+export default FieldTemplate;

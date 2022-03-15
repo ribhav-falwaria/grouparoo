@@ -1,16 +1,18 @@
-import React from 'react'
-import { StyleSheet } from 'react-native'
-import RBSheet from 'react-native-raw-bottom-sheet'
-import UploadOptionBottom from './UploadOptionBottom'
+import React from "react";
+import { StyleSheet } from "react-native";
+import RBSheet from "react-native-raw-bottom-sheet";
+import UploadOptionBottom from "./UploadOptionBottom";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 const BottomSheet = ({
   onOpenCamera,
   onSelectFile,
   refRBSheet,
-  height = 250
+  height = 250,
 }) => {
   const onCancel = () => {
-    refRBSheet.current.close()
-  }
+    refRBSheet.current.close();
+  };
   return (
     <>
       <RBSheet
@@ -20,14 +22,13 @@ const BottomSheet = ({
         closeOnPressMask={false}
         customStyles={{
           wrapper: {
-            backgroundColor: 'gray',
-            opacity: 0.9
+            backgroundColor: "gray",
+            opacity: 0.9,
           },
-          container: {
-          },
+          container: {},
           draggableIcon: {
-            backgroundColor: 'grey'
-          }
+            backgroundColor: "grey",
+          },
         }}
       >
         <UploadOptionBottom
@@ -37,17 +38,17 @@ const BottomSheet = ({
         />
       </RBSheet>
     </>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    justifyContent: 'flex-end'
+    justifyContent: "flex-end",
   },
   button: {
-    margin: 5
-  }
-})
-export default BottomSheet
+    margin: 5,
+  },
+});
+export default BottomSheet;

@@ -1,14 +1,24 @@
-import React from 'react'
-import * as types from '../types'
+import React from "react";
+import * as types from "../types";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 import {
   getWidget,
   getUiOptions,
   optionsList,
-  getDefaultRegistry
-} from '../utils'
+  getDefaultRegistry,
+} from "../utils";
 
-function BooleanField (props) {
+function BooleanField(props) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "BooleanField method starts here ",
+      { props },
+      "BooleanField()",
+      "BooleanField.js"
+    )
+  );
   const {
     schema,
     name,
@@ -23,31 +33,31 @@ function BooleanField (props) {
     onChange,
     onFocus,
     onBlur,
-    rawErrors
-  } = props
-  const { title } = schema
-  const { widgets, formContext, fields } = registry
-  const { widget = 'checkbox', ...options } = getUiOptions(uiSchema)
-  const Widget = getWidget(schema, widget, widgets)
+    rawErrors,
+  } = props;
+  const { title } = schema;
+  const { widgets, formContext, fields } = registry;
+  const { widget = "checkbox", ...options } = getUiOptions(uiSchema);
+  const Widget = getWidget(schema, widget, widgets);
 
-  let enumOptions
+  let enumOptions;
 
   if (Array.isArray(schema.oneOf)) {
     enumOptions = optionsList({
-      oneOf: schema.oneOf.map(option => ({
+      oneOf: schema.oneOf.map((option) => ({
         ...option,
-        title: option.title || (option.const === true ? 'Yes' : 'No')
-      }))
-    })
+        title: option.title || (option.const === true ? "Yes" : "No"),
+      })),
+    });
   } else {
     enumOptions = optionsList({
       enum: schema.enum || [true, false],
       enumNames:
         schema.enumNames ||
         (schema.enum && schema.enum[0] === false
-          ? ['No', 'Yes']
-          : ['Yes', 'No'])
-    })
+          ? ["No", "Yes"]
+          : ["Yes", "No"]),
+    });
   }
 
   return (
@@ -69,18 +79,18 @@ function BooleanField (props) {
       rawErrors={rawErrors}
       DescriptionField={fields.DescriptionField}
     />
-  )
+  );
 }
 
-if (process.env.NODE_ENV !== 'production') {
-  BooleanField.propTypes = types.fieldProps
+if (process.env.NODE_ENV !== "production") {
+  BooleanField.propTypes = types.fieldProps;
 }
 
 BooleanField.defaultProps = {
   uiSchema: {},
   disabled: false,
   readonly: false,
-  autofocus: false
-}
+  autofocus: false,
+};
 
-export default BooleanField
+export default BooleanField;

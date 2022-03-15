@@ -1,16 +1,24 @@
-import React, { useContext } from 'react'
-import { View } from 'react-native'
-import { useStore, useSelector } from 'react-redux'
-import { Card, Text, StyleService, useStyleSheet, Button } from '@ui-kitten/components'
+import React, { useContext } from "react";
+import { View } from "react-native";
+import { useStore, useSelector } from "react-redux";
+import {
+  Card,
+  Text,
+  StyleService,
+  useStyleSheet,
+  Button,
+} from "@ui-kitten/components";
 import {
   Placeholder,
   PlaceholderMedia,
   PlaceholderLine,
-  Fade
-} from 'rn-placeholder'
-import VerticalStepIndicator from '../components/VerticalStepIndicator'
-import { LocalizationContext } from '../../components/Translation'
-import styleConstants from '../styleConstants'
+  Fade,
+} from "rn-placeholder";
+import VerticalStepIndicator from "../components/VerticalStepIndicator";
+import { LocalizationContext } from "../../components/Translation";
+import styleConstants from "../styleConstants";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 const Loading = () => (
   <Placeholder
     Animation={Fade}
@@ -22,31 +30,39 @@ const Loading = () => (
     <PlaceholderLine width={30} />
     <PlaceholderLine width={30} />
   </Placeholder>
-)
+);
 
 const PendingLoanApplications = ({
   heading,
   loanApplicationId,
   Icon,
   onPress,
-  loading
+  loading,
 }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "PendingLoanApplications method starts here",
+      { heading, loanApplicationId, Icon, onPress, loading },
+      "PendingLoanApplications()",
+      "PendingLoanApplications.js"
+    )
+  );
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
-  const store = useStore()
-  const state = useSelector(state => state)
-  const selector = store.select(models => ({
+  const store = useStore();
+  const state = useSelector((state) => state);
+  const selector = store.select((models) => ({
     loanApplicationSteps: models.loanApplicationSteps.getLoanApplicationSteps,
-    currentStep: models.loanApplicationSteps.getCurrentStep
-  }))
+    currentStep: models.loanApplicationSteps.getCurrentStep,
+  }));
   const { loanApplicationSteps, currentStep } = selector(state, {
-    loanApplicationId
-  })
+    loanApplicationId,
+  });
 
   // FIXME: Remove this
-  const styles = useStyleSheet(themedStyles)
-  const { translations } = useContext(LocalizationContext)
+  const styles = useStyleSheet(themedStyles);
+  const { translations } = useContext(LocalizationContext);
   return (
     <Card style={styles.cardContainer} onPress={onPress}>
       <View style={styles.cardTitleContainer}>
@@ -54,9 +70,9 @@ const PendingLoanApplications = ({
           <Icon />
           <Text
             style={styles.heading}
-            category='h6'
-            status='primary'
-            appearance='default'
+            category="h6"
+            status="primary"
+            appearance="default"
           >
             {translations[heading]}
           </Text>
@@ -69,55 +85,55 @@ const PendingLoanApplications = ({
         loanApplicationId={loanApplicationId}
       />
       <Button onPress={onPress}>
-        {translations['pendingLoanApplication.viewDetails']}
+        {translations["pendingLoanApplication.viewDetails"]}
       </Button>
     </Card>
-  )
-}
+  );
+};
 
 const themedStyles = StyleService.create({
   cardContainer: {
-    ...styleConstants.cardContainer
+    ...styleConstants.cardContainer,
   },
   headRow: {
-    marginBottom: 12
+    marginBottom: 12,
   },
   cardTitleContainer: {
     ...styleConstants.cardTitleContainer,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between'
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   contentContainer: {
     ...styleConstants.contentContainer,
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   heading: {
-    ...styleConstants.heading
+    ...styleConstants.heading,
   },
   headingAmount: {
-    marginLeft: 'auto'
+    marginLeft: "auto",
   },
   content: {
     ...styleConstants.content,
-    width: 100
+    width: 100,
   },
   repaymentSchedule: {
-    flexDirection: 'column',
-    alignItems: 'baseline'
+    flexDirection: "column",
+    alignItems: "baseline",
   },
   scheduleRowHead: {
-    flexDirection: 'row',
-    marginBottom: 4
+    flexDirection: "row",
+    marginBottom: 4,
   },
 
   scheduleRow: {
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   payNow: {
-    marginLeft: 'auto',
-    width: 150
-  }
-})
+    marginLeft: "auto",
+    width: 150,
+  },
+});
 
-export default PendingLoanApplications
+export default PendingLoanApplications;

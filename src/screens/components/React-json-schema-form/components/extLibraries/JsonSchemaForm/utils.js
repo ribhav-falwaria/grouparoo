@@ -1,211 +1,285 @@
-import React from 'react'
-import * as ReactIs from 'react-is'
-import mergeAllOf from 'json-schema-merge-allof'
-import fill from 'core-js-pure/features/array/fill'
-import union from 'lodash/union'
-import jsonpointer from 'jsonpointer'
-import validateFormData, { isValid } from './validate'
+import React from "react";
+import * as ReactIs from "react-is";
+import mergeAllOf from "json-schema-merge-allof";
+import fill from "core-js-pure/features/array/fill";
+import union from "lodash/union";
+import jsonpointer from "jsonpointer";
+import validateFormData, { isValid } from "./validate";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../Errors/ErrorUtil";
 
-export const ADDITIONAL_PROPERTY_FLAG = '__additional_property'
+export const ADDITIONAL_PROPERTY_FLAG = "__additional_property";
 
 const widgetMap = {
   boolean: {
-    checkbox: 'CheckboxWidget',
-    radio: 'RadioWidget',
-    select: 'SelectWidget',
-    hidden: 'HiddenWidget'
+    checkbox: "CheckboxWidget",
+    radio: "RadioWidget",
+    select: "SelectWidget",
+    hidden: "HiddenWidget",
   },
   string: {
-    text: 'TextWidget',
-    password: 'PasswordWidget',
-    email: 'EmailWidget',
-    hostname: 'TextWidget',
-    ipv4: 'TextWidget',
-    ipv6: 'TextWidget',
-    uri: 'URLWidget',
-    'data-url': 'FileWidget',
-    radio: 'RadioWidget',
-    select: 'SelectWidget',
-    textarea: 'TextareaWidget',
-    hidden: 'HiddenWidget',
-    date: 'DateWidget',
-    datetime: 'DateTimeWidget',
-    'date-time': 'DateTimeWidget',
-    'alt-date': 'AltDateWidget',
-    'alt-datetime': 'AltDateTimeWidget',
-    color: 'ColorWidget',
-    file: 'FileWidget'
+    text: "TextWidget",
+    password: "PasswordWidget",
+    email: "EmailWidget",
+    hostname: "TextWidget",
+    ipv4: "TextWidget",
+    ipv6: "TextWidget",
+    uri: "URLWidget",
+    "data-url": "FileWidget",
+    radio: "RadioWidget",
+    select: "SelectWidget",
+    textarea: "TextareaWidget",
+    hidden: "HiddenWidget",
+    date: "DateWidget",
+    datetime: "DateTimeWidget",
+    "date-time": "DateTimeWidget",
+    "alt-date": "AltDateWidget",
+    "alt-datetime": "AltDateTimeWidget",
+    color: "ColorWidget",
+    file: "FileWidget",
   },
   number: {
-    text: 'TextWidget',
-    select: 'SelectWidget',
-    updown: 'UpDownWidget',
-    range: 'RangeWidget',
-    radio: 'RadioWidget',
-    hidden: 'HiddenWidget'
+    text: "TextWidget",
+    select: "SelectWidget",
+    updown: "UpDownWidget",
+    range: "RangeWidget",
+    radio: "RadioWidget",
+    hidden: "HiddenWidget",
   },
   integer: {
-    text: 'TextWidget',
-    select: 'SelectWidget',
-    updown: 'UpDownWidget',
-    range: 'RangeWidget',
-    radio: 'RadioWidget',
-    hidden: 'HiddenWidget'
+    text: "TextWidget",
+    select: "SelectWidget",
+    updown: "UpDownWidget",
+    range: "RangeWidget",
+    radio: "RadioWidget",
+    hidden: "HiddenWidget",
   },
   array: {
-    select: 'SelectWidget',
-    checkboxes: 'CheckboxesWidget',
-    files: 'FileWidget',
-    hidden: 'HiddenWidget'
-  }
-}
+    select: "SelectWidget",
+    checkboxes: "CheckboxesWidget",
+    files: "FileWidget",
+    hidden: "HiddenWidget",
+  },
+};
 
-export function canExpand (schema, uiSchema, formData) {
+export function canExpand(schema, uiSchema, formData) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "canExpand method starts here",
+      { schema, uiSchema, formData },
+      "canExpand()",
+      "utils.js"
+    )
+  );
   if (!schema.additionalProperties) {
-    return false
+    return false;
   }
-  const { expandable } = getUiOptions(uiSchema)
+  const { expandable } = getUiOptions(uiSchema);
   if (expandable === false) {
-    return expandable
+    return expandable;
   }
   // if ui:options.expandable was not explicitly set to false, we can add
   // another property if we have not exceeded maxProperties yet
   if (schema.maxProperties !== undefined) {
-    return Object.keys(formData).length < schema.maxProperties
+    return Object.keys(formData).length < schema.maxProperties;
   }
-  return true
+  return true;
 }
 
-export function getDefaultRegistry () {
+export function getDefaultRegistry() {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getDefaultRegistry method starts here",
+      undefined,
+      "getDefaultRegistry()",
+      "utils.js"
+    )
+  );
   return {
     fields: {},
     widgets: {},
     definitions: {},
     rootSchema: {},
-    formContext: {}
-  }
+    formContext: {},
+  };
 }
 
 /* Gets the type of a given schema. */
-export function getSchemaType (schema) {
-  const { type } = schema
+export function getSchemaType(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getSchemaType method starts here",
+      { schema },
+      "getSchemaType()",
+      "utils.js"
+    )
+  );
+  const { type } = schema;
 
   if (!type && schema.const) {
-    return guessType(schema.const)
+    return guessType(schema.const);
   }
 
   if (!type && schema.enum) {
-    return 'string'
+    return "string";
   }
 
   if (!type && (schema.properties || schema.additionalProperties)) {
-    return 'object'
+    return "object";
   }
 
-  if (type instanceof Array && type.length === 2 && type.includes('null')) {
-    return type.find((type) => type !== 'null')
+  if (type instanceof Array && type.length === 2 && type.includes("null")) {
+    return type.find((type) => type !== "null");
   }
 
-  return type
+  return type;
 }
 
-export function getWidget (schema, widget, registeredWidgets = {}) {
-  const type = getSchemaType(schema)
+export function getWidget(schema, widget, registeredWidgets = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getWidget method starts here",
+      { schema, widget, registeredWidgets },
+      "getWidget()",
+      "utils.js"
+    )
+  );
+  const type = getSchemaType(schema);
 
-  function mergeOptions (Widget) {
+  function mergeOptions(Widget) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "mergeOptions method starts here",
+        { Widget },
+        "mergeOptions()",
+        "utils.js"
+      )
+    );
     // cache return value as property of widget for proper react reconciliation
     if (!Widget.MergedWidget) {
       const defaultOptions =
-        (Widget.defaultProps && Widget.defaultProps.options) || {}
+        (Widget.defaultProps && Widget.defaultProps.options) || {};
       Widget.MergedWidget = ({ options = {}, ...props }) => (
         <Widget options={{ ...defaultOptions, ...options }} {...props} />
-      )
+      );
     }
-    return Widget.MergedWidget
+    return Widget.MergedWidget;
   }
 
   if (
-    typeof widget === 'function' ||
+    typeof widget === "function" ||
     ReactIs.isForwardRef(React.createElement(widget)) ||
     ReactIs.isMemo(widget)
   ) {
-    return mergeOptions(widget)
+    return mergeOptions(widget);
   }
 
-  if (typeof widget !== 'string') {
-    throw new Error(`Unsupported widget definition: ${typeof widget}`)
+  if (typeof widget !== "string") {
+    throw new Error(`Unsupported widget definition: ${typeof widget}`);
   }
 
   if (registeredWidgets.hasOwnProperty(widget)) {
-    const registeredWidget = registeredWidgets[widget]
-    return getWidget(schema, registeredWidget, registeredWidgets)
+    const registeredWidget = registeredWidgets[widget];
+    return getWidget(schema, registeredWidget, registeredWidgets);
   }
 
   if (!widgetMap.hasOwnProperty(type)) {
-    throw new Error(`No widget for type "${type}"`)
+    throw new Error(`No widget for type "${type}"`);
   }
 
   if (widgetMap[type].hasOwnProperty(widget)) {
-    const registeredWidget = registeredWidgets[widgetMap[type][widget]]
-    return getWidget(schema, registeredWidget, registeredWidgets)
+    const registeredWidget = registeredWidgets[widgetMap[type][widget]];
+    return getWidget(schema, registeredWidget, registeredWidgets);
   }
 
-  throw new Error(`No widget "${widget}" for type "${type}"`)
+  throw new Error(`No widget "${widget}" for type "${type}"`);
 }
 
-export function hasWidget (schema, widget, registeredWidgets = {}) {
+export function hasWidget(schema, widget, registeredWidgets = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "hasWidget method starts here",
+      { schema, widget, registeredWidgets },
+      "hasWidget()",
+      "utils.js"
+    )
+  );
   try {
-    getWidget(schema, widget, registeredWidgets)
-    return true
+    getWidget(schema, widget, registeredWidgets);
+    return true;
   } catch (e) {
+    crashlytics().log(
+      ErrorUtil.createError(
+        e,
+        e.message,
+        e.message,
+        undefined,
+        "hasWidget",
+        "utils.js"
+      )
+    );
     if (
       e.message &&
-      (e.message.startsWith('No widget') ||
-        e.message.startsWith('Unsupported widget'))
+      (e.message.startsWith("No widget") ||
+        e.message.startsWith("Unsupported widget"))
     ) {
-      return false
+      return false;
     }
-    throw e
+    throw e;
   }
 }
 
-function computeDefaults (
+function computeDefaults(
   _schema,
   parentDefaults,
   rootSchema,
   rawFormData = {},
   includeUndefinedValues = false
 ) {
-  let schema = isObject(_schema) ? _schema : {}
-  const formData = isObject(rawFormData) ? rawFormData : {}
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "computeDefaults method starts here",
+      {
+        _schema,
+        parentDefaults,
+        rootSchema,
+        rawFormData,
+        includeUndefinedValues,
+      },
+      "computeDefaults()",
+      "utils.js"
+    )
+  );
+  let schema = isObject(_schema) ? _schema : {};
+  const formData = isObject(rawFormData) ? rawFormData : {};
   // Compute the defaults recursively: give highest priority to deepest nodes.
-  let defaults = parentDefaults
+  let defaults = parentDefaults;
   if (isObject(defaults) && isObject(schema.default)) {
     // For object defaults, only override parent defaults that are defined in
     // schema.default.
-    defaults = mergeObjects(defaults, schema.default)
-  } else if ('default' in schema) {
+    defaults = mergeObjects(defaults, schema.default);
+  } else if ("default" in schema) {
     // Use schema defaults for this node.
-    defaults = schema.default
-  } else if ('$ref' in schema) {
+    defaults = schema.default;
+  } else if ("$ref" in schema) {
     // Use referenced schema defaults for this node.
-    const refSchema = findSchemaDefinition(schema.$ref, rootSchema)
+    const refSchema = findSchemaDefinition(schema.$ref, rootSchema);
     return computeDefaults(
       refSchema,
       defaults,
       rootSchema,
       formData,
       includeUndefinedValues
-    )
-  } else if ('dependencies' in schema) {
-    const resolvedSchema = resolveDependencies(schema, rootSchema, formData)
+    );
+  } else if ("dependencies" in schema) {
+    const resolvedSchema = resolveDependencies(schema, rootSchema, formData);
     return computeDefaults(
       resolvedSchema,
       defaults,
       rootSchema,
       formData,
       includeUndefinedValues
-    )
+    );
   } else if (isFixedItems(schema)) {
     defaults = schema.items.map((itemSchema, idx) =>
       computeDefaults(
@@ -215,23 +289,23 @@ function computeDefaults (
         formData,
         includeUndefinedValues
       )
-    )
-  } else if ('oneOf' in schema) {
+    );
+  } else if ("oneOf" in schema) {
     schema =
-      schema.oneOf[getMatchingOption(undefined, schema.oneOf, rootSchema)]
-  } else if ('anyOf' in schema) {
+      schema.oneOf[getMatchingOption(undefined, schema.oneOf, rootSchema)];
+  } else if ("anyOf" in schema) {
     schema =
-      schema.anyOf[getMatchingOption(undefined, schema.anyOf, rootSchema)]
+      schema.anyOf[getMatchingOption(undefined, schema.anyOf, rootSchema)];
   }
 
   // Not defaults defined for this node, fallback to generic typed ones.
-  if (typeof defaults === 'undefined') {
-    defaults = schema.default
+  if (typeof defaults === "undefined") {
+    defaults = schema.default;
   }
 
   switch (getSchemaType(schema)) {
     // We need to recur for object schema inner default values.
-    case 'object':
+    case "object":
       return Object.keys(schema.properties || {}).reduce((acc, key) => {
         // Compute the defaults for this node, with the parent defaults we might
         // have from a previous run: defaults[key].
@@ -241,14 +315,14 @@ function computeDefaults (
           rootSchema,
           (formData || {})[key],
           includeUndefinedValues
-        )
+        );
         if (includeUndefinedValues || computedDefault !== undefined) {
-          acc[key] = computedDefault
+          acc[key] = computedDefault;
         }
-        return acc
-      }, {})
+        return acc;
+      }, {});
 
-    case 'array':
+    case "array":
       // Inject defaults into existing array defaults
       if (Array.isArray(defaults)) {
         defaults = defaults.map((item, idx) => {
@@ -256,8 +330,8 @@ function computeDefaults (
             schema.items[idx] || schema.additionalItems || {},
             item,
             rootSchema
-          )
-        })
+          );
+        });
       }
 
       // Deeply inject defaults into already existing form data
@@ -268,62 +342,72 @@ function computeDefaults (
             (defaults || {})[idx],
             rootSchema,
             item
-          )
-        })
+          );
+        });
       }
       if (schema.minItems) {
         if (!isMultiSelect(schema, rootSchema)) {
-          const defaultsLength = defaults ? defaults.length : 0
+          const defaultsLength = defaults ? defaults.length : 0;
           if (schema.minItems > defaultsLength) {
-            const defaultEntries = defaults || []
+            const defaultEntries = defaults || [];
             // populate the array with the defaults
             const fillerSchema = Array.isArray(schema.items)
               ? schema.additionalItems
-              : schema.items
+              : schema.items;
             const fillerEntries = fill(
               new Array(schema.minItems - defaultsLength),
               computeDefaults(fillerSchema, fillerSchema.defaults, rootSchema)
-            )
+            );
             // then fill up the rest with either the item default or empty, up to minItems
 
-            return defaultEntries.concat(fillerEntries)
+            return defaultEntries.concat(fillerEntries);
           }
         } else {
-          return defaults || []
+          return defaults || [];
         }
       }
   }
-  return defaults
+  return defaults;
 }
 
-export function getDefaultFormState (
+export function getDefaultFormState(
   _schema,
   formData,
   rootSchema = {},
   includeUndefinedValues = false
 ) {
+  crashlytics().log(
+    ErrorUtil.createError(
+      error,
+      error.message,
+      error.message,
+      undefined,
+      "useOtpVerify",
+      "OKYCComponent.js"
+    )
+  );
   if (!isObject(_schema)) {
-    throw new Error('Invalid schema: ' + _schema)
+    throw new Error("Invalid schema: " + _schema);
   }
-  const schema = retrieveSchema(_schema, rootSchema, formData)
+  const schema = retrieveSchema(_schema, rootSchema, formData);
   const defaults = computeDefaults(
     schema,
     _schema.default,
     rootSchema,
     formData,
     includeUndefinedValues
-  )
-  if (typeof formData === 'undefined') {
+  );
+  if (typeof formData === "undefined") {
     // No form data? Use schema defaults.
-    return defaults
+    return defaults;
   }
   if (isObject(formData) || Array.isArray(formData)) {
-    return mergeDefaultsWithFormData(defaults, formData)
+    return mergeDefaultsWithFormData(defaults, formData);
   }
-  if (formData === 0 || formData === false || formData === '') {
-    return formData
+  if (formData === 0 || formData === false || formData === "") {
+    return formData;
   }
-  return formData || defaults
+  return formData || defaults;
 }
 
 /**
@@ -335,435 +419,627 @@ export function getDefaultFormState (
  *   - when the array is not set in form data, the default is copied over
  * - scalars are overwritten/set by form data
  */
-export function mergeDefaultsWithFormData (defaults, formData) {
+export function mergeDefaultsWithFormData(defaults, formData) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "mergeDefaultsWithFormData method starts here",
+      { defaults, formData },
+      "mergeDefaultsWithFormData()",
+      "utils.js"
+    )
+  );
   if (Array.isArray(formData)) {
     if (!Array.isArray(defaults)) {
-      defaults = []
+      defaults = [];
     }
     return formData.map((value, idx) => {
       if (defaults[idx]) {
-        return mergeDefaultsWithFormData(defaults[idx], value)
+        return mergeDefaultsWithFormData(defaults[idx], value);
       }
-      return value
-    })
+      return value;
+    });
   } else if (isObject(formData)) {
-    const acc = Object.assign({}, defaults) // Prevent mutation of source object.
+    const acc = Object.assign({}, defaults); // Prevent mutation of source object.
     return Object.keys(formData).reduce((acc, key) => {
       acc[key] = mergeDefaultsWithFormData(
         defaults ? defaults[key] : {},
         formData[key]
-      )
-      return acc
-    }, acc)
+      );
+      return acc;
+    }, acc);
   } else {
-    return formData
+    return formData;
   }
 }
 
-export function getUiOptions (uiSchema) {
+export function getUiOptions(uiSchema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getUiOptions method starts here",
+      { uiSchema },
+      "getUiOptions()",
+      "utils.js"
+    )
+  );
   // get all passed options from ui:widget, ui:options, and ui:<optionName>
   return Object.keys(uiSchema)
-    .filter((key) => key.indexOf('ui:') === 0)
+    .filter((key) => key.indexOf("ui:") === 0)
     .reduce((options, key) => {
-      const value = uiSchema[key]
+      const value = uiSchema[key];
 
-      if (key === 'ui:widget' && isObject(value)) {
+      if (key === "ui:widget" && isObject(value)) {
         console.warn(
-          'Setting options via ui:widget object is deprecated, use ui:options instead'
-        )
+          "Setting options via ui:widget object is deprecated, use ui:options instead"
+        );
         return {
           ...options,
           ...(value.options || {}),
-          widget: value.component
-        }
+          widget: value.component,
+        };
       }
-      if (key === 'ui:options' && isObject(value)) {
-        return { ...options, ...value }
+      if (key === "ui:options" && isObject(value)) {
+        return { ...options, ...value };
       }
-      return { ...options, [key.substring(3)]: value }
-    }, {})
+      return { ...options, [key.substring(3)]: value };
+    }, {});
 }
 
-export function getDisplayLabel (schema, uiSchema, rootSchema) {
-  const uiOptions = getUiOptions(uiSchema)
-  let { label: displayLabel = true } = uiOptions
-  if (schema.type === 'array') {
+export function getDisplayLabel(schema, uiSchema, rootSchema) {
+  const uiOptions = getUiOptions(uiSchema);
+  let { label: displayLabel = true } = uiOptions;
+  if (schema.type === "array") {
     displayLabel =
       isMultiSelect(schema, rootSchema) ||
-      isFilesArray(schema, uiSchema, rootSchema)
+      isFilesArray(schema, uiSchema, rootSchema);
   }
-  if (schema.type === 'object') {
-    displayLabel = false
+  if (schema.type === "object") {
+    displayLabel = false;
   }
-  if (schema.type === 'boolean' && !uiSchema['ui:widget']) {
-    displayLabel = false
+  if (schema.type === "boolean" && !uiSchema["ui:widget"]) {
+    displayLabel = false;
   }
-  if (uiSchema['ui:field']) {
-    displayLabel = false
+  if (uiSchema["ui:field"]) {
+    displayLabel = false;
   }
-  return displayLabel
+  return displayLabel;
 }
 
-export function isObject (thing) {
-  if (typeof File !== 'undefined' && thing instanceof File) {
-    return false
+export function isObject(thing) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isObject method starts here",
+      { thing },
+      "isObject()",
+      "utils.js"
+    )
+  );
+  if (typeof File !== "undefined" && thing instanceof File) {
+    return false;
   }
-  return typeof thing === 'object' && thing !== null && !Array.isArray(thing)
+  return typeof thing === "object" && thing !== null && !Array.isArray(thing);
 }
 
-export function mergeObjects (obj1, obj2, concatArrays = false) {
+export function mergeObjects(obj1, obj2, concatArrays = false) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "mergeObjects method starts here",
+      { obj1, obj2, concatArrays },
+      "mergeObjects()",
+      "utils.js"
+    )
+  );
   // Recursively merge deeply nested objects.
-  let acc = Object.assign({}, obj1) // Prevent mutation of source object.
+  let acc = Object.assign({}, obj1); // Prevent mutation of source object.
   return Object.keys(obj2).reduce((acc, key) => {
     const left = obj1 ? obj1[key] : {};
-      const right = obj2[key]
+    const right = obj2[key];
     if (obj1 && obj1.hasOwnProperty(key) && isObject(right)) {
-      acc[key] = mergeObjects(left, right, concatArrays)
+      acc[key] = mergeObjects(left, right, concatArrays);
     } else if (concatArrays && Array.isArray(left) && Array.isArray(right)) {
-      acc[key] = left.concat(right)
+      acc[key] = left.concat(right);
     } else {
-      acc[key] = right
+      acc[key] = right;
     }
-    return acc
-  }, acc)
+    return acc;
+  }, acc);
 }
 
-export function asNumber (value) {
-  if (value === '') {
-    return undefined
+export function asNumber(value) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "asNumber method starts here",
+      { value },
+      "asNumber()",
+      "utils.js"
+    )
+  );
+  if (value === "") {
+    return undefined;
   }
   if (value === null) {
-    return null
+    return null;
   }
   if (/\.$/.test(value)) {
     // "3." can't really be considered a number even if it parses in js. The
     // user is most likely entering a float.
-    return value
+    return value;
   }
   if (/\.0$/.test(value)) {
     // we need to return this as a string here, to allow for input like 3.07
-    return value
+    return value;
   }
-  const n = Number(value)
-  const valid = typeof n === 'number' && !Number.isNaN(n)
+  const n = Number(value);
+  const valid = typeof n === "number" && !Number.isNaN(n);
 
   if (/\.\d*0$/.test(value)) {
     // It's a number, that's cool - but we need it as a string so it doesn't screw
     // with the user when entering dollar amounts or other values (such as those with
     // specific precision or number of significant digits)
-    return value
+    return value;
   }
 
-  return valid ? n : value
+  return valid ? n : value;
 }
 
-export function orderProperties (properties, order) {
+export function orderProperties(properties, order) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "orderProperties method starts here",
+      { properties, order },
+      "orderProperties()",
+      "utils.js"
+    )
+  );
   if (!Array.isArray(order)) {
-    return properties
+    return properties;
   }
 
   const arrayToHash = (arr) =>
-    arr.reduce((prev, curr) => {
-      prev[curr] = true
-      return prev
-    }, {})
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "arrayToHash method starts here",
+        { arr },
+        "arrayToHash()",
+        "utils.js"
+      )
+    );
+  arr.reduce((prev, curr) => {
+    prev[curr] = true;
+    return prev;
+  }, {});
   const errorPropList = (arr) =>
-    arr.length > 1
-      ? `properties '${arr.join("', '")}'`
-      : `property '${arr[0]}'`
-  const propertyHash = arrayToHash(properties)
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "errorPropList method starts here",
+        { arr },
+        "errorPropList()",
+        "utils.js"
+      )
+    );
+  arr.length > 1 ? `properties '${arr.join("', '")}'` : `property '${arr[0]}'`;
+  const propertyHash = arrayToHash(properties);
   const orderFiltered = order.filter(
-    (prop) => prop === '*' || propertyHash[prop]
-  )
-  const orderHash = arrayToHash(orderFiltered)
+    (prop) => prop === "*" || propertyHash[prop]
+  );
+  const orderHash = arrayToHash(orderFiltered);
 
-  const rest = properties.filter((prop) => !orderHash[prop])
-  const restIndex = orderFiltered.indexOf('*')
+  const rest = properties.filter((prop) => !orderHash[prop]);
+  const restIndex = orderFiltered.indexOf("*");
   if (restIndex === -1) {
     if (rest.length) {
       throw new Error(
         `uiSchema order list does not contain ${errorPropList(rest)}`
-      )
+      );
     }
-    return orderFiltered
+    return orderFiltered;
   }
-  if (restIndex !== orderFiltered.lastIndexOf('*')) {
-    throw new Error('uiSchema order list contains more than one wildcard item')
+  if (restIndex !== orderFiltered.lastIndexOf("*")) {
+    throw new Error("uiSchema order list contains more than one wildcard item");
   }
 
-  const complete = [...orderFiltered]
-  complete.splice(restIndex, 1, ...rest)
-  return complete
+  const complete = [...orderFiltered];
+  complete.splice(restIndex, 1, ...rest);
+  return complete;
 }
 
 /**
  * This function checks if the given schema matches a single
  * constant value.
  */
-export function isConstant (schema) {
+export function isConstant(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isConstant method starts here",
+      { schema },
+      "isConstant()",
+      "utils.js"
+    )
+  );
   return (
     (Array.isArray(schema.enum) && schema.enum.length === 1) ||
-    schema.hasOwnProperty('const')
-  )
+    schema.hasOwnProperty("const")
+  );
 }
 
-export function toConstant (schema) {
+export function toConstant(schema) {
   if (Array.isArray(schema.enum) && schema.enum.length === 1) {
-    return schema.enum[0]
-  } else if (schema.hasOwnProperty('const')) {
-    return schema.const
+    return schema.enum[0];
+  } else if (schema.hasOwnProperty("const")) {
+    return schema.const;
   } else {
-    throw new Error('schema cannot be inferred as a constant')
+    throw new Error("schema cannot be inferred as a constant");
   }
 }
 
-export function isSelect (_schema, rootSchema = {}) {
-  const schema = retrieveSchema(_schema, rootSchema)
-  const altSchemas = schema.oneOf || schema.anyOf
+export function isSelect(_schema, rootSchema = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isSelect method starts here",
+      { _schema, rootSchema },
+      "isSelect()",
+      "utils.js"
+    )
+  );
+  const schema = retrieveSchema(_schema, rootSchema);
+  const altSchemas = schema.oneOf || schema.anyOf;
   if (Array.isArray(schema.enum)) {
-    return true
+    return true;
   } else if (Array.isArray(altSchemas)) {
-    return altSchemas.every((altSchemas) => isConstant(altSchemas))
+    return altSchemas.every((altSchemas) => isConstant(altSchemas));
   }
-  return false
+  return false;
 }
 
-export function isMultiSelect (schema, rootSchema = {}) {
+export function isMultiSelect(schema, rootSchema = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isMultiSelect method starts here",
+      { schema, rootSchema },
+      "isMultiSelect()",
+      "utils.js"
+    )
+  );
   if (!schema.uniqueItems || !schema.items) {
-    return false
+    return false;
   }
-  return isSelect(schema.items, rootSchema)
+  return isSelect(schema.items, rootSchema);
 }
 
-export function isFilesArray (schema, uiSchema, rootSchema = {}) {
-  if (uiSchema['ui:widget'] === 'files') {
-    return true
+export function isFilesArray(schema, uiSchema, rootSchema = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isFilesArray method starts here",
+      { schema, uiSchema, rootSchema },
+      "isFilesArray()",
+      "utils.js"
+    )
+  );
+  if (uiSchema["ui:widget"] === "files") {
+    return true;
   } else if (schema.items) {
-    const itemsSchema = retrieveSchema(schema.items, rootSchema)
-    return itemsSchema.type === 'string' && itemsSchema.format === 'data-url'
+    const itemsSchema = retrieveSchema(schema.items, rootSchema);
+    return itemsSchema.type === "string" && itemsSchema.format === "data-url";
   }
-  return false
+  return false;
 }
 
-export function isFixedItems (schema) {
+export function isFixedItems(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isFixedItems method starts here",
+      { schema },
+      "isFixedItems()",
+      "utils.js"
+    )
+  );
   return (
     Array.isArray(schema.items) &&
     schema.items.length > 0 &&
     schema.items.every((item) => isObject(item))
-  )
+  );
 }
 
-export function allowAdditionalItems (schema) {
+export function allowAdditionalItems(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "allowAdditionalItems method starts here",
+      { schema },
+      "allowAdditionalItems()",
+      "utils.js"
+    )
+  );
   if (schema.additionalItems === true) {
-    console.warn('additionalItems=true is currently not supported')
+    console.warn("additionalItems=true is currently not supported");
   }
-  return isObject(schema.additionalItems)
+  return isObject(schema.additionalItems);
 }
 
-export function optionsList (schema) {
+export function optionsList(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "optionsList method starts here",
+      { schema },
+      "optionsList()",
+      "utils.js"
+    )
+  );
   if (schema.enum) {
     return schema.enum.map((value, i) => {
-      const label = (schema.enumNames && schema.enumNames[i]) || String(value)
-      return { label, value }
-    })
+      const label = (schema.enumNames && schema.enumNames[i]) || String(value);
+      return { label, value };
+    });
   } else {
-    const altSchemas = schema.oneOf || schema.anyOf
+    const altSchemas = schema.oneOf || schema.anyOf;
     return altSchemas.map((schema, i) => {
-      const value = toConstant(schema)
-      const label = schema.title || String(value)
+      const value = toConstant(schema);
+      const label = schema.title || String(value);
       return {
         schema,
         label,
-        value
-      }
-    })
+        value,
+      };
+    });
   }
 }
 
-export function findSchemaDefinition ($ref, rootSchema = {}) {
-  const origRef = $ref
-  if ($ref.startsWith('#')) {
+export function findSchemaDefinition($ref, rootSchema = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "findSchemaDefinition method starts here",
+      { $ref, rootSchema },
+      "findSchemaDefinition()",
+      "utils.js"
+    )
+  );
+  const origRef = $ref;
+  if ($ref.startsWith("#")) {
     // Decode URI fragment representation.
-    $ref = decodeURIComponent($ref.substring(1))
+    $ref = decodeURIComponent($ref.substring(1));
   } else {
-    throw new Error(`Could not find a definition for ${origRef}.`)
+    throw new Error(`Could not find a definition for ${origRef}.`);
   }
-  const current = jsonpointer.get(rootSchema, $ref)
+  const current = jsonpointer.get(rootSchema, $ref);
   if (current === undefined) {
-    throw new Error(`Could not find a definition for ${origRef}.`)
+    throw new Error(`Could not find a definition for ${origRef}.`);
   }
-  if (current.hasOwnProperty('$ref')) {
-    return findSchemaDefinition(current.$ref, rootSchema)
+  if (current.hasOwnProperty("$ref")) {
+    return findSchemaDefinition(current.$ref, rootSchema);
   }
-  return current
+  return current;
 }
 
 // In the case where we have to implicitly create a schema, it is useful to know what type to use
 //  based on the data we are defining
-export const guessType = function guessType (value) {
+export const guessType = function guessType(value) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "guessType method starts here",
+      { value },
+      "guessType()",
+      "utils.js"
+    )
+  );
   if (Array.isArray(value)) {
-    return 'array'
-  } else if (typeof value === 'string') {
-    return 'string'
+    return "array";
+  } else if (typeof value === "string") {
+    return "string";
   } else if (value == null) {
-    return 'null'
-  } else if (typeof value === 'boolean') {
-    return 'boolean'
+    return "null";
+  } else if (typeof value === "boolean") {
+    return "boolean";
   } else if (!isNaN(value)) {
-    return 'number'
-  } else if (typeof value === 'object') {
-    return 'object'
+    return "number";
+  } else if (typeof value === "object") {
+    return "object";
   }
   // Default to string if we can't figure it out
-  return 'string'
-}
+  return "string";
+};
 
 // This function will create new "properties" items for each key in our formData
-export function stubExistingAdditionalProperties (
+export function stubExistingAdditionalProperties(
   schema,
   rootSchema = {},
   formData = {}
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "stubExistingAdditionalProperties method starts here",
+      { schema, rootSchema, formData },
+      "stubExistingAdditionalProperties()",
+      "utils.js"
+    )
+  );
   // Clone the schema so we don't ruin the consumer's original
   schema = {
     ...schema,
-    properties: { ...schema.properties }
-  }
+    properties: { ...schema.properties },
+  };
 
   Object.keys(formData).forEach((key) => {
     if (schema.properties.hasOwnProperty(key)) {
       // No need to stub, our schema already has the property
-      return
+      return;
     }
 
-    let additionalProperties
-    if (schema.additionalProperties.hasOwnProperty('$ref')) {
+    let additionalProperties;
+    if (schema.additionalProperties.hasOwnProperty("$ref")) {
       additionalProperties = retrieveSchema(
         { $ref: schema.additionalProperties.$ref },
         rootSchema,
         formData
-      )
-    } else if (schema.additionalProperties.hasOwnProperty('type')) {
-      additionalProperties = { ...schema.additionalProperties }
+      );
+    } else if (schema.additionalProperties.hasOwnProperty("type")) {
+      additionalProperties = { ...schema.additionalProperties };
     } else {
-      additionalProperties = { type: guessType(formData[key]) }
+      additionalProperties = { type: guessType(formData[key]) };
     }
 
     // The type of our new key should match the additionalProperties value;
-    schema.properties[key] = additionalProperties
+    schema.properties[key] = additionalProperties;
     // Set our additional property flag so we know it was dynamically added
-    schema.properties[key][ADDITIONAL_PROPERTY_FLAG] = true
-  })
+    schema.properties[key][ADDITIONAL_PROPERTY_FLAG] = true;
+  });
 
-  return schema
+  return schema;
 }
 
-export function resolveSchema (schema, rootSchema = {}, formData = {}) {
-  if (schema.hasOwnProperty('$ref')) {
-    return resolveReference(schema, rootSchema, formData)
-  } else if (schema.hasOwnProperty('dependencies')) {
-    const resolvedSchema = resolveDependencies(schema, rootSchema, formData)
-    return retrieveSchema(resolvedSchema, rootSchema, formData)
-  } else if (schema.hasOwnProperty('allOf')) {
+export function resolveSchema(schema, rootSchema = {}, formData = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "resolveSchema method starts here",
+      { schema, rootSchema, formData },
+      "resolveSchema()",
+      "utils.js"
+    )
+  );
+  if (schema.hasOwnProperty("$ref")) {
+    return resolveReference(schema, rootSchema, formData);
+  } else if (schema.hasOwnProperty("dependencies")) {
+    const resolvedSchema = resolveDependencies(schema, rootSchema, formData);
+    return retrieveSchema(resolvedSchema, rootSchema, formData);
+  } else if (schema.hasOwnProperty("allOf")) {
     return {
       ...schema,
       allOf: schema.allOf.map((allOfSubschema) =>
         retrieveSchema(allOfSubschema, rootSchema, formData)
-      )
-    }
+      ),
+    };
   } else {
     // No $ref or dependencies attribute found, returning the original schema.
-    return schema
+    return schema;
   }
 }
 
-function resolveReference (schema, rootSchema, formData) {
+function resolveReference(schema, rootSchema, formData) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "resolveReference method starts here",
+      { schema, rootSchema, formData },
+      "resolveReference()",
+      "utils.js"
+    )
+  );
   // Retrieve the referenced schema definition.
-  const $refSchema = findSchemaDefinition(schema.$ref, rootSchema)
+  const $refSchema = findSchemaDefinition(schema.$ref, rootSchema);
   // Drop the $ref property of the source schema.
-  const { $ref, ...localSchema } = schema
+  const { $ref, ...localSchema } = schema;
   // Update referenced schema definition with local schema properties.
   return retrieveSchema(
     { ...$refSchema, ...localSchema },
     rootSchema,
     formData
-  )
+  );
 }
 
-export function retrieveSchema (schema, rootSchema = {}, formData = {}) {
+export function retrieveSchema(schema, rootSchema = {}, formData = {}) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "retrieveSchema method starts here",
+      { schema, rootSchema, formData },
+      "retrieveSchema()",
+      "utils.js"
+    )
+  );
   if (!isObject(schema)) {
-    return {}
+    return {};
   }
-  let resolvedSchema = resolveSchema(schema, rootSchema, formData)
-  if ('allOf' in schema) {
+  let resolvedSchema = resolveSchema(schema, rootSchema, formData);
+  if ("allOf" in schema) {
     try {
       resolvedSchema = mergeAllOf({
         ...resolvedSchema,
-        allOf: resolvedSchema.allOf
-      })
+        allOf: resolvedSchema.allOf,
+      });
     } catch (e) {
-      console.warn('could not merge subschemas in allOf:\n' + e)
-      const { allOf, ...resolvedSchemaWithoutAllOf } = resolvedSchema
-      return resolvedSchemaWithoutAllOf
+      crashlytics().log(
+        ErrorUtil.createError(
+          e,
+          e.message,
+          e.message,
+          { schema, rootSchema, formData },
+          "retrieveSchema",
+          "utils.js"
+        )
+      );
+      console.warn("could not merge subschemas in allOf:\n" + e);
+      const { allOf, ...resolvedSchemaWithoutAllOf } = resolvedSchema;
+      return resolvedSchemaWithoutAllOf;
     }
   }
   const hasAdditionalProperties =
-    resolvedSchema.hasOwnProperty('additionalProperties') &&
-    resolvedSchema.additionalProperties !== false
+    resolvedSchema.hasOwnProperty("additionalProperties") &&
+    resolvedSchema.additionalProperties !== false;
   if (hasAdditionalProperties) {
     return stubExistingAdditionalProperties(
       resolvedSchema,
       rootSchema,
       formData
-    )
+    );
   }
-  return resolvedSchema
+  return resolvedSchema;
 }
 
-function resolveDependencies (schema, rootSchema, formData) {
+function resolveDependencies(schema, rootSchema, formData) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "resolveDependencies method starts here",
+      { schema, rootSchema, formData },
+      "resolveDependencies()",
+      "utils.js"
+    )
+  );
   // Drop the dependencies from the source schema.
-  let { dependencies = {}, ...resolvedSchema } = schema
-  if ('oneOf' in resolvedSchema) {
+  let { dependencies = {}, ...resolvedSchema } = schema;
+  if ("oneOf" in resolvedSchema) {
     resolvedSchema =
       resolvedSchema.oneOf[
         getMatchingOption(formData, resolvedSchema.oneOf, rootSchema)
-      ]
-  } else if ('anyOf' in resolvedSchema) {
+      ];
+  } else if ("anyOf" in resolvedSchema) {
     resolvedSchema =
       resolvedSchema.anyOf[
         getMatchingOption(formData, resolvedSchema.anyOf, rootSchema)
-      ]
+      ];
   }
   return processDependencies(
     dependencies,
     resolvedSchema,
     rootSchema,
     formData
-  )
+  );
 }
-function processDependencies (
+function processDependencies(
   dependencies,
   resolvedSchema,
   rootSchema,
   formData
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "processDependencies method starts here",
+      { dependencies, resolvedSchema, rootSchema, formData },
+      "processDependencies()",
+      "utils.js"
+    )
+  );
   // Process dependencies updating the local schema properties as appropriate.
   for (const dependencyKey in dependencies) {
     // Skip this dependency if its trigger property is not present.
     if (formData[dependencyKey] === undefined) {
-      continue
+      continue;
     }
     // Skip this dependency if it is not included in the schema (such as when dependencyKey is itself a hidden dependency.)
     if (
       resolvedSchema.properties &&
       !(dependencyKey in resolvedSchema.properties)
     ) {
-      continue
+      continue;
     }
     const { [dependencyKey]: dependencyValue, ...remainingDependencies } =
-      dependencies
+      dependencies;
     if (Array.isArray(dependencyValue)) {
-      resolvedSchema = withDependentProperties(resolvedSchema, dependencyValue)
+      resolvedSchema = withDependentProperties(resolvedSchema, dependencyValue);
     } else if (isObject(dependencyValue)) {
       resolvedSchema = withDependentSchema(
         resolvedSchema,
@@ -771,99 +1047,123 @@ function processDependencies (
         formData,
         dependencyKey,
         dependencyValue
-      )
+      );
     }
     return processDependencies(
       remainingDependencies,
       resolvedSchema,
       rootSchema,
       formData
-    )
+    );
   }
-  return resolvedSchema
+  return resolvedSchema;
 }
 
-function withDependentProperties (schema, additionallyRequired) {
+function withDependentProperties(schema, additionallyRequired) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "withDependentProperties method starts here",
+      { schema, additionallyRequired },
+      "withDependentProperties()",
+      "utils.js"
+    )
+  );
   if (!additionallyRequired) {
-    return schema
+    return schema;
   }
   const required = Array.isArray(schema.required)
     ? Array.from(new Set([...schema.required, ...additionallyRequired]))
-    : additionallyRequired
-  return { ...schema, required: required }
+    : additionallyRequired;
+  return { ...schema, required: required };
 }
 
-function withDependentSchema (
+function withDependentSchema(
   schema,
   rootSchema,
   formData,
   dependencyKey,
   dependencyValue
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "withDependentSchema method starts here",
+      { schema, rootSchema, formData, dependencyKey, dependencyValue },
+      "withDependentSchema()",
+      "utils.js"
+    )
+  );
   const { oneOf, ...dependentSchema } = retrieveSchema(
     dependencyValue,
     rootSchema,
     formData
-  )
-  schema = mergeSchemas(schema, dependentSchema)
+  );
+  schema = mergeSchemas(schema, dependentSchema);
   // Since it does not contain oneOf, we return the original schema.
   if (oneOf === undefined) {
-    return schema
+    return schema;
   } else if (!Array.isArray(oneOf)) {
-    throw new Error(`invalid: it is some ${typeof oneOf} instead of an array`)
+    throw new Error(`invalid: it is some ${typeof oneOf} instead of an array`);
   }
   // Resolve $refs inside oneOf.
   const resolvedOneOf = oneOf.map((subschema) =>
-    subschema.hasOwnProperty('$ref')
+    subschema.hasOwnProperty("$ref")
       ? resolveReference(subschema, rootSchema, formData)
       : subschema
-  )
+  );
   return withExactlyOneSubschema(
     schema,
     rootSchema,
     formData,
     dependencyKey,
     resolvedOneOf
-  )
+  );
 }
 
-function withExactlyOneSubschema (
+function withExactlyOneSubschema(
   schema,
   rootSchema,
   formData,
   dependencyKey,
   oneOf
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "withExactlyOneSubschema method starts here",
+      { schema, rootSchema, formData, dependencyKey, oneOf },
+      "withExactlyOneSubschema()",
+      "utils.js"
+    )
+  );
   const validSubschemas = oneOf.filter((subschema) => {
     if (!subschema.properties) {
-      return false
+      return false;
     }
-    const { [dependencyKey]: conditionPropertySchema } = subschema.properties
+    const { [dependencyKey]: conditionPropertySchema } = subschema.properties;
     if (conditionPropertySchema) {
       const conditionSchema = {
-        type: 'object',
+        type: "object",
         properties: {
-          [dependencyKey]: conditionPropertySchema
-        }
-      }
-      const { errors } = validateFormData(formData, conditionSchema)
-      return errors.length === 0
+          [dependencyKey]: conditionPropertySchema,
+        },
+      };
+      const { errors } = validateFormData(formData, conditionSchema);
+      return errors.length === 0;
     }
-  })
+  });
   if (validSubschemas.length !== 1) {
     console.warn(
       "ignoring oneOf in dependencies because there isn't exactly one subschema that is valid"
-    )
-    return schema
+    );
+    return schema;
   }
-  const subschema = validSubschemas[0]
+  const subschema = validSubschemas[0];
   const { [dependencyKey]: conditionPropertySchema, ...dependentSubschema } =
-    subschema.properties
-  const dependentSchema = { ...subschema, properties: dependentSubschema }
+    subschema.properties;
+  const dependentSchema = { ...subschema, properties: dependentSubschema };
   return mergeSchemas(
     schema,
     retrieveSchema(dependentSchema, rootSchema, formData)
-  )
+  );
 }
 
 // Recursively merge deeply nested schemas.
@@ -871,51 +1171,75 @@ function withExactlyOneSubschema (
 // is that mergeSchemas only concats arrays for
 // values under the "required" keyword, and when it does,
 // it doesn't include duplicate values.
-export function mergeSchemas (obj1, obj2) {
-  let acc = Object.assign({}, obj1) // Prevent mutation of source object.
+export function mergeSchemas(obj1, obj2) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "mergeSchemas method starts here",
+      { obj1, obj2 },
+      "mergeSchemas()",
+      "utils.js"
+    )
+  );
+  let acc = Object.assign({}, obj1); // Prevent mutation of source object.
   return Object.keys(obj2).reduce((acc, key) => {
     const left = obj1 ? obj1[key] : {};
-      const right = obj2[key]
+    const right = obj2[key];
     if (obj1 && obj1.hasOwnProperty(key) && isObject(right)) {
-      acc[key] = mergeSchemas(left, right)
+      acc[key] = mergeSchemas(left, right);
     } else if (
       obj1 &&
       obj2 &&
-      (getSchemaType(obj1) === 'object' || getSchemaType(obj2) === 'object') &&
-      key === 'required' &&
+      (getSchemaType(obj1) === "object" || getSchemaType(obj2) === "object") &&
+      key === "required" &&
       Array.isArray(left) &&
       Array.isArray(right)
     ) {
       // Don't include duplicate values when merging
       // "required" fields.
-      acc[key] = union(left, right)
+      acc[key] = union(left, right);
     } else {
-      acc[key] = right
+      acc[key] = right;
     }
-    return acc
-  }, acc)
+    return acc;
+  }, acc);
 }
 
-function isArguments (object) {
-  return Object.prototype.toString.call(object) === '[object Arguments]'
+function isArguments(object) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isArguments method starts here",
+      { object },
+      "isArguments()",
+      "utils.js"
+    )
+  );
+  return Object.prototype.toString.call(object) === "[object Arguments]";
 }
 
-export function deepEquals (a, b, ca = [], cb = []) {
+export function deepEquals(a, b, ca = [], cb = []) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "deepEquals method starts here",
+      { a, b, ca, cb },
+      "deepEquals()",
+      "utils.js"
+    )
+  );
   // Partially extracted from node-deeper and adapted to exclude comparison
   // checks for functions.
   // https://github.com/othiym23/node-deeper
   if (a === b) {
-    return true
-  } else if (typeof a === 'function' || typeof b === 'function') {
+    return true;
+  } else if (typeof a === "function" || typeof b === "function") {
     // Assume all functions are equivalent
     // see https://github.com/rjsf-team/react-jsonschema-form/issues/255
-    return true
-  } else if (typeof a !== 'object' || typeof b !== 'object') {
-    return false
+    return true;
+  } else if (typeof a !== "object" || typeof b !== "object") {
+    return false;
   } else if (a === null || b === null) {
-    return false
+    return false;
   } else if (a instanceof Date && b instanceof Date) {
-    return a.getTime() === b.getTime()
+    return a.getTime() === b.getTime();
   } else if (a instanceof RegExp && b instanceof RegExp) {
     return (
       a.source === b.source &&
@@ -923,88 +1247,96 @@ export function deepEquals (a, b, ca = [], cb = []) {
       a.multiline === b.multiline &&
       a.lastIndex === b.lastIndex &&
       a.ignoreCase === b.ignoreCase
-    )
+    );
   } else if (isArguments(a) || isArguments(b)) {
     if (!(isArguments(a) && isArguments(b))) {
-      return false
+      return false;
     }
-    const slice = Array.prototype.slice
-    return deepEquals(slice.call(a), slice.call(b), ca, cb)
+    const slice = Array.prototype.slice;
+    return deepEquals(slice.call(a), slice.call(b), ca, cb);
   } else {
     if (a.constructor !== b.constructor) {
-      return false
+      return false;
     }
 
-    const ka = Object.keys(a)
-    const kb = Object.keys(b)
+    const ka = Object.keys(a);
+    const kb = Object.keys(b);
     // don't bother with stack acrobatics if there's nothing there
     if (ka.length === 0 && kb.length === 0) {
-      return true
+      return true;
     }
     if (ka.length !== kb.length) {
-      return false
+      return false;
     }
 
-    let cal = ca.length
+    let cal = ca.length;
     while (cal--) {
       if (ca[cal] === a) {
-        return cb[cal] === b
+        return cb[cal] === b;
       }
     }
-    ca.push(a)
-    cb.push(b)
+    ca.push(a);
+    cb.push(b);
 
-    ka.sort()
-    kb.sort()
+    ka.sort();
+    kb.sort();
     for (let j = ka.length - 1; j >= 0; j--) {
       if (ka[j] !== kb[j]) {
-        return false
+        return false;
       }
     }
 
-    let key
+    let key;
     for (let k = ka.length - 1; k >= 0; k--) {
-      key = ka[k]
+      key = ka[k];
       if (!deepEquals(a[key], b[key], ca, cb)) {
-        return false
+        return false;
       }
     }
 
-    ca.pop()
-    cb.pop()
+    ca.pop();
+    cb.pop();
 
-    return true
+    return true;
   }
 }
 
-export function shouldRender (comp, nextProps, nextState) {
-  const { props, state } = comp
-  return !deepEquals(props, nextProps) || !deepEquals(state, nextState)
+export function shouldRender(comp, nextProps, nextState) {
+  const { props, state } = comp;
+  return !deepEquals(props, nextProps) || !deepEquals(state, nextState);
 }
 
-export function toIdSchema (
+export function toIdSchema(
   schema,
   id,
   rootSchema,
   formData = {},
-  idPrefix = 'root'
+  idPrefix = "root"
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "toIdSchema method starts here",
+      { schema, id, rootSchema, formData, idPrefix },
+      "toIdSchema()",
+      "utils.js"
+    )
+  );
   const idSchema = {
-    $id: id || idPrefix
+    $id: id || idPrefix,
+  };
+  if ("$ref" in schema || "dependencies" in schema || "allOf" in schema) {
+    const _schema = retrieveSchema(schema, rootSchema, formData);
+    return toIdSchema(_schema, id, rootSchema, formData, idPrefix);
   }
-  if ('$ref' in schema || 'dependencies' in schema || 'allOf' in schema) {
-    const _schema = retrieveSchema(schema, rootSchema, formData)
-    return toIdSchema(_schema, id, rootSchema, formData, idPrefix)
+  if ("items" in schema && !schema.items.$ref) {
+    return toIdSchema(schema.items, id, rootSchema, formData, idPrefix);
   }
-  if ('items' in schema && !schema.items.$ref) {
-    return toIdSchema(schema.items, id, rootSchema, formData, idPrefix)
-  }
-  if (schema.type !== 'object') {
-    return idSchema
+  if (schema.type !== "object") {
+    return idSchema;
   }
   for (const name in schema.properties || {}) {
-    const field = schema.properties[name]
-    const fieldId = idSchema.$id + '_' + name
+    const field = schema.properties[name];
+    const fieldId = idSchema.$id + "_" + name;
     idSchema[name] = toIdSchema(
       isObject(field) ? field : {},
       fieldId,
@@ -1013,34 +1345,34 @@ export function toIdSchema (
       // array item has just been added, but not populated with data yet
       (formData || {})[name],
       idPrefix
-    )
+    );
   }
-  return idSchema
+  return idSchema;
 }
 
-export function toPathSchema (schema, name = '', rootSchema, formData = {}) {
+export function toPathSchema(schema, name = "", rootSchema, formData = {}) {
   const pathSchema = {
-    $name: name.replace(/^\./, '')
-  }
-  if ('$ref' in schema || 'dependencies' in schema || 'allOf' in schema) {
-    const _schema = retrieveSchema(schema, rootSchema, formData)
-    return toPathSchema(_schema, name, rootSchema, formData)
-  }
-
-  if (schema.hasOwnProperty('additionalProperties')) {
-    pathSchema.__rjsf_additionalProperties = true
+    $name: name.replace(/^\./, ""),
+  };
+  if ("$ref" in schema || "dependencies" in schema || "allOf" in schema) {
+    const _schema = retrieveSchema(schema, rootSchema, formData);
+    return toPathSchema(_schema, name, rootSchema, formData);
   }
 
-  if (schema.hasOwnProperty('items') && Array.isArray(formData)) {
+  if (schema.hasOwnProperty("additionalProperties")) {
+    pathSchema.__rjsf_additionalProperties = true;
+  }
+
+  if (schema.hasOwnProperty("items") && Array.isArray(formData)) {
     formData.forEach((element, i) => {
       pathSchema[i] = toPathSchema(
         schema.items,
         `${name}.${i}`,
         rootSchema,
         element
-      )
-    })
-  } else if (schema.hasOwnProperty('properties')) {
+      );
+    });
+  } else if (schema.hasOwnProperty("properties")) {
     for (const property in schema.properties) {
       pathSchema[property] = toPathSchema(
         schema.properties[property],
@@ -1049,13 +1381,21 @@ export function toPathSchema (schema, name = '', rootSchema, formData = {}) {
         // It's possible that formData is not an object -- this can happen if an
         // array item has just been added, but not populated with data yet
         (formData || {})[property]
-      )
+      );
     }
   }
-  return pathSchema
+  return pathSchema;
 }
 
-export function parseDateString (dateString, includeTime = true) {
+export function parseDateString(dateString, includeTime = true) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "parseDateString method starts here",
+      { dateString, includeTime },
+      "parseDateString()",
+      "utils.js"
+    )
+  );
   if (!dateString) {
     return {
       year: -1,
@@ -1063,12 +1403,12 @@ export function parseDateString (dateString, includeTime = true) {
       day: -1,
       hour: includeTime ? -1 : 0,
       minute: includeTime ? -1 : 0,
-      second: includeTime ? -1 : 0
-    }
+      second: includeTime ? -1 : 0,
+    };
   }
-  const date = new Date(dateString)
+  const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) {
-    throw new Error('Unable to parse date ' + dateString)
+    throw new Error("Unable to parse date " + dateString);
   }
   return {
     year: date.getUTCFullYear(),
@@ -1076,22 +1416,38 @@ export function parseDateString (dateString, includeTime = true) {
     day: date.getUTCDate(),
     hour: includeTime ? date.getUTCHours() : 0,
     minute: includeTime ? date.getUTCMinutes() : 0,
-    second: includeTime ? date.getUTCSeconds() : 0
-  }
+    second: includeTime ? date.getUTCSeconds() : 0,
+  };
 }
 
-export function toDateString (
+export function toDateString(
   { year, month, day, hour = 0, minute = 0, second = 0 },
   time = true
 ) {
-  const utcTime = Date.UTC(year, month - 1, day, hour, minute, second)
-  const datetime = new Date(utcTime).toJSON()
-  return time ? datetime : datetime.slice(0, 10)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "toDateString method starts here",
+      { year, month, day, hour, minute, second, time },
+      "toDateString()",
+      "utils.js"
+    )
+  );
+  const utcTime = Date.UTC(year, month - 1, day, hour, minute, second);
+  const datetime = new Date(utcTime).toJSON();
+  return time ? datetime : datetime.slice(0, 10);
 }
 
-export function utcToLocal (jsonDate) {
+export function utcToLocal(jsonDate) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "utcToLocal method starts here",
+      { jsonDate },
+      "utcToLocal()",
+      "utils.js"
+    )
+  );
   if (!jsonDate) {
-    return ''
+    return "";
   }
 
   // required format of `"yyyy-MM-ddThh:mm" followed by optional ":ss" or ":ss.SSS"
@@ -1100,92 +1456,140 @@ export function utcToLocal (jsonDate) {
 
   // Note - date constructor passed local ISO-8601 does not correctly
   // change time to UTC in node pre-8
-  const date = new Date(jsonDate)
+  const date = new Date(jsonDate);
 
-  const yyyy = pad(date.getFullYear(), 4)
-  const MM = pad(date.getMonth() + 1, 2)
-  const dd = pad(date.getDate(), 2)
-  const hh = pad(date.getHours(), 2)
-  const mm = pad(date.getMinutes(), 2)
-  const ss = pad(date.getSeconds(), 2)
-  const SSS = pad(date.getMilliseconds(), 3)
+  const yyyy = pad(date.getFullYear(), 4);
+  const MM = pad(date.getMonth() + 1, 2);
+  const dd = pad(date.getDate(), 2);
+  const hh = pad(date.getHours(), 2);
+  const mm = pad(date.getMinutes(), 2);
+  const ss = pad(date.getSeconds(), 2);
+  const SSS = pad(date.getMilliseconds(), 3);
 
-  return `${yyyy}-${MM}-${dd}T${hh}:${mm}:${ss}.${SSS}`
+  return `${yyyy}-${MM}-${dd}T${hh}:${mm}:${ss}.${SSS}`;
 }
 
-export function localToUTC (dateString) {
+export function localToUTC(dateString) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "localToUTC method starts here",
+      { dateString },
+      "localToUTC()",
+      "utils.js"
+    )
+  );
   if (dateString) {
-    return new Date(dateString).toJSON()
+    return new Date(dateString).toJSON();
   }
 }
 
-export function pad (num, size) {
-  let s = String(num)
+export function pad(num, size) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "pad method starts here",
+      { num, size },
+      "pad()",
+      "utils.js"
+    )
+  );
+  let s = String(num);
   while (s.length < size) {
-    s = '0' + s
+    s = "0" + s;
   }
-  return s
+  return s;
 }
 
-export function dataURItoBlob (dataURI) {
+export function dataURItoBlob(dataURI) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "dataURItoBlob method starts here",
+      { dataURI },
+      "dataURItoBlob()",
+      "utils.js"
+    )
+  );
   // Split metadata from data
-  const splitted = dataURI.split(',')
+  const splitted = dataURI.split(",");
   // Split params
-  const params = splitted[0].split(';')
+  const params = splitted[0].split(";");
   // Get mime-type from params
-  const type = params[0].replace('data:', '')
+  const type = params[0].replace("data:", "");
   // Filter the name property from params
   const properties = params.filter((param) => {
-    return param.split('=')[0] === 'name'
-  })
+    return param.split("=")[0] === "name";
+  });
   // Look for the name and use unknown if no name property.
-  let name
+  let name;
   if (properties.length !== 1) {
-    name = 'unknown'
+    name = "unknown";
   } else {
     // Because we filtered out the other property,
     // we only have the name case here.
-    name = properties[0].split('=')[1]
+    name = properties[0].split("=")[1];
   }
 
   // Built the Uint8Array Blob parameter from the base64 string.
-  const binary = atob(splitted[1])
-  const array = []
+  const binary = atob(splitted[1]);
+  const array = [];
   for (let i = 0; i < binary.length; i++) {
-    array.push(binary.charCodeAt(i))
+    array.push(binary.charCodeAt(i));
   }
   // Create the blob object
-  const blob = new window.Blob([new Uint8Array(array)], { type })
+  const blob = new window.Blob([new Uint8Array(array)], { type });
 
-  return { blob, name }
+  return { blob, name };
 }
 
-export function rangeSpec (schema) {
-  const spec = {}
+export function rangeSpec(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "rangeSpec method starts here",
+      { schema },
+      "rangeSpec()",
+      "utils.js"
+    )
+  );
+  const spec = {};
   if (schema.multipleOf) {
-    spec.step = schema.multipleOf
+    spec.step = schema.multipleOf;
   }
   if (schema.minimum || schema.minimum === 0) {
-    spec.min = schema.minimum
+    spec.min = schema.minimum;
   }
   if (schema.maximum || schema.maximum === 0) {
-    spec.max = schema.maximum
+    spec.max = schema.maximum;
   }
-  return spec
+  return spec;
 }
 
-export function numberWithCommas (x) {
-  x = x.toString()
-  let lastThree = x.substring(x.length - 3)
-  const otherNumbers = x.substring(0, x.length - 3)
-  if (otherNumbers != '') lastThree = ',' + lastThree
-  const res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree
-  return res
+export function numberWithCommas(x) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "numberWithCommas method starts here",
+      { x },
+      "numberWithCommas()",
+      "utils.js"
+    )
+  );
+  x = x.toString();
+  let lastThree = x.substring(x.length - 3);
+  const otherNumbers = x.substring(0, x.length - 3);
+  if (otherNumbers != "") lastThree = "," + lastThree;
+  const res = otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree;
+  return res;
 }
 
-export function getMatchingOption (formData, options, rootSchema) {
+export function getMatchingOption(formData, options, rootSchema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "getMatchingOption method starts here",
+      { formData, options, rootSchema },
+      "getMatchingOption()",
+      "utils.js"
+    )
+  );
   for (let i = 0; i < options.length; i++) {
-    const option = options[i]
+    const option = options[i];
 
     // If the schema describes an object then we need to add slightly more
     // strict matching to the schema, because unless the schema uses the
@@ -1199,72 +1603,80 @@ export function getMatchingOption (formData, options, rootSchema) {
       // "properties" object
       const requiresAnyOf = {
         anyOf: Object.keys(option.properties).map((key) => ({
-          required: [key]
-        }))
-      }
+          required: [key],
+        })),
+      };
 
-      let augmentedSchema
+      let augmentedSchema;
 
       // If the "anyOf" keyword already exists, wrap the augmentation in an "allOf"
       if (option.anyOf) {
         // Create a shallow clone of the option
-        const { ...shallowClone } = option
+        const { ...shallowClone } = option;
 
         if (!shallowClone.allOf) {
-          shallowClone.allOf = []
+          shallowClone.allOf = [];
         } else {
           // If "allOf" already exists, shallow clone the array
-          shallowClone.allOf = shallowClone.allOf.slice()
+          shallowClone.allOf = shallowClone.allOf.slice();
         }
 
-        shallowClone.allOf.push(requiresAnyOf)
+        shallowClone.allOf.push(requiresAnyOf);
 
-        augmentedSchema = shallowClone
+        augmentedSchema = shallowClone;
       } else {
-        augmentedSchema = Object.assign({}, option, requiresAnyOf)
+        augmentedSchema = Object.assign({}, option, requiresAnyOf);
       }
 
       // Remove the "required" field as it's likely that not all fields have
       // been filled in yet, which will mean that the schema is not valid
-      delete augmentedSchema.required
+      delete augmentedSchema.required;
 
       if (isValid(augmentedSchema, formData, rootSchema)) {
-        return i
+        return i;
       }
     } else if (isValid(option, formData, rootSchema)) {
-      return i
+      return i;
     }
   }
-  return 0
+  return 0;
 }
 
 // Check to see if a schema specifies that a value must be true
-export function schemaRequiresTrueValue (schema) {
+export function schemaRequiresTrueValue(schema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "schemaRequiresTrueValue method starts here",
+      { schema },
+      "schemaRequiresTrueValue()",
+      "utils.js"
+    )
+  );
   // Check if const is a truthy value
   if (schema.const) {
-    return true
+    return true;
   }
 
   // Check if an enum has a single value of true
   if (schema.enum && schema.enum.length === 1 && schema.enum[0] === true) {
-    return true
+    return true;
   }
 
   // If anyOf has a single value, evaluate the subschema
   if (schema.anyOf && schema.anyOf.length === 1) {
-    return schemaRequiresTrueValue(schema.anyOf[0])
+    return schemaRequiresTrueValue(schema.anyOf[0]);
   }
 
   // If oneOf has a single value, evaluate the subschema
   if (schema.oneOf && schema.oneOf.length === 1) {
-    return schemaRequiresTrueValue(schema.oneOf[0])
+    return schemaRequiresTrueValue(schema.oneOf[0]);
   }
 
   // Evaluate each subschema in allOf, to see if one of them requires a true
   // value
   if (schema.allOf) {
-    return schema.allOf.some(schemaRequiresTrueValue)
+    return schema.allOf.some(schemaRequiresTrueValue);
   }
 
-  return false
+  return false;
 }

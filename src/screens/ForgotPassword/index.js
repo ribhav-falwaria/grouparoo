@@ -1,62 +1,81 @@
-import React, { useContext } from 'react'
-import { View } from 'react-native'
-import { Button, Input, Text, StyleService, useStyleSheet } from '@ui-kitten/components'
-import { EmailIcon } from './extra/icons'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { LocalizationContext } from '../../components/Translation'
-import styleConstants from '../styleConstants'
-import ScreenTitle from '../components/ScreenTitle'
+import React, { useContext } from "react";
+import { View } from "react-native";
+import {
+  Button,
+  Input,
+  Text,
+  StyleService,
+  useStyleSheet,
+} from "@ui-kitten/components";
+import { EmailIcon } from "./extra/icons";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { LocalizationContext } from "../../components/Translation";
+import styleConstants from "../styleConstants";
+import ScreenTitle from "../components/ScreenTitle";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 export default ({ navigation, route }) => {
-  const [email, setEmail] = React.useState()
-  const styles = useStyleSheet(themedStyles)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ForgotPassword method starts here",
+      { content },
+      "ForgotPassword()",
+      "ForgotPassword.js"
+    )
+  );
+  const [email, setEmail] = React.useState();
+  const styles = useStyleSheet(themedStyles);
   const onResetPasswordButtonPress = () => {
-    navigation && navigation.goBack()
-  }
-  const { translations } = useContext(LocalizationContext)
-  const title = route.params?.title || translations['auth.forgotPassword']
+    navigation && navigation.goBack();
+  };
+  const { translations } = useContext(LocalizationContext);
+  const title = route.params?.title || translations["auth.forgotPassword"];
   return (
     <KeyboardAwareScrollView>
       <View style={styles.container}>
-        <ScreenTitle title={title} description={translations['auth.forgotPassword.enterEmail']} />
+        <ScreenTitle
+          title={title}
+          description={translations["auth.forgotPassword.enterEmail"]}
+        />
         <View style={styles.formContainer}>
           <Input
-            status='basic'
-            placeholder='Email'
+            status="basic"
+            placeholder="Email"
             accessoryRight={EmailIcon}
             value={email}
-            size='large'
+            size="large"
             onChangeText={setEmail}
           />
         </View>
         <View style={styles.buttonContanier}>
-          <Button size='large' onPress={onResetPasswordButtonPress}>
-            {translations['auth.forgotPassword.reset']}
+          <Button size="large" onPress={onResetPasswordButtonPress}>
+            {translations["auth.forgotPassword.reset"]}
           </Button>
         </View>
       </View>
     </KeyboardAwareScrollView>
-  )
-}
+  );
+};
 
 const themedStyles = StyleService.create({
   container: {
     flex: 1,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   formContainer: {
     flex: 1,
-    justifyContent: 'space-between',
-    marginTop: 24
+    justifyContent: "space-between",
+    marginTop: 24,
   },
   forgotPasswordLabel: {
     zIndex: 1,
-    alignSelf: 'center',
-    marginTop: 24
+    alignSelf: "center",
+    marginTop: 24,
   },
   content: {
-    ...styleConstants.content
+    ...styleConstants.content,
   },
   buttonContanier: {
-    paddingVertical: 24
-  }
-})
+    paddingVertical: 24,
+  },
+});

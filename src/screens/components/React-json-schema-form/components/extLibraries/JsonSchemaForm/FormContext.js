@@ -1,17 +1,17 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext } from "react";
 
 export const defaultProps = {
   theme: {
-    primaryColor: '#2196F3',
-    highlightColor: '#2196F3',
-    borderColor: '#979B9E',
-    textColor: '#333333',
-    placeholderTextColor: '#999999',
-    errorColor: '#a94442'
+    primaryColor: "#2196F3",
+    highlightColor: "#2196F3",
+    borderColor: "#979B9E",
+    textColor: "#333333",
+    placeholderTextColor: "#999999",
+    errorColor: "#a94442",
   },
-  requiredTitle: '*',
-  arrayAddTitle: 'Add'
-}
+  requiredTitle: "*",
+  arrayAddTitle: "Add",
+};
 
-export const FormContext = createContext(defaultProps)
-export const useFormContext = () => useContext(FormContext)
+export const FormContext = createContext(defaultProps);
+export const useFormContext = () => useContext(FormContext);

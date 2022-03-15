@@ -1,70 +1,85 @@
-import React, { useState, useContext } from 'react'
-import { View, TouchableWithoutFeedback } from 'react-native'
-import { heightPercentageToDP } from 'react-native-responsive-screen'
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../Errors/ErrorUtil";
+import React, { useState, useContext } from "react";
+import { View, TouchableWithoutFeedback } from "react-native";
+import { heightPercentageToDP } from "react-native-responsive-screen";
 import {
   Button,
   Text,
   StyleService,
   useStyleSheet,
-  Card
-} from '@ui-kitten/components'
-import { LoanOfferIcon, EditIcon, CheckIconGreen } from '../ThemedIcons'
-import FormattedCardNoHeader from '../FormattedCardNoHeader'
-import AmountRangeSelector from '../AmountRangeSelector'
-import { LocalizationContext } from '../../../components/Translation'
-import { config } from '../../../config'
-import { rupeeFormatter, calculateEmi } from '../../../utils'
-import { AmountDisplay, InterestDisplay } from '../ValueDisplayComponent'
-import styleConstants from '../../styleConstants'
-const LoanOfferComponent = ({
-  onSubmit,
-  loanOption
-}) => {
-  const [selectedTenure, setSelectedTenure] = useState(0)
-  const [selectedRepayment, setSelectedRepayment] = useState(0)
+  Card,
+} from "@ui-kitten/components";
+import { LoanOfferIcon, EditIcon, CheckIconGreen } from "../ThemedIcons";
+import FormattedCardNoHeader from "../FormattedCardNoHeader";
+import AmountRangeSelector from "../AmountRangeSelector";
+import { LocalizationContext } from "../../../components/Translation";
+import { config } from "../../../config";
+import { rupeeFormatter, calculateEmi } from "../../../utils";
+import { AmountDisplay, InterestDisplay } from "../ValueDisplayComponent";
+import styleConstants from "../../styleConstants";
+const LoanOfferComponent = ({ onSubmit, loanOption }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      " LoanOfferComponent method starts here",
+      { onSubmit, loanOption },
+      "LoanOfferComponent()",
+      "OldLoanOfferComponent.js"
+    )
+  );
+  const [selectedTenure, setSelectedTenure] = useState(0);
+  const [selectedRepayment, setSelectedRepayment] = useState(0);
 
-  const [editLoanAmount, setEditLoanAmount] = useState(false)
-  const [loanAmount, setLoanAmount] = useState(loanOption.maxLoanAmount)
-  const { translations } = useContext(LocalizationContext)
-  const styles = useStyleSheet(themedStyles)
+  const [editLoanAmount, setEditLoanAmount] = useState(false);
+  const [loanAmount, setLoanAmount] = useState(loanOption.maxLoanAmount);
+  const { translations } = useContext(LocalizationContext);
+  const styles = useStyleSheet(themedStyles);
   const loanEMI = calculateEmi(
     loanAmount,
     loanOption.tenures[selectedTenure],
     loanOption.repayments[selectedRepayment],
     loanOption.unit
-  )
+  );
   const onSelectPress = () => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " onSelectPress method starts here",
+        undefined,
+        "onSelectPress()",
+        "OldLoanOfferComponent.js"
+      )
+    );
     onSubmit({
       selectedOption: loanOption,
       configParams: {
         loanAmount,
         tenureIndex: selectedTenure,
-        repaymentIndex: selectedRepayment
-      }
-    })
-  }
+        repaymentIndex: selectedRepayment,
+      },
+    });
+  };
   return (
     <View style={styles.container}>
-      <FormattedCardNoHeader status='primary'>
+      <FormattedCardNoHeader status="primary">
         <View style={[styles.loanPropsContainer, styles.itemContainer]}>
           <View style={styles.withIconContainer}>
             <AmountDisplay
-              label={translations['loan.loanAmount']}
+              label={translations["loan.loanAmount"]}
               amount={loanAmount}
             />
             <View style={styles.iconContainer}>
               {!editLoanAmount && (
                 <Button
                   accessoryLeft={EditIcon}
-                  size='small'
-                  appearance='ghost'
+                  size="small"
+                  appearance="ghost"
                   onPress={() => setEditLoanAmount(true)}
                 />
               )}
               {editLoanAmount && (
                 <Button
-                  size='small'
-                  appearance='ghost'
+                  size="small"
+                  appearance="ghost"
                   accessoryLeft={CheckIconGreen}
                   onPress={() => setEditLoanAmount(false)}
                 />
@@ -72,7 +87,7 @@ const LoanOfferComponent = ({
             </View>
           </View>
           <InterestDisplay
-            label={translations['loan.interestRate']}
+            label={translations["loan.interestRate"]}
             interestRate={loanOption.estimatedInterestRate}
           />
         </View>
@@ -88,115 +103,102 @@ const LoanOfferComponent = ({
           </View>
         )}
         <View style={styles.itemContainer}>
-          <Text category='label'>
-            {translations['application.loanPeriod']}
-          </Text>
+          <Text category="label">{translations["application.loanPeriod"]}</Text>
           <View style={styles.tenureContainer}>
-            {
-              loanOption.tenures.map((tenure, ix) => (
-                <Button
-                  size='small'
-                  appearance={selectedTenure === ix ? 'outline' : 'ghost'}
-                  style={styles.buttonStyle}
-                  key={`tenures-${ix}`}
-                  status={selectedTenure === ix ? 'primary' : 'basic'}
-                  onPress={() => setSelectedTenure(ix)}
-                >
-                  {`${tenure} ${loanOption.unitDisplay}`}
-                </Button>
-              ))
-            }
+            {loanOption.tenures.map((tenure, ix) => (
+              <Button
+                size="small"
+                appearance={selectedTenure === ix ? "outline" : "ghost"}
+                style={styles.buttonStyle}
+                key={`tenures-${ix}`}
+                status={selectedTenure === ix ? "primary" : "basic"}
+                onPress={() => setSelectedTenure(ix)}
+              >
+                {`${tenure} ${loanOption.unitDisplay}`}
+              </Button>
+            ))}
           </View>
         </View>
         <View style={styles.itemContainer}>
-          <Text category='label'>
-            {translations['application.repayment']}
-          </Text>
+          <Text category="label">{translations["application.repayment"]}</Text>
           <View style={styles.tenureContainer}>
-            {
-              loanOption.repayments.map((rp, ix) => (
-                <Button
-                  size='small'
-                  appearance={selectedRepayment === ix ? 'outline' : 'ghost'}
-                  style={styles.buttonStyle}
-                  key={`tenures-${ix}`}
-                  status={selectedRepayment === ix ? 'primary' : 'basic'}
-                  onPress={() => setSelectedRepayment(ix)}
-                >
-                  {translations[`period.${rp}ly`]}
-                </Button>
-              ))
-            }
+            {loanOption.repayments.map((rp, ix) => (
+              <Button
+                size="small"
+                appearance={selectedRepayment === ix ? "outline" : "ghost"}
+                style={styles.buttonStyle}
+                key={`tenures-${ix}`}
+                status={selectedRepayment === ix ? "primary" : "basic"}
+                onPress={() => setSelectedRepayment(ix)}
+              >
+                {translations[`period.${rp}ly`]}
+              </Button>
+            ))}
           </View>
         </View>
         <View style={styles.itemContainer}>
           <Card style={styles.loanEmiContainer}>
-            <Text category='h6'>
-              <Text category='label'>
-                {'₹ '}
-              </Text>
+            <Text category="h6">
+              <Text category="label">{"₹ "}</Text>
               {rupeeFormatter(loanEMI)}
             </Text>
-            <Text catgory='p'>
+            <Text catgory="p">
               {translations[`period.inst.per.${loanOption.unit}`]}
             </Text>
           </Card>
         </View>
-        <Button
-          status='primary'
-          onPress={onSelectPress}
-        >
-          {translations['application.acceptOffer']}
+        <Button status="primary" onPress={onSelectPress}>
+          {translations["application.acceptOffer"]}
         </Button>
       </FormattedCardNoHeader>
     </View>
-  )
-}
+  );
+};
 const themedStyles = StyleService.create({
   iconContainer: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginLeft: 8,
-    marginTop: 4
+    marginTop: 4,
   },
   withIconContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around'
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   itemContainer: {
-    marginVertical: 8
+    marginVertical: 8,
   },
   container: {
     ...styleConstants.container,
-    marginTop: 16
+    marginTop: 16,
   },
   loanPropsContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
   },
   loanEmiContainer: {
-    height: heightPercentageToDP('10%'),
+    height: heightPercentageToDP("10%"),
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: 'background-basic-color-2',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginVertical: 8
+    flexDirection: "column",
+    backgroundColor: "background-basic-color-2",
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 8,
   },
   tenureContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginVertical: 8,
-    paddingHorizontal: 4
+    paddingHorizontal: 4,
   },
   buttonStyle: {
-    marginLeft: 0
+    marginLeft: 0,
   },
   loanAmountContainer: {
-    alignItems: 'center'
-  }
-})
-export default LoanOfferComponent
+    alignItems: "center",
+  },
+});
+export default LoanOfferComponent;

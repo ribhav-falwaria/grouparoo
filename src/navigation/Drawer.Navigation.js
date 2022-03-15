@@ -1,5 +1,5 @@
-import React, { useContext } from 'react'
-import { StyleSheet, View } from 'react-native'
+import React, { useContext } from "react";
+import { StyleSheet, View } from "react-native";
 import {
   Avatar,
   Divider,
@@ -7,38 +7,48 @@ import {
   DrawerItem,
   Layout,
   Text,
-  IndexPath
-} from '@ui-kitten/components'
-import SafeAreaLayout from '../components/SafeAreaLayout.component'
-import { AppInfoService } from '../services/app-info.service'
-import { LocalizationContext } from '../components/Translation'
+  IndexPath,
+} from "@ui-kitten/components";
+import SafeAreaLayout from "../components/SafeAreaLayout.component";
+import { AppInfoService } from "../services/app-info.service";
+import { LocalizationContext } from "../components/Translation";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../screens/Errors/ErrorUtil";
 
 const HomeDrawer = ({ navigation, navigationData, state }) => {
-  const { translations } = useContext(LocalizationContext)
-  navigationData.forEach(n => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      " HomeDrawer method starts here",
+      { navigation, navigationData, state },
+      "HomeDrawer()",
+      "Drawer.Navigation.js"
+    )
+  );
+  const { translations } = useContext(LocalizationContext);
+  navigationData.forEach((n) => {
     n.handleOnPress = () => {
-      navigation.toggleDrawer()
-      navigation.navigate(n.name, {})
-    }
-  })
+      navigation.toggleDrawer();
+      navigation.navigate(n.name, {});
+    };
+  });
   const renderHeader = () => (
-    <SafeAreaLayout insets='top' level='2'>
-      <Layout style={styles.header} level='2'>
+    <SafeAreaLayout insets="top" level="2">
+      <Layout style={styles.header} level="2">
         <View style={styles.profileContainer}>
           <Avatar
-            size='giant'
-            source={require('../assets/images/image-app-icon.png')}
+            size="giant"
+            source={require("../assets/images/image-app-icon.png")}
           />
-          <Text style={styles.profileName} category='h6'>
+          <Text style={styles.profileName} category="h6">
             Kitten Tricks
           </Text>
         </View>
       </Layout>
     </SafeAreaLayout>
-  )
+  );
 
   const renderFooter = () => (
-    <SafeAreaLayout insets='bottom'>
+    <SafeAreaLayout insets="bottom">
       <>
         <Divider />
         <View style={styles.footer}>
@@ -46,13 +56,13 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
         </View>
       </>
     </SafeAreaLayout>
-  )
+  );
   return (
     <Drawer
       header={renderHeader}
       footer={renderFooter}
       selectedIndex={new IndexPath(state.index)}
-      onSelect={index => navigation.navigate(state.routeNames[index.row], {})}
+      onSelect={(index) => navigation.navigate(state.routeNames[index.row], {})}
     >
       {navigationData.map((el, index) => (
         <DrawerItem
@@ -63,30 +73,30 @@ const HomeDrawer = ({ navigation, navigationData, state }) => {
         />
       ))}
     </Drawer>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   safeArea: {
-    flex: 1
+    flex: 1,
   },
   header: {
     height: 128,
     paddingHorizontal: 16,
-    justifyContent: 'center'
+    justifyContent: "center",
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginLeft: 16
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginLeft: 16,
   },
   profileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    flexDirection: "row",
+    alignItems: "center",
   },
   profileName: {
-    marginHorizontal: 16
-  }
-})
+    marginHorizontal: 16,
+  },
+});
 
-export default HomeDrawer
+export default HomeDrawer;

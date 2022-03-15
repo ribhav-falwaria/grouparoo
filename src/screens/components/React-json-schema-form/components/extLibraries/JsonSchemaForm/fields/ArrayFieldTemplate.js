@@ -1,48 +1,82 @@
-import React from 'react'
+import React from "react";
 import {
   Image,
   LayoutAnimation,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native'
+  View,
+} from "react-native";
 
-import { isMultiSelect, getDefaultRegistry } from '../utils'
-import DescriptionField from './DescriptionField'
-import { useFormContext } from '../FormContext'
-import TitleField from './TitleField'
-const reorderUp = ''
-const reorderDown = ''
-const arrayDelete = ''
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
+import { isMultiSelect, getDefaultRegistry } from "../utils";
+import DescriptionField from "./DescriptionField";
+import { useFormContext } from "../FormContext";
+import TitleField from "./TitleField";
+const reorderUp = "";
+const reorderDown = "";
+const arrayDelete = "";
 
-const ArrayFieldTemplate = props => {
-  const { schema, registry = getDefaultRegistry() } = props
+const ArrayFieldTemplate = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ArrayFieldTemplate method starts here ",
+      { props },
+      "ArrayFieldTemplate()",
+      "ArrayFieldTemplate.js"
+    )
+  );
+  const { schema, registry = getDefaultRegistry() } = props;
 
   if (isMultiSelect(schema, registry.definitions)) {
-    return <DefaultFixedArrayFieldTemplate {...props} />
+    return <DefaultFixedArrayFieldTemplate {...props} />;
   } else {
-    return <DefaultNormalArrayFieldTemplate {...props} />
+    return <DefaultNormalArrayFieldTemplate {...props} />;
   }
-}
+};
 
 const ArrayFieldTitle = ({ title, required }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ArrayFieldTitle method starts here ",
+      { title, required },
+      "ArrayFieldTitle()",
+      "ArrayFieldTemplate.js"
+    )
+  );
   if (!title) {
-    return null
+    return null;
   }
-  return <TitleField title={title} required={required} />
-}
+  return <TitleField title={title} required={required} />;
+};
 
 const ArrayFieldDescription = ({ description }) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ArrayFieldDescription method starts here ",
+      { description },
+      "ArrayFieldDescription()",
+      "ArrayFieldTemplate.js"
+    )
+  );
   if (!description) {
-    return null
+    return null;
   }
 
-  return <DescriptionField description={description} />
-}
+  return <DescriptionField description={description} />;
+};
 
 // Used in the two templates
-const DefaultArrayItem = props => {
+const DefaultArrayItem = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "DefaultArrayItem method starts here ",
+      { props },
+      "DefaultArrayItem()",
+      "ArrayFieldTemplate.js"
+    )
+  );
   return (
     <View style={styles.arrayItem} key={props.index}>
       <View style={styles.card}>{props.children}</View>
@@ -53,8 +87,8 @@ const DefaultArrayItem = props => {
             onPress={() => {
               LayoutAnimation.configureNext(
                 LayoutAnimation.Presets.easeInEaseOut
-              )
-              props.onReorderClick(props.index, props.index - 1)()
+              );
+              props.onReorderClick(props.index, props.index - 1)();
             }}
           >
             <Image style={styles.image} source={{ uri: reorderUp }} />
@@ -64,7 +98,7 @@ const DefaultArrayItem = props => {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => {
-              props.onReorderClick(props.index, props.index + 1)()
+              props.onReorderClick(props.index, props.index + 1)();
             }}
           >
             <Image style={styles.image} source={{ uri: reorderDown }} />
@@ -77,8 +111,8 @@ const DefaultArrayItem = props => {
             onPress={() => {
               LayoutAnimation.configureNext(
                 LayoutAnimation.Presets.easeInEaseOut
-              )
-              props.onDropIndexClick(props.index)()
+              );
+              props.onDropIndexClick(props.index)();
             }}
           >
             <Image style={styles.image} source={{ uri: arrayDelete }} />
@@ -86,45 +120,61 @@ const DefaultArrayItem = props => {
         )}
       </View>
     </View>
-  )
-}
+  );
+};
 
-const AddButton = props => {
-  const context = useFormContext()
+const AddButton = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "AddButton method starts here ",
+      { props },
+      "AddButton()",
+      "ArrayFieldTemplate.js"
+    )
+  );
+  const context = useFormContext();
   return (
     <TouchableOpacity
       style={[
         styles.addButton,
         {
-          backgroundColor: context.theme.primaryColor
-        }
+          backgroundColor: context.theme.primaryColor,
+        },
       ]}
-      onPress={e => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        props.onPress(e)
+      onPress={(e) => {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+        props.onPress(e);
       }}
       disabled={props.disabled}
     >
       <Text style={styles.addButtonText}>{context.arrayAddTitle}</Text>
     </TouchableOpacity>
-  )
-}
+  );
+};
 
-const DefaultFixedArrayFieldTemplate = props => {
+const DefaultFixedArrayFieldTemplate = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "DefaultFixedArrayFieldTemplate method starts here ",
+      { props },
+      "DefaultFixedArrayFieldTemplate()",
+      "ArrayFieldTemplate.js"
+    )
+  );
   return (
     <View style={styles.container}>
       <ArrayFieldTitle
         key={`array-field-title-${props.idSchema.$id}`}
         TitleField={props.TitleField}
         idSchema={props.idSchema}
-        title={props.uiSchema['ui:title'] || props.title}
+        title={props.uiSchema["ui:title"] || props.title}
         required={props.required}
       />
 
-      {(props.uiSchema['ui:description'] || props.schema.description) && (
+      {(props.uiSchema["ui:description"] || props.schema.description) && (
         <DescriptionField
           description={
-            props.uiSchema['ui:description'] || props.schema.description
+            props.uiSchema["ui:description"] || props.schema.description
           }
         />
       )}
@@ -140,33 +190,41 @@ const DefaultFixedArrayFieldTemplate = props => {
         />
       )}
     </View>
-  )
-}
+  );
+};
 
-const DefaultNormalArrayFieldTemplate = props => {
+const DefaultNormalArrayFieldTemplate = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "DefaultNormalArrayFieldTemplate method starts here ",
+      { props },
+      "DefaultNormalArrayFieldTemplate()",
+      "ArrayFieldTemplate.js"
+    )
+  );
   return (
     <View style={styles.container}>
       <ArrayFieldTitle
         key={`array-field-title-${props.idSchema.$id}`}
         TitleField={props.TitleField}
         idSchema={props.idSchema}
-        title={props.uiSchema['ui:title'] || props.title}
+        title={props.uiSchema["ui:title"] || props.title}
         required={props.required}
       />
 
-      {(props.uiSchema['ui:description'] || props.schema.description) && (
+      {(props.uiSchema["ui:description"] || props.schema.description) && (
         <ArrayFieldDescription
           key={`array-field-description-${props.idSchema.$id}`}
           DescriptionField={props.DescriptionField}
           idSchema={props.idSchema}
           description={
-            props.uiSchema['ui:description'] || props.schema.description
+            props.uiSchema["ui:description"] || props.schema.description
           }
         />
       )}
 
       <View style={styles.content}>
-        {props.items && props.items.map(p => DefaultArrayItem(p))}
+        {props.items && props.items.map((p) => DefaultArrayItem(p))}
       </View>
 
       {props.canAdd && (
@@ -176,55 +234,55 @@ const DefaultNormalArrayFieldTemplate = props => {
         />
       )}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 10
+    marginBottom: 10,
   },
   content: {
-    marginTop: 10
+    marginTop: 10,
   },
   arrayItem: {
-    marginBottom: 10
+    marginBottom: 10,
   },
   card: {
     paddingBottom: 20,
-    borderRadius: 5
+    borderRadius: 5,
   },
   actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "flex-end",
     paddingLeft: 10,
-    position: 'absolute',
+    position: "absolute",
     right: 0,
-    bottom: 0
+    bottom: 0,
   },
   actionButton: {
     width: 40,
     height: 40,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
   addButton: {
     marginTop: 20,
     height: 44,
-    backgroundColor: '#0057FF',
+    backgroundColor: "#0057FF",
     borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center'
+    justifyContent: "center",
+    alignItems: "center",
   },
   addButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 17,
-    fontWeight: '600'
+    fontWeight: "600",
   },
   image: {
     width: 24,
     height: 24,
-    resizeMode: 'contain'
-  }
-})
+    resizeMode: "contain",
+  },
+});
 
-export default ArrayFieldTemplate
+export default ArrayFieldTemplate;

@@ -1,35 +1,58 @@
-import toPath from 'lodash/toPath'
-import Ajv from 'ajv'
-import { deepEquals, getDefaultFormState, isObject, mergeObjects } from './utils'
+import toPath from "lodash/toPath";
+import Ajv from "ajv";
+import {
+  deepEquals,
+  getDefaultFormState,
+  isObject,
+  mergeObjects,
+} from "./utils";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../Errors/ErrorUtil";
 
-let ajv = createAjvInstance()
+let ajv = createAjvInstance();
 
-let formerCustomFormats = null
-let formerMetaSchema = null
-const ROOT_SCHEMA_PREFIX = '__rjsf_rootSchema'
+let formerCustomFormats = null;
+let formerMetaSchema = null;
+const ROOT_SCHEMA_PREFIX = "__rjsf_rootSchema";
 
-function createAjvInstance () {
+function createAjvInstance() {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "createAjvInstance method starts here",
+      undefined,
+      "createAjvInstance()",
+      "validate.js"
+    )
+  );
   const ajv = new Ajv({
-    errorDataPath: 'property',
+    errorDataPath: "property",
     allErrors: true,
     multipleOfPrecision: 8,
-    schemaId: 'auto',
-    unknownFormats: 'ignore'
-  })
+    schemaId: "auto",
+    unknownFormats: "ignore",
+  });
 
   // add custom formats
   ajv.addFormat(
-    'data-url',
+    "data-url",
     /^data:([a-z]+\/[a-z0-9-+.]+)?;(?:name=(.*);)?base64,(.*)$/
-  )
+  );
   ajv.addFormat(
-    'color',
+    "color",
     /^(#?([0-9A-Fa-f]{3}){1,2}\b|aqua|black|blue|fuchsia|gray|green|lime|maroon|navy|olive|orange|purple|red|silver|teal|white|yellow|(rgb\(\s*\b([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\b\s*,\s*\b([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\b\s*,\s*\b([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])\b\s*\))|(rgb\(\s*(\d?\d%|100%)+\s*,\s*(\d?\d%|100%)+\s*,\s*(\d?\d%|100%)+\s*\)))$/
-  )
-  return ajv
+  );
+  return ajv;
 }
 
-function toErrorSchema (errors) {
+function toErrorSchema(errors) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "toErrorSchema method starts here",
+      { errors },
+      "toErrorSchema()",
+      "validate.js"
+    )
+  );
   // Transforms a ajv validation errors list:
   // [
   //   {property: ".level1.level2[2].level3", message: "err a"},
@@ -46,106 +69,138 @@ function toErrorSchema (errors) {
   //   }
   // };
   if (!errors.length) {
-    return {}
+    return {};
   }
   return errors.reduce((errorSchema, error) => {
-    const { property, message } = error
-    const path = toPath(property)
-    let parent = errorSchema
+    const { property, message } = error;
+    const path = toPath(property);
+    let parent = errorSchema;
 
     // If the property is at the root (.level1) then toPath creates
     // an empty array element at the first index. Remove it.
-    if (path.length > 0 && path[0] === '') {
-      path.splice(0, 1)
+    if (path.length > 0 && path[0] === "") {
+      path.splice(0, 1);
     }
 
     for (const segment of path.slice(0)) {
       if (!(segment in parent)) {
-        parent[segment] = {}
+        parent[segment] = {};
       }
-      parent = parent[segment]
+      parent = parent[segment];
     }
 
     if (Array.isArray(parent.__errors)) {
       // We store the list of errors for this node in a property named __errors
       // to avoid name collision with a possible sub schema field named
       // "errors" (see `validate.createErrorHandler`).
-      parent.__errors = parent.__errors.concat(message)
+      parent.__errors = parent.__errors.concat(message);
     } else {
       if (message) {
-        parent.__errors = [message]
+        parent.__errors = [message];
       }
     }
-    return errorSchema
-  }, {})
+    return errorSchema;
+  }, {});
 }
 
-export function toErrorList (errorSchema, fieldName = 'root') {
-  // XXX: We should transform fieldName as a full field path string.
-  let errorList = []
-  if ('__errors' in errorSchema) {
-    errorList = errorList.concat(
-      errorSchema.__errors.map(stack => {
-        return {
-          stack: `${fieldName}: ${stack}`
-        }
-      })
+export function toErrorList(errorSchema, fieldName = "root") {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "toErrorList method starts here",
+      { errorSchema, fieldName },
+      "toErrorList()",
+      "validate.js"
     )
+  );
+  // XXX: We should transform fieldName as a full field path string.
+  let errorList = [];
+  if ("__errors" in errorSchema) {
+    errorList = errorList.concat(
+      errorSchema.__errors.map((stack) => {
+        return {
+          stack: `${fieldName}: ${stack}`,
+        };
+      })
+    );
   }
   return Object.keys(errorSchema).reduce((acc, key) => {
-    if (key !== '__errors') {
-      acc = acc.concat(toErrorList(errorSchema[key], key))
+    if (key !== "__errors") {
+      acc = acc.concat(toErrorList(errorSchema[key], key));
     }
-    return acc
-  }, errorList)
+    return acc;
+  }, errorList);
 }
 
-function createErrorHandler (formData) {
+function createErrorHandler(formData) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "createErrorHandler method starts here",
+      { formData },
+      "createErrorHandler()",
+      "validate.js"
+    )
+  );
   const handler = {
     // We store the list of errors for this node in a property named __errors
     // to avoid name collision with a possible sub schema field named
     // "errors" (see `utils.toErrorSchema`).
     __errors: [],
-    addError (message) {
-      this.__errors.push(message)
-    }
-  }
+    addError(message) {
+      this.__errors.push(message);
+    },
+  };
   if (isObject(formData)) {
     return Object.keys(formData).reduce((acc, key) => {
-      return { ...acc, [key]: createErrorHandler(formData[key]) }
-    }, handler)
+      return { ...acc, [key]: createErrorHandler(formData[key]) };
+    }, handler);
   }
   if (Array.isArray(formData)) {
     return formData.reduce((acc, value, key) => {
-      return { ...acc, [key]: createErrorHandler(value) }
-    }, handler)
+      return { ...acc, [key]: createErrorHandler(value) };
+    }, handler);
   }
-  return handler
+  return handler;
 }
 
-function unwrapErrorHandler (errorHandler) {
+function unwrapErrorHandler(errorHandler) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "unwrapErrorHandler method starts here",
+      { errorHandler },
+      "unwrapErrorHandler()",
+      "validate.js"
+    )
+  );
   return Object.keys(errorHandler).reduce((acc, key) => {
-    if (key === 'addError') {
-      return acc
-    } else if (key === '__errors') {
-      return { ...acc, [key]: errorHandler[key] }
+    if (key === "addError") {
+      return acc;
+    } else if (key === "__errors") {
+      return { ...acc, [key]: errorHandler[key] };
     }
-    return { ...acc, [key]: unwrapErrorHandler(errorHandler[key]) }
-  }, {})
+    return { ...acc, [key]: unwrapErrorHandler(errorHandler[key]) };
+  }, {});
 }
 
 /**
  * Transforming the error output from ajv to format used by jsonschema.
  * At some point, components should be updated to support ajv.
  */
-function transformAjvErrors (errors = []) {
+function transformAjvErrors(errors = []) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "transformAjvErrors method starts here",
+      { errors },
+      "transformAjvErrors()",
+      "validate.js"
+    )
+  );
   if (errors === null) {
-    return []
+    return [];
   }
 
-  return errors.map(e => {
-    const { dataPath, keyword, message, params, schemaPath } = e
-    let property = `${dataPath}`
+  return errors.map((e) => {
+    const { dataPath, keyword, message, params, schemaPath } = e;
+    let property = `${dataPath}`;
 
     // put data in expected format
     return {
@@ -154,9 +209,9 @@ function transformAjvErrors (errors = []) {
       message,
       params, // specific to ajv
       stack: `${property} ${message}`.trim(),
-      schemaPath
-    }
-  })
+      schemaPath,
+    };
+  });
 }
 
 /**
@@ -164,7 +219,7 @@ function transformAjvErrors (errors = []) {
  * function, which receives the form data and an `errorHandler` object that
  * will be used to add custom validation errors for each field.
  */
-export default function validateFormData (
+export default function validateFormData(
   formData,
   schema,
   customValidate,
@@ -172,15 +227,30 @@ export default function validateFormData (
   additionalMetaSchemas = [],
   customFormats = {}
 ) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "validateFormData method starts here",
+      {
+        formData,
+        schema,
+        customValidate,
+        transformErrors,
+        additionalMetaSchemas,
+        customFormats,
+      },
+      "validateFormData()",
+      "validate.js"
+    )
+  );
   // Include form data with undefined values, which is required for validation.
-  const rootSchema = schema
-  formData = getDefaultFormState(schema, formData, rootSchema, true)
+  const rootSchema = schema;
+  formData = getDefaultFormState(schema, formData, rootSchema, true);
 
-  const newMetaSchemas = !deepEquals(formerMetaSchema, additionalMetaSchemas)
-  const newFormats = !deepEquals(formerCustomFormats, customFormats)
+  const newMetaSchemas = !deepEquals(formerMetaSchema, additionalMetaSchemas);
+  const newFormats = !deepEquals(formerCustomFormats, customFormats);
 
   if (newMetaSchemas || newFormats) {
-    ajv = createAjvInstance()
+    ajv = createAjvInstance();
   }
 
   // add more schemas to validate against
@@ -189,107 +259,115 @@ export default function validateFormData (
     newMetaSchemas &&
     Array.isArray(additionalMetaSchemas)
   ) {
-    ajv.addMetaSchema(additionalMetaSchemas)
-    formerMetaSchema = additionalMetaSchemas
+    ajv.addMetaSchema(additionalMetaSchemas);
+    formerMetaSchema = additionalMetaSchemas;
   }
 
   // add more custom formats to validate against
   if (customFormats && newFormats && isObject(customFormats)) {
-    Object.keys(customFormats).forEach(formatName => {
-      ajv.addFormat(formatName, customFormats[formatName])
-    })
+    Object.keys(customFormats).forEach((formatName) => {
+      ajv.addFormat(formatName, customFormats[formatName]);
+    });
 
-    formerCustomFormats = customFormats
+    formerCustomFormats = customFormats;
   }
 
-  let validationError = null
+  let validationError = null;
   try {
-    ajv.validate(schema, formData)
+    ajv.validate(schema, formData);
   } catch (err) {
-    validationError = err
+    validationError = err;
   }
 
-  let errors = transformAjvErrors(ajv.errors)
+  let errors = transformAjvErrors(ajv.errors);
   // Clear errors to prevent persistent errors, see #1104
 
-  ajv.errors = null
+  ajv.errors = null;
 
   const noProperMetaSchema =
     validationError &&
     validationError.message &&
-    typeof validationError.message === 'string' &&
-    validationError.message.includes('no schema with key or ref ')
+    typeof validationError.message === "string" &&
+    validationError.message.includes("no schema with key or ref ");
 
   if (noProperMetaSchema) {
     errors = [
       ...errors,
       {
-        stack: validationError.message
-      }
-    ]
+        stack: validationError.message,
+      },
+    ];
   }
-  if (typeof transformErrors === 'function') {
-    errors = transformErrors(errors)
+  if (typeof transformErrors === "function") {
+    errors = transformErrors(errors);
   }
 
-  let errorSchema = toErrorSchema(errors)
+  let errorSchema = toErrorSchema(errors);
 
   if (noProperMetaSchema) {
     errorSchema = {
       ...errorSchema,
       ...{
         $schema: {
-          __errors: [validationError.message]
-        }
-      }
-    }
+          __errors: [validationError.message],
+        },
+      },
+    };
   }
 
-  if (typeof customValidate !== 'function') {
-    return { errors, errorSchema }
+  if (typeof customValidate !== "function") {
+    return { errors, errorSchema };
   }
 
-  const errorHandler = customValidate(formData, createErrorHandler(formData))
-  const userErrorSchema = unwrapErrorHandler(errorHandler)
-  const newErrorSchema = mergeObjects(errorSchema, userErrorSchema, true)
+  const errorHandler = customValidate(formData, createErrorHandler(formData));
+  const userErrorSchema = unwrapErrorHandler(errorHandler);
+  const newErrorSchema = mergeObjects(errorSchema, userErrorSchema, true);
   // XXX: The errors list produced is not fully compliant with the format
   // exposed by the jsonschema lib, which contains full field paths and other
   // properties.
-  const newErrors = toErrorList(newErrorSchema)
+  const newErrors = toErrorList(newErrorSchema);
 
   return {
     errors: newErrors,
-    errorSchema: newErrorSchema
-  }
+    errorSchema: newErrorSchema,
+  };
 }
 
 /**
  * Recursively prefixes all $ref's in a schema with `ROOT_SCHEMA_PREFIX`
  * This is used in isValid to make references to the rootSchema
  */
-export function withIdRefPrefix (schemaNode) {
-  let obj = schemaNode
+export function withIdRefPrefix(schemaNode) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "withIdRefPrefix method starts here",
+      { schemaNode },
+      "withIdRefPrefix()",
+      "validate.js"
+    )
+  );
+  let obj = schemaNode;
   if (schemaNode.constructor === Object) {
-    obj = { ...schemaNode }
+    obj = { ...schemaNode };
     for (const key in obj) {
-      const value = obj[key]
+      const value = obj[key];
       if (
-        key === '$ref' &&
-        typeof value === 'string' &&
-        value.startsWith('#')
+        key === "$ref" &&
+        typeof value === "string" &&
+        value.startsWith("#")
       ) {
-        obj[key] = ROOT_SCHEMA_PREFIX + value
+        obj[key] = ROOT_SCHEMA_PREFIX + value;
       } else {
-        obj[key] = withIdRefPrefix(value)
+        obj[key] = withIdRefPrefix(value);
       }
     }
   } else if (Array.isArray(schemaNode)) {
-    obj = [...schemaNode]
+    obj = [...schemaNode];
     for (var i = 0; i < obj.length; i++) {
-      obj[i] = withIdRefPrefix(obj[i])
+      obj[i] = withIdRefPrefix(obj[i]);
     }
   }
-  return obj
+  return obj;
 }
 
 /**
@@ -297,7 +375,15 @@ export function withIdRefPrefix (schemaNode) {
  * false otherwise. If the schema is invalid, then this function will return
  * false.
  */
-export function isValid (schema, data, rootSchema) {
+export function isValid(schema, data, rootSchema) {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "isValid method starts here",
+      { schema, data, rootSchema },
+      "isValid()",
+      "validate.js"
+    )
+  );
   try {
     // add the rootSchema ROOT_SCHEMA_PREFIX as id.
     // then rewrite the schema ref's to point to the rootSchema
@@ -305,11 +391,22 @@ export function isValid (schema, data, rootSchema) {
     // that lives in the rootSchema but not in the schema in question.
     return ajv
       .addSchema(rootSchema, ROOT_SCHEMA_PREFIX)
-      .validate(withIdRefPrefix(schema), data)
+      .validate(withIdRefPrefix(schema), data);
   } catch (e) {
-    return false
+    crashlytics().log(
+      ErrorUtil.createError(
+        e,
+        e.message,
+        e.message,
+        { schema, data, rootSchema },
+        "isValid",
+        "validate.js"
+      )
+    );
+    crashlytics().log(ErrorUtil.createError());
+    return false;
   } finally {
     // make sure we remove the rootSchema from the global ajv instance
-    ajv.removeSchema(ROOT_SCHEMA_PREFIX)
+    ajv.removeSchema(ROOT_SCHEMA_PREFIX);
   }
 }

@@ -1,7 +1,9 @@
-import React from 'react'
-import MaskedInput from '../../textMask/text-input-mask'
+import React from "react";
+import MaskedInput from "../../textMask/text-input-mask";
 
-import { useFormContext } from '../FormContext'
+import { useFormContext } from "../FormContext";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const PincodeWidget = ({
   id,
@@ -17,37 +19,64 @@ const PincodeWidget = ({
   multiline,
   secureEntry,
   schema,
-  textContentType = 'none',
+  textContentType = "none",
   rawErrors = [],
-  required
+  required,
 }) => {
-  const { theme } = useFormContext()
-  const hasErrors = rawErrors.length > 0
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "PincodeWidget method starts here ",
+      {
+        id,
+        readonly,
+        disabled,
+        label,
+        value,
+        onChange,
+        onBlur,
+        onFocus,
+        autofocus,
+        options,
+        multiline,
+        secureEntry,
+        schema,
+        textContentType,
+        rawErrors,
+        required,
+      },
+      "PincodeWidget()",
+      "PincodeWidget.js"
+    )
+  );
+  const { theme } = useFormContext();
+  const hasErrors = rawErrors.length > 0;
 
   return (
     <MaskedInput
-      type='zip-code'
+      type="zip-code"
       includeRawValueInChangeText
       multiline={multiline}
       placeholder={label}
       autoFocus={autofocus}
       editable={!disabled && !readonly}
-      keyboardType='numeric'
-      value={value ? value.toString() : ''}
+      keyboardType="numeric"
+      value={value ? value.toString() : ""}
       secureTextEntry={secureEntry}
       textContentType={textContentType}
-      onChangeText={(newText) => onChange(newText === '' ? options.emptyValue : newText)}
+      onChangeText={(newText) =>
+        onChange(newText === "" ? options.emptyValue : newText)
+      }
       onBlur={() => {
-        onBlur(id, value)
+        onBlur(id, value);
       }}
       onFocus={() => {
-        onFocus(id, value)
+        onFocus(id, value);
       }}
       selectionColor={theme.highlightColor}
       placeholderTextColor={theme.placeholderTextColor}
-      status={(hasErrors) && 'danger'}
+      status={hasErrors && "danger"}
     />
-  )
-}
+  );
+};
 
-export default PincodeWidget
+export default PincodeWidget;

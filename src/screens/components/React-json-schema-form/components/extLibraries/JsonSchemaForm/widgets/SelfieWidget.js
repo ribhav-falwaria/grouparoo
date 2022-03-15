@@ -12,8 +12,18 @@ import ReactJsonSchemaUtil from "../../../../services/ReactJsonSchemaFormUtil";
 import DownloadComponent from "../common/DownloadComponent";
 import ResourceFactoryConstants from "../../../../services/ResourceFactoryConstants";
 import DataService from "../../../../services/DataService";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const uploadFileForFaceMatch = async (dispatch, file, docface) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "uploadFileForFaceMatch method starts here ",
+      { dispatch, file, docface },
+      "uploadFileForFaceMatch()",
+      "SelfieWidget.js"
+    )
+  );
   const resourceFactoryConstants = new ResourceFactoryConstants();
   const url = resourceFactoryConstants.constants.kyc.getUrlForFaceMatch;
   const formData = new FormData();
@@ -23,13 +33,25 @@ const uploadFileForFaceMatch = async (dispatch, file, docface) => {
     const res = await DataService.postData(url, formData);
     if (res.data.status === "SUCCESS") {
       await dispatch.formDetails.setOkycSelfieFile(file);
-      const {uploadedDocId,uploadedFileName} = await uploadToAppWrite([file])
-      return {uploadedDocId,uploadedFileName};
+      const { uploadedDocId, uploadedFileName } = await uploadToAppWrite([
+        file,
+      ]);
+      return { uploadedDocId, uploadedFileName };
     } else {
       console.log(res.data.message);
       throw new Error("FACE_MATCH_FAILED");
     }
   } catch (e) {
+    crashlytics().log(
+      ErrorUtil.createError(
+        e,
+        e.message,
+        e.message,
+        { dispatch, file, docface },
+        "uploadFileForFaceMatch()",
+        "SelfieWidget.js"
+      )
+    );
     if (e.message === "FACE_MATCH_FAILED") {
       throw e;
     } else {
@@ -39,6 +61,14 @@ const uploadFileForFaceMatch = async (dispatch, file, docface) => {
 };
 
 const uploadToAppWrite = async (file) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "uploadToAppWrite method starts here ",
+      { file },
+      "uploadToAppWrite()",
+      "SelfieWidget.js"
+    )
+  );
   const documentUploadService = new DocumentUploadService();
   if (isEmpty(file)) {
     return;
@@ -57,6 +87,16 @@ const uploadToAppWrite = async (file) => {
       throw new Error("UPLOAD_SELFIE_TO_DOC_SERVER_FAILED");
     }
   } catch (err) {
+    crashlytics().log(
+      ErrorUtil.createError(
+        err,
+        err.message,
+        err.message,
+        { file },
+        "uploadToAppWrite()",
+        "SelfieWidget.js"
+      )
+    );
     console.log(err);
     if (err.message === "UPLOAD_SELFIE_TO_DOC_SERVER_FAILED") {
       throw err;
@@ -67,6 +107,14 @@ const uploadToAppWrite = async (file) => {
 };
 
 const SelfieWidget = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "SelfieWidget method starts here ",
+      { props },
+      "SelfieWidget()",
+      "SelfieWidget.js"
+    )
+  );
   const hasError = isUndefined(props.rawErrors)
     ? 0
     : props.rawErrors.length > 0;
@@ -74,7 +122,7 @@ const SelfieWidget = (props) => {
     const data = state.formDetails.kycData;
     return data;
   });
-  const selfieFile = useSelector((state)=>state.formDetails.okycSelfieFile)
+  const selfieFile = useSelector((state) => state.formDetails.okycSelfieFile);
   const [isUploadDone, setIsUploadDone] = useState(!isEmpty(selfieFile));
   const { translations } = useContext(LocalizationContext);
   const dispatch = useDispatch();
@@ -85,6 +133,14 @@ const SelfieWidget = (props) => {
     fileName = tempArr[1];
   }
   const removeFile = (uri) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "removeFile method starts here ",
+        { uri },
+        "removeFile()",
+        "SelfieWidget.js"
+      )
+    );
     if (uri.length > 0) {
       useRemoveFile.run();
       // remove from props
@@ -96,7 +152,7 @@ const SelfieWidget = (props) => {
     manual: true,
     onSuccess: (res) => {
       setIsUploadDone(true);
-      props.onChange(res.uploadedDocId + "::" + res.uploadedFileName)
+      props.onChange(res.uploadedDocId + "::" + res.uploadedFileName);
       Toast.show({
         type: "success",
         position: "bottom",
@@ -107,6 +163,14 @@ const SelfieWidget = (props) => {
       });
     },
     onError: (error) => {
+      crashlytics().log(
+        error,
+        error.message,
+        error.message,
+        undefined,
+        "useFaceMatch()",
+        "SelfieWidget.js"
+      );
       console.log(error);
       setIsUploadDone(true);
       if (error.message === "FACE_MATCH_FAILED") {
@@ -124,6 +188,14 @@ const SelfieWidget = (props) => {
     },
   });
   const onFileChange = (data) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onFileChange method starts here ",
+        { data },
+        "onFileChange()",
+        "SelfieWidget.js"
+      )
+    );
     setIsUploadDone(false);
     const fileDetails = {
       uri: data.uri,
@@ -133,20 +205,19 @@ const SelfieWidget = (props) => {
     const docface = kycData?.photo_link;
     if (!isUndefined(docface) || !isEmpty(docface)) {
       useFaceMatch.run(dispatch, fileDetails, docface);
-    }else {
+    } else {
       Toast.show({
-        type: 'error',
-        position: 'bottom',
+        type: "error",
+        position: "bottom",
         props: {
-          title: translations['selfie.title'],
-          description: translations['selfie.compleKycFirst.message']
-        }
-      })
+          title: translations["selfie.title"],
+          description: translations["selfie.compleKycFirst.message"],
+        },
+      });
     }
   };
   return (
     <>
-     
       <ImageUploadComponent
         isUploadDone={isUploadDone}
         onFileChange={onFileChange}

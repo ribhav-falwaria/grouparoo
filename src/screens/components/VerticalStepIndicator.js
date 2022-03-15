@@ -1,86 +1,106 @@
-import React, { useContext } from 'react'
-import { useTheme, Text } from '@ui-kitten/components'
-import { StyleSheet, View } from 'react-native'
-import { useStore, useSelector } from 'react-redux'
-import StepIndicator from 'react-native-step-indicator'
-import { LocalizationContext } from '../../components/Translation'
-import { CheckedIconSteps } from './ThemedIcons'
-import { rupeeFormatter } from '../../utils'
+import React, { useContext } from "react";
+import { useTheme, Text } from "@ui-kitten/components";
+import { StyleSheet, View } from "react-native";
+import { useStore, useSelector } from "react-redux";
+import StepIndicator from "react-native-step-indicator";
+import { LocalizationContext } from "../../components/Translation";
+import { CheckedIconSteps } from "./ThemedIcons";
+import { rupeeFormatter } from "../../utils";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 
 const VerticalStepIndicator = ({
   stepData,
   currentStep,
-  loanApplicationId
+  loanApplicationId,
 }) => {
-  const theme = useTheme()
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "VerticalStepIndicator method starts here",
+      { stepData, currentStep, loanApplicationId },
+      "VerticalStepIndicator()",
+      "VerticalStepIndicator.js"
+    )
+  );
+  const theme = useTheme();
   const stepIndicatorStyles = {
     stepIndicatorSize: 30,
     currentStepIndicatorSize: 40,
     separatorStrokeWidth: 3,
     currentStepStrokeWidth: 5,
-    stepStrokeCurrentColor: theme['color-warning-500'],
-    separatorFinishedColor: theme['color-warning-300'],
-    separatorUnFinishedColor: theme['color-basic-500'],
-    stepIndicatorFinishedColor: theme['color-warning-300'],
-    stepIndicatorUnFinishedColor: theme['color-basic-500'],
-    stepIndicatorCurrentColor: '#ffffff',
+    stepStrokeCurrentColor: theme["color-warning-500"],
+    separatorFinishedColor: theme["color-warning-300"],
+    separatorUnFinishedColor: theme["color-basic-500"],
+    stepIndicatorFinishedColor: theme["color-warning-300"],
+    stepIndicatorUnFinishedColor: theme["color-basic-500"],
+    stepIndicatorCurrentColor: "#ffffff",
     stepIndicatorLabelFontSize: 15,
     currentStepIndicatorLabelFontSize: 15,
-    stepIndicatorLabelCurrentColor: theme['color-primary-500'],
-    stepIndicatorLabelFinishedColor: '#ffffff',
-    stepIndicatorLabelUnFinishedColor: theme['color-basic-500'],
-    labelColor: theme['color-primary-200'],
+    stepIndicatorLabelCurrentColor: theme["color-primary-500"],
+    stepIndicatorLabelFinishedColor: "#ffffff",
+    stepIndicatorLabelUnFinishedColor: theme["color-basic-500"],
+    labelColor: theme["color-primary-200"],
     labelSize: 15,
-    currentStepLabelColor: theme['color-primary-500'],
-    labelAlign: 'flex-start'
-  }
-  const store = useStore()
-  const state = useSelector(state => state)
-  const selector = store.select(models => ({
+    currentStepLabelColor: theme["color-primary-500"],
+    labelAlign: "flex-start",
+  };
+  const store = useStore();
+  const state = useSelector((state) => state);
+  const selector = store.select((models) => ({
     loanAmount: models.loanApplications.getLoanAmount,
-    applicationStartDate: models.loanApplications.getStartDate
-  }))
+    applicationStartDate: models.loanApplications.getStartDate,
+  }));
   const { loanAmount, applicationStartDate } = selector(state, {
-    loanApplicationId
-  })
-  const { translations } = useContext(LocalizationContext)
+    loanApplicationId,
+  });
+  const { translations } = useContext(LocalizationContext);
 
   const RenderDetails = () => {
     return (
       <View style={styles.rowItem}>
         <View style={styles.rowItemDetail}>
-          <Text category='p1' appearance='hint'>
-            {translations['application.applicationNumber']}
+          <Text category="p1" appearance="hint">
+            {translations["application.applicationNumber"]}
           </Text>
-          <Text category='s1' appearance='default' status='primary'>
+          <Text category="s1" appearance="default" status="primary">
             {loanApplicationId}
           </Text>
         </View>
         <View style={styles.rowItemDetail}>
-          <Text category='p1' appearance='hint'>
-            {translations['application.form.loanAmount']}
+          <Text category="p1" appearance="hint">
+            {translations["application.form.loanAmount"]}
           </Text>
-          <Text category='s1' appearance='default' status='primary'>
-            <Text category='p1' status='basic'>{'₹ '}</Text>
+          <Text category="s1" appearance="default" status="primary">
+            <Text category="p1" status="basic">
+              {"₹ "}
+            </Text>
             {rupeeFormatter(loanAmount)}
           </Text>
         </View>
         <View style={styles.rowItemDetail}>
-          <Text category='p1' appearance='hint'>
-            {translations['pendingLoanApplication.applicationStartDate']}
+          <Text category="p1" appearance="hint">
+            {translations["pendingLoanApplication.applicationStartDate"]}
           </Text>
-          <Text category='s1' appearance='default' status='primary'>
+          <Text category="s1" appearance="default" status="primary">
             {applicationStartDate}
           </Text>
         </View>
       </View>
-    )
-  }
+    );
+  };
   const renderStepIndicator = ({ position, stepStatus }) => {
-    if (stepStatus === 'finished') {
-      return <CheckedIconSteps />
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "renderStepIndicator method starts here",
+        { position, stepStatus },
+        "renderStepIndicator()",
+        "VerticalStepIndicator.js"
+      )
+    );
+    if (stepStatus === "finished") {
+      return <CheckedIconSteps />;
     }
-  }
+  };
   return (
     <View>
       <View style={styles.container}>
@@ -88,9 +108,9 @@ const VerticalStepIndicator = ({
           <StepIndicator
             customStyles={stepIndicatorStyles}
             stepCount={stepData.length}
-            direction='vertical'
+            direction="vertical"
             currentPosition={currentStep}
-            labels={stepData.map(item => translations[item.title])}
+            labels={stepData.map((item) => translations[item.title])}
             renderStepIndicator={renderStepIndicator}
           />
         </View>
@@ -99,32 +119,32 @@ const VerticalStepIndicator = ({
         </View>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     height: 300,
-    flexDirection: 'row'
+    flexDirection: "row",
   },
   details: {
-    flex: 1
+    flex: 1,
   },
   stepIndicator: {
     marginVertical: 16,
     paddingHorizontal: 0,
-    flex: 1.5
+    flex: 1.5,
   },
   rowItem: {
     flex: 3,
     paddingVertical: 24,
     // paddingLeft: 36,
-    justifyContent: 'center'
+    justifyContent: "center",
   },
   rowItemDetail: {
-    paddingVertical: 16
-  }
-})
+    paddingVertical: 16,
+  },
+});
 
-export default VerticalStepIndicator
+export default VerticalStepIndicator;

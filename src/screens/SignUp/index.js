@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react'
-import { View, Linking } from 'react-native'
-import isEmpty from 'lodash.isempty'
-import isUndefined from 'lodash.isundefined'
-import { useRequest } from 'ahooks'
-import { mask, unMask } from 'react-native-mask-text'
-import apiServices from '../../apiService'
+import React, { useContext, useState } from "react";
+import { View, Linking } from "react-native";
+import isEmpty from "lodash.isempty";
+import isUndefined from "lodash.isundefined";
+import { useRequest } from "ahooks";
+import { mask, unMask } from "react-native-mask-text";
+import apiServices from "../../apiService";
 
 import {
   Button,
@@ -13,118 +13,156 @@ import {
   StyleService,
   Text,
   useStyleSheet,
-  Spinner
-} from '@ui-kitten/components'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { FormIcons } from '../components/ThemedIcons'
-import { LocalizationContext } from '../../components/Translation'
-import styleConstants from '../styleConstants'
-import ScreenTitle from '../components/ScreenTitle'
-import { validateFormData } from './validations'
-import { config } from '../../config'
-const MOBILE_MASK = '99999 99999'
+  Spinner,
+} from "@ui-kitten/components";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { FormIcons } from "../components/ThemedIcons";
+import { LocalizationContext } from "../../components/Translation";
+import styleConstants from "../styleConstants";
+import ScreenTitle from "../components/ScreenTitle";
+import { validateFormData } from "./validations";
+import { config } from "../../config";
+const MOBILE_MASK = "99999 99999";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 
 const SignUp = ({ navigation, route }) => {
-  const [liveValidate, setLiveValidate] = useState(false)
-  const { translations } = useContext(LocalizationContext)
-  const title = route.params?.title || translations['auth.signUp']
-  const [formData, setFormData] = useState(route.params?.formData || {
-    fullName: '',
-    email: '',
-    primaryPhone: '',
-    whatsappPermission: true
-  })
-  const [error, setError] = useState({})
-  const styles = useStyleSheet(themedStyles)
-  const { loading, run } = useRequest(apiServices.sendOtp, { manual: true })
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "SignUp method starts here",
+      { navigation, route },
+      "SignUp()",
+      "SignUp.js"
+    )
+  );
+  const [liveValidate, setLiveValidate] = useState(false);
+  const { translations } = useContext(LocalizationContext);
+  const title = route.params?.title || translations["auth.signUp"];
+  const [formData, setFormData] = useState(
+    route.params?.formData || {
+      fullName: "",
+      email: "",
+      primaryPhone: "",
+      whatsappPermission: true,
+    }
+  );
+  const [error, setError] = useState({});
+  const styles = useStyleSheet(themedStyles);
+  const { loading, run } = useRequest(apiServices.sendOtp, { manual: true });
   const onDataChange = (key, value) => {
-    formData[key] = value
-    if (key === 'primaryPhone') {
-      formData.primaryPhone = mask(value, MOBILE_MASK)
+    formData[key] = value;
+    if (key === "primaryPhone") {
+      formData.primaryPhone = mask(value, MOBILE_MASK);
     } else {
-      formData[key] = value
+      formData[key] = value;
     }
     if (liveValidate) {
       const errors = validateFormData({
         fullName: formData.fullName,
         email: formData.email,
-        primaryPhone: unMask(formData.primaryPhone)
-      })
-      setError(errors)
+        primaryPhone: unMask(formData.primaryPhone),
+      });
+      setError(errors);
     }
-    setFormData(Object.assign({}, formData))
-  }
+    setFormData(Object.assign({}, formData));
+  };
   const onSignUpButtonPress = async () => {
-    const unmaskedPhone = formData.primaryPhone && unMask(formData.primaryPhone)
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onSignUpButtonPress method starts here",
+        undefined,
+        "onSignUpButtonPress()",
+        "SignUp.js"
+      )
+    );
+
+    const unmaskedPhone =
+      formData.primaryPhone && unMask(formData.primaryPhone);
     const errors = validateFormData({
       fullName: formData.fullName,
       email: formData.email,
-      primaryPhone: unmaskedPhone
-    })
-    if (isUndefined(formData.termsAccepted) || formData.termsAccepted === false) {
-      errors.termsAccepted = true
+      primaryPhone: unmaskedPhone,
+    });
+    if (
+      isUndefined(formData.termsAccepted) ||
+      formData.termsAccepted === false
+    ) {
+      errors.termsAccepted = true;
     }
     if (isEmpty(errors)) {
-      await run(unmaskedPhone)
-      formData.primaryPhone = unmaskedPhone
-      navigation.navigate('Otp', { formData })
+      await run(unmaskedPhone);
+      formData.primaryPhone = unmaskedPhone;
+      navigation.navigate("Otp", { formData });
     } else {
-      setLiveValidate(true)
-      setError(errors)
+      setLiveValidate(true);
+      setError(errors);
     }
-  }
+  };
   const onSignInButtonPress = () => {
-    navigation.navigate('SignIn', { formData })
-  }
-
-  const renderTermsLabel = React.useCallback(
-    evaProps => {
-      // in order to have multiple colored text
-      const modifiedProps = JSON.parse(JSON.stringify(evaProps))
-      delete modifiedProps.style.color
-      return (
-        <Text {...evaProps} category='p1' appearance='hint'>
-          {`${translations['auth.tnc']} `}
-          <Text
-            {...modifiedProps}
-            category='p1'
-            status='info'
-            onPress={() => Linking.openURL(config.termsUrl)}
-          >
-            {translations['auth.tnc.terms']}
-          </Text>
-          {' & '}
-          <Text
-            {...modifiedProps}
-            status='info'
-            category='p1'
-            onPress={() => Linking.openURL(config.ppUrl)}
-          >
-            {translations['auth.tnc.privacy']}
-          </Text>
-        </Text>
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onSignInButtonPress method starts here",
+        undefined,
+        "onSignInButtonPress()",
+        "SignUp.js"
       )
-    },
-    []
-  )
+    );
+    navigation.navigate("SignIn", { formData });
+  };
+
+  const renderTermsLabel = React.useCallback((evaProps) => {
+    // in order to have multiple colored text
+    const modifiedProps = JSON.parse(JSON.stringify(evaProps));
+    delete modifiedProps.style.color;
+    return (
+      <Text {...evaProps} category="p1" appearance="hint">
+        {`${translations["auth.tnc"]} `}
+        <Text
+          {...modifiedProps}
+          category="p1"
+          status="info"
+          onPress={() => Linking.openURL(config.termsUrl)}
+        >
+          {translations["auth.tnc.terms"]}
+        </Text>
+        {" & "}
+        <Text
+          {...modifiedProps}
+          status="info"
+          category="p1"
+          onPress={() => Linking.openURL(config.ppUrl)}
+        >
+          {translations["auth.tnc.privacy"]}
+        </Text>
+      </Text>
+    );
+  }, []);
   const renderWhatsappLabel = React.useCallback(
-    evaProps => (
-      <Text {...evaProps} category='p1' appearance='hint'>
-        {translations['form.whatsappTnc']}
+    (evaProps) => (
+      <Text {...evaProps} category="p1" appearance="hint">
+        {translations["form.whatsappTnc"]}
       </Text>
     ),
     []
-  )
-  const loadingIndicator = props => {
+  );
+  const loadingIndicator = (props) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "loadingIndicator method starts here",
+        { props },
+        "loadingIndicator()",
+        "SignUp.js"
+      )
+    );
     if (!loading) {
-      return null
+      return null;
     }
     return (
       <View style={[props.style, styles.indicator]}>
-        <Spinner size='small' status='basic' />
+        <Spinner size="small" status="basic" />
       </View>
-    )
-  }
+    );
+  };
   return (
     <KeyboardAwareScrollView
       showsHorizontalScrollIndicator={false}
@@ -133,53 +171,57 @@ const SignUp = ({ navigation, route }) => {
     >
       <ScreenTitle
         title={title}
-        description={translations['auth.signup.excited']}
+        description={translations["auth.signup.excited"]}
       />
       <View style={styles.formContainer}>
         <View>
           <Input
-            placeholder={translations['form.placeholder.name']}
-            label={translations['form.name']}
-            autoCapitalize='words'
+            placeholder={translations["form.placeholder.name"]}
+            label={translations["form.name"]}
+            autoCapitalize="words"
             value={formData.fullName}
-            status={error.fullName && 'danger'}
-            onChangeText={(v) => onDataChange('fullName', v)}
-            caption={() => (<Text appearance='hint' category='label'>{translations['form.asOnPan']}</Text>)}
+            status={error.fullName && "danger"}
+            onChangeText={(v) => onDataChange("fullName", v)}
+            caption={() => (
+              <Text appearance="hint" category="label">
+                {translations["form.asOnPan"]}
+              </Text>
+            )}
             accessoryRight={FormIcons.FormNameIcon}
           />
           <Input
             style={styles.formInput}
-            placeholder=''
-            label={translations['form.email']}
-            status={error.email && 'danger'}
+            placeholder=""
+            label={translations["form.email"]}
+            status={error.email && "danger"}
             value={formData.email}
-            keyboardType='email-address'
-            onChangeText={(v) => onDataChange('email', v)}
+            keyboardType="email-address"
+            onChangeText={(v) => onDataChange("email", v)}
             accessoryRight={FormIcons.FormEmailIcon}
           />
           <Input
             style={styles.formInput}
-            label={translations['form.mobileNumber']}
-            placeholder={translations['form.mobileNumber']}
+            label={translations["form.mobileNumber"]}
+            placeholder={translations["form.mobileNumber"]}
             value={formData.primaryPhone}
-            keyboardType='numeric'
-            status={error.primaryPhone && 'danger'}
-            onChangeText={(v) => onDataChange('primaryPhone', v)}
-            accessoryLeft={() => (<Text appearance='hint'>+91 </Text>)}
+            keyboardType="numeric"
+            status={error.primaryPhone && "danger"}
+            onChangeText={(v) => onDataChange("primaryPhone", v)}
+            accessoryLeft={() => <Text appearance="hint">+91 </Text>}
             accessoryRight={FormIcons.FormMobileIcon}
           />
           <CheckBox
             style={styles.termsCheckBox}
             checked={formData.whatsappPermission}
-            onChange={checked => onDataChange('whatsappPermission', checked)}
+            onChange={(checked) => onDataChange("whatsappPermission", checked)}
           >
             {renderWhatsappLabel}
           </CheckBox>
           <CheckBox
             style={styles.termsCheckBox}
             checked={formData.termsAccepted}
-            status={error.termsAccepted && 'danger'}
-            onChange={checked => onDataChange('termsAccepted', checked)}
+            status={error.termsAccepted && "danger"}
+            onChange={(checked) => onDataChange("termsAccepted", checked)}
           >
             {renderTermsLabel}
           </CheckBox>
@@ -190,56 +232,56 @@ const SignUp = ({ navigation, route }) => {
             onPress={onSignUpButtonPress}
             accessoryRight={loadingIndicator}
           >
-            {translations['auth.signUp'].toUpperCase()}
+            {translations["auth.signUp"].toUpperCase()}
           </Button>
           <Button
             style={styles.signInButton}
-            appearance='ghost'
-            status='primary'
+            appearance="ghost"
+            status="primary"
             onPress={onSignInButtonPress}
           >
-            {translations['auth.signInReminder']}
+            {translations["auth.signInReminder"]}
           </Button>
         </View>
       </View>
     </KeyboardAwareScrollView>
-  )
-}
+  );
+};
 
 const themedStyles = StyleService.create({
   container: {
     flex: 1,
-    flexDirection: 'column',
-    paddingHorizontal: 16
+    flexDirection: "column",
+    paddingHorizontal: 16,
   },
   buttonContainer: {
-    justifyContent: 'flex-end',
-    marginTop: 'auto'
+    justifyContent: "flex-end",
+    marginTop: "auto",
   },
   formContainer: {
     marginTop: 32,
-    justifyContent: 'space-between'
+    justifyContent: "space-between",
   },
   signInButton: {
-    flexDirection: 'row-reverse',
-    paddingHorizontal: 0
+    flexDirection: "row-reverse",
+    paddingHorizontal: 0,
   },
   signUpButton: {
     marginTop: 16,
-    marginBottom: 0
+    marginBottom: 0,
   },
   content: {
-    ...styleConstants.content
+    ...styleConstants.content,
   },
   formInput: {
-    marginTop: 16
+    marginTop: 16,
   },
   termsCheckBox: {
-    marginTop: 20
+    marginTop: 20,
   },
   indicator: {
-    alignItems: 'center'
-  }
-})
+    alignItems: "center",
+  },
+});
 
-export default SignUp
+export default SignUp;

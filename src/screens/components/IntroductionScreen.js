@@ -1,36 +1,43 @@
-import React from 'react'
-import { View, Linking } from 'react-native'
+import React from "react";
+import { View, Linking } from "react-native";
 import {
   Text,
   StyleService,
   useStyleSheet,
   Button,
-  List
-} from '@ui-kitten/components'
-import ScreenTitle from './ScreenTitle'
-import styleConstants from '../styleConstants'
+  List,
+} from "@ui-kitten/components";
+import ScreenTitle from "./ScreenTitle";
+import styleConstants from "../styleConstants";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 const IntroductionScreenComponent = ({
   title,
   description,
   content,
   items,
   confirmText,
-  onPress
+  onPress,
 }) => {
-  const styles = useStyleSheet(themedStyles)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "IntroductionScreenComponent method starts here",
+      { title, description, content, items, confirmText, onPress },
+      "IntroductionScreenComponent()",
+      "IntroductionScreen.js"
+    )
+  );
+  const styles = useStyleSheet(themedStyles);
   const renderHeader = () => {
     return (
       <View style={styles.headerContainer}>
-        <ScreenTitle
-          title={title}
-          description={description}
-        />
-        <Text category='s1' appearance='hint'>
+        <ScreenTitle title={title} description={description} />
+        <Text category="s1" appearance="hint">
           {content}
         </Text>
       </View>
-    )
-  }
+    );
+  };
   const renderItem = ({ item }) => {
     return (
       <View style={styles.itemContainer}>
@@ -38,8 +45,8 @@ const IntroductionScreenComponent = ({
           <item.Icon />
         </View>
         <View style={styles.itemDetailsContainer}>
-          <Text category='h6'>{item.title}</Text>
-          <Text category='p1' appearance='hint'>
+          <Text category="h6">{item.title}</Text>
+          <Text category="p1" appearance="hint">
             {item.description}
           </Text>
           {item.list && item.list.length > 0 && (
@@ -47,7 +54,7 @@ const IntroductionScreenComponent = ({
               {item.list.map((list, ix) => (
                 <View style={styles.listItemRow} key={`help=list=${ix}`}>
                   <item.ListItemIcon />
-                  <Text category='p2' style={styles.listItemText}>
+                  <Text category="p2" style={styles.listItemText}>
                     {list}
                   </Text>
                 </View>
@@ -57,8 +64,8 @@ const IntroductionScreenComponent = ({
           {item.link && item.link.length > 0 && (
             <View style={styles.linkTextStyle}>
               <Text
-                status='info'
-                category='p1'
+                status="info"
+                category="p1"
                 onPress={() => Linking.openURL(item.link)}
               >
                 {item.linkText}
@@ -67,17 +74,15 @@ const IntroductionScreenComponent = ({
           )}
         </View>
       </View>
-    )
-  }
+    );
+  };
   const renderFooter = () => {
     return (
       <View>
-        <Button onPress={onPress}>
-          {confirmText}
-        </Button>
+        <Button onPress={onPress}>{confirmText}</Button>
       </View>
-    )
-  }
+    );
+  };
   return (
     <List
       contentContainerStyle={styles.contentContainer}
@@ -89,60 +94,60 @@ const IntroductionScreenComponent = ({
       ListFooterComponentStyle={styles.footer}
       showsVerticalScrollIndicator={false}
     />
-  )
-}
+  );
+};
 
 const themedStyles = StyleService.create({
   headerContainer: {
-    marginBottom: 16
+    marginBottom: 16,
   },
   itemDetailsContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justyContent: 'flex-start',
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justyContent: "flex-start",
     paddingLeft: 8,
-    flexWrap: 'wrap',
-    width: '95%'
+    flexWrap: "wrap",
+    width: "95%",
   },
   contentContainer: {
-    backgroundColor: 'background-basic-color-1',
-    flex: 1
+    backgroundColor: "background-basic-color-1",
+    flex: 1,
   },
   itemContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
     marginVertical: 8,
-    marginLeft: 8
+    marginLeft: 8,
   },
   content: {
-    ...styleConstants.content
+    ...styleConstants.content,
   },
   bottomButtonContainer: {
-    paddingVertical: 8
+    paddingVertical: 8,
   },
   listItemRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    jistifyContent: 'flex-start',
-    marginVertical: 4
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    jistifyContent: "flex-start",
+    marginVertical: 4,
   },
   listItemText: {
-    paddingHorizontal: 4
+    paddingHorizontal: 4,
   },
   footer: {
     flex: 1,
     flexGrow: 1,
-    justifyContent: 'flex-end',
-    marginBottom: 16
+    justifyContent: "flex-end",
+    marginBottom: 16,
   },
   linkTextStyle: {
     marginTop: 8,
-    underline: { textDecorationLine: 'underline' }
-  }
-})
+    underline: { textDecorationLine: "underline" },
+  },
+});
 
-export default IntroductionScreenComponent
+export default IntroductionScreenComponent;

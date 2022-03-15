@@ -1,10 +1,20 @@
-import React, { useContext } from 'react'
-import { LocalizationContext } from './translation/Translation'
-import ApplicationForm from './ApplicationForm'
+import React, { useContext } from "react";
+import { LocalizationContext } from "./translation/Translation";
+import ApplicationForm from "./ApplicationForm";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../Errors/ErrorUtil";
 
 const ReactNativeJsonSchemaForm = (props) => {
-  const { initializeAppLanguage } = useContext(LocalizationContext)
-  initializeAppLanguage()
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ReactNativeJsonSchemaForm method starts here",
+      { props },
+      "ReactNativeJsonSchemaForm()",
+      "ReactNativeJsonSchemaForm.js"
+    )
+  );
+  const { initializeAppLanguage } = useContext(LocalizationContext);
+  initializeAppLanguage();
   return (
     <>
       <ApplicationForm
@@ -14,7 +24,7 @@ const ReactNativeJsonSchemaForm = (props) => {
         currentFormData={props.currentFormData}
       />
     </>
-  )
-}
+  );
+};
 
-export default ReactNativeJsonSchemaForm
+export default ReactNativeJsonSchemaForm;

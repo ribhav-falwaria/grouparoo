@@ -1,7 +1,9 @@
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../Errors/ErrorUtil";
 class ResourceFactoryConstants {
   apiContextPath = "/novocode/";
   brokerContextPath = "/broker/";
-  udyamContextPath = "/udyam?udyam="
+  udyamContextPath = "/udyam?udyam=";
   defaultApiContextPath = "/";
   documentGatewayURL = "/api-gateway/document/v1/";
   platformApiGatewayURL = "/api-gateway/api/v1/";
@@ -11,8 +13,10 @@ class ResourceFactoryConstants {
   appWriteUrl = "https://dev-appwrite.novopay.in/v1/";
   qaGateWay = "https://novo-adapter-qa.novopay.in/";
   REACT_APP_DMS_SERVER_URL = "https://asset-qa-platform.novopay.in";
-  REACT_APP_SPRING_VERIFY_SERVER_URL = "https://api-dev.springscan.springverify.com/";
-  REACT_APP_AADHAR_PAN_SERVICE = "https://sandbox.veri5digital.com/verification-service/api/1.0/"
+  REACT_APP_SPRING_VERIFY_SERVER_URL =
+    "https://api-dev.springscan.springverify.com/";
+  REACT_APP_AADHAR_PAN_SERVICE =
+    "https://sandbox.veri5digital.com/verification-service/api/1.0/";
   constants = {
     masterData: {
       getStates: this.getPlatformApiUrl("getChildHierarchyElements"),
@@ -104,7 +108,7 @@ class ResourceFactoryConstants {
         "enterOtp",
         "/okyc/"
       ),
-      getUrlForIdMatch: this.qaGateWay + 'match',
+      getUrlForIdMatch: this.qaGateWay + "match",
       getUrlForFaceMatch: this.getCustomUrl(
         this.apiGateWay,
         "faceMatch",
@@ -163,33 +167,85 @@ class ResourceFactoryConstants {
   };
 
   getApiUrl(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getApiUrl method starts here",
+        { apiName },
+        "getApiUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return this.apiGateWay + this.apiContextPath + apiName;
   }
   getApiUrlV1(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getApiUrlV1 method starts here",
+        { apiName },
+        "getApiUrlV1()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return this.apiGateWay + this.defaultApiContextPath + apiName;
   }
   getCustomUrl(apiGateway, apiName, contextPath) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getCustomUrl method starts here",
+        { apiGateway, apiName, contextPath },
+        "getCustomUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return apiGateway + contextPath + apiName;
   }
   getDocumentApiUrl(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getDocumentApiUrl method starts here",
+        { apiName },
+        "getDocumentApiUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return (
-      this.REACT_APP_DMS_SERVER_URL +
-      `${this.documentGatewayURL}` +
-      apiName
+      this.REACT_APP_DMS_SERVER_URL + `${this.documentGatewayURL}` + apiName
     );
   }
   getPlatformApiUrl(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getPlatformApiUrl method starts here",
+        { apiName },
+        "getPlatformApiUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return (
-      this.REACT_APP_DMS_SERVER_URL +
-      `${this.platformApiGatewayURL}` +
-      apiName
+      this.REACT_APP_DMS_SERVER_URL + `${this.platformApiGatewayURL}` + apiName
     );
   }
   getSpringVerifyApiUrl(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getSpringVerifyApiUrl method starts here",
+        { apiName },
+        "getSpringVerifyApiUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return this.REACT_APP_SPRING_VERIFY_SERVER_URL + apiName;
   }
 
   getAadharPanServiceUrl(apiName) {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        " getAadharPanServiceUrl method starts here",
+        { apiName },
+        "getAadharPanServiceUrl()",
+        "ResourceFactoryConstants.js"
+      )
+    );
     return this.REACT_APP_AADHAR_PAN_SERVICE + apiName;
   }
 }

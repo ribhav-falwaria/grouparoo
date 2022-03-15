@@ -1,155 +1,227 @@
-import { StyleService, Text } from '@ui-kitten/components'
-import React, { useContext, useEffect, useState } from 'react'
-import { useToast } from 'react-native-toast-notifications'
-import RNFetchBlob from 'rn-fetch-blob'
-import DocumentPicker from 'react-native-document-picker'
+import { StyleService, Text } from "@ui-kitten/components";
+import React, { useContext, useEffect, useState } from "react";
+import { useToast } from "react-native-toast-notifications";
+import RNFetchBlob from "rn-fetch-blob";
+import DocumentPicker from "react-native-document-picker";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../../Errors/ErrorUtil";
 
-import DocumentUploadService from '../../../../services/DocumentUploadService'
-import { LocalizationContext } from '../../../../translation/Translation'
-import ResourceFactoryConstants from '../../../../services/ResourceFactoryConstants'
-import DataService from '../../../../services/DataService'
-import DocumentUploadComponent from './common/DocumentUploadComponent'
-import isEmpty from 'lodash.isempty'
-import DownloadComponent from './common/DownloadComponent'
-import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
+import DocumentUploadService from "../../../../services/DocumentUploadService";
+import { LocalizationContext } from "../../../../translation/Translation";
+import ResourceFactoryConstants from "../../../../services/ResourceFactoryConstants";
+import DataService from "../../../../services/DataService";
+import DocumentUploadComponent from "./common/DocumentUploadComponent";
+import isEmpty from "lodash.isempty";
+import DownloadComponent from "./common/DownloadComponent";
+import ReactJsonSchemaUtil from "../../../../services/ReactJsonSchemaFormUtil";
 
 const uploadToAppWrite = async (file) => {
-  const documentUploadService = new DocumentUploadService()
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "uploadToAppWrite method starts here ",
+      { file },
+      "uploadToAppWrite()",
+      "AadharMaskWidgetOLD.js"
+    )
+  );
+  const documentUploadService = new DocumentUploadService();
   if (isEmpty(file)) {
-    return
+    return;
   }
-  const uploadedFileName = ReactJsonSchemaUtil.getFileName(file).join('::')
+  const uploadedFileName = ReactJsonSchemaUtil.getFileName(file).join("::");
   try {
-    const res = await documentUploadService.uploadFileToAppWrite(file)
-    const responseData = res.data
-    if (responseData.status === 'SUCCESS') {
+    const res = await documentUploadService.uploadFileToAppWrite(file);
+    const responseData = res.data;
+    if (responseData.status === "SUCCESS") {
       return {
         uploadedDocId: responseData.fileId,
-        uploadedFileName
-      }
+        uploadedFileName,
+      };
     } else {
-      console.log(responseData)
-      throw new Error('UPLOAD_STATEMENT_TO_DOC_SERVER_FAILED')
+      console.log(responseData);
+      throw new Error("UPLOAD_STATEMENT_TO_DOC_SERVER_FAILED");
     }
   } catch (err) {
-    console.log(err)
-    if (err.message === 'UPLOAD_STATEMENT_TO_DOC_SERVER_FAILED') {
-      throw err
+    crashlytics().log(
+      ErrorUtil.createError(
+        err,
+        err.message,
+        err.message,
+        { file },
+        "uploadToAppWrite()",
+        "AadharMaskWidgetOLD.js"
+      )
+    );
+    console.log(err);
+    if (err.message === "UPLOAD_STATEMENT_TO_DOC_SERVER_FAILED") {
+      throw err;
     } else {
-      throw new Error('CANNOT_REACH_STATEMENT_UPLOAD_SERVER')
+      throw new Error("CANNOT_REACH_STATEMENT_UPLOAD_SERVER");
     }
   }
-}
+};
 
 const AadharMaskWidget = (props) => {
-  const FRONT_SIDE = 'front-side-aadhar-masked.jpeg'
-  const BACK_SIDE = 'back-side-aadhar-masked.jpeg'
-  const toast = useToast()
-  const [isUploadDone, setIsUploadDone] = useState(false)
-  const { translations } = useContext(LocalizationContext)
-  const [files, setFiles] = useState([])
-  const resourceFactoryConstants = new ResourceFactoryConstants()
-  const [loaderVisibility, setLoaderVisibility] = useState(false)
-  const [maskedFront, setMaskedFront] = useState('')
-  const [maskedBack, setMaskedBack] = useState('')
-  let ids
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "AadharMaskWidget method starts here ",
+      { props },
+      "AadharMaskWidget()",
+      "AadharMaskWidgetOLD.js"
+    )
+  );
+  const FRONT_SIDE = "front-side-aadhar-masked.jpeg";
+  const BACK_SIDE = "back-side-aadhar-masked.jpeg";
+  const toast = useToast();
+  const [isUploadDone, setIsUploadDone] = useState(false);
+  const { translations } = useContext(LocalizationContext);
+  const [files, setFiles] = useState([]);
+  const resourceFactoryConstants = new ResourceFactoryConstants();
+  const [loaderVisibility, setLoaderVisibility] = useState(false);
+  const [maskedFront, setMaskedFront] = useState("");
+  const [maskedBack, setMaskedBack] = useState("");
+  let ids;
   if (props.value) {
-    ids = props.value.split('::')
+    ids = props.value.split("::");
   }
-  const [uploadedIds, setUploadedIds] = useState(ids ? [ids[0], ids[1]] : [])
+  const [uploadedIds, setUploadedIds] = useState(ids ? [ids[0], ids[1]] : []);
 
   const onAadharUploadHandler = () => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "onAadharUploadHandler method starts here ",
+        undefined,
+        "onAadharUploadHandler()",
+        "AadharMaskWidgetOLD.js"
+      )
+    );
     if (isEmpty(files)) {
-      return
+      return;
     }
-    setLoaderVisibility(true)
+    setLoaderVisibility(true);
     const url =
-      resourceFactoryConstants.constants.aadharMask.uploadAadharWithFronAndBack
+      resourceFactoryConstants.constants.aadharMask.uploadAadharWithFronAndBack;
     DataService.postData(url, getFormData())
       .then(async (res) => {
-        const responseData = res.data
-        if (responseData.status === 'SUCCESS') {
-          setMaskedFront(responseData?.maskedFront)
-          setMaskedBack(responseData?.maskedBack)
-          uploadFileUsingRNFetchBlob(maskedFront, maskedBack)
+        const responseData = res.data;
+        if (responseData.status === "SUCCESS") {
+          setMaskedFront(responseData?.maskedFront);
+          setMaskedBack(responseData?.maskedBack);
+          uploadFileUsingRNFetchBlob(maskedFront, maskedBack);
         } else {
-          toast.show(translations['common.error'], { type: 'danger' })
-          setLoaderVisibility(false)
+          toast.show(translations["common.error"], { type: "danger" });
+          setLoaderVisibility(false);
         }
       })
       .catch((err) => {
-        toast.show(err.message, { type: 'danger' })
-        setLoaderVisibility(false)
-      })
-  }
+        crashlytics().log(
+          ErrorUtil.createLog(
+            err,
+            err.message,
+            err.message,
+            undefined,
+            "onAadharUploadHandler()",
+            "AadharMaskWidgetOLD.js"
+          )
+        );
+        toast.show(err.message, { type: "danger" });
+        setLoaderVisibility(false);
+      });
+  };
 
   const uploadFileUsingRNFetchBlob = (base64, fileName) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "uploadFileUsingRNFetchBlob method starts here ",
+        { fileName, base64 },
+        "uploadFileUsingRNFetchBlob()",
+        "AadharMaskWidgetOLD.js"
+      )
+    );
     RNFetchBlob.fetch(
-      'POST',
+      "POST",
       resourceFactoryConstants.constants.lending.uploadFile,
-      { 'Content-Type': 'multipart/form-data' },
-      [{ name: 'file', filename: fileName, data: base64 }]
+      { "Content-Type": "multipart/form-data" },
+      [{ name: "file", filename: fileName, data: base64 }]
     )
       .then((res) => {
-        const data = JSON.parse(res.data)
-        if (data.status === 'SUCCESS') {
+        const data = JSON.parse(res.data);
+        if (data.status === "SUCCESS") {
           setUploadedIds((prev) => {
-            const temp = JSON.parse(JSON.stringify(prev))
-            temp.push(data.fileId)
-            return temp
-          })
+            const temp = JSON.parse(JSON.stringify(prev));
+            temp.push(data.fileId);
+            return temp;
+          });
         }
       })
       .catch((err) => {
-        console.log(fileName, err)
-        setLoaderVisibility(false)
-      })
-  }
+        crashlytics().log(
+          ErrorUtil.createError(
+            err,
+            err.message,
+            err.message,
+            { fileName, base64 },
+            "uploadFileUsingRNFetchBlob()",
+            "AadharMaskWidgetOLD.js"
+          )
+        );
+        console.log(fileName, err);
+        setLoaderVisibility(false);
+      });
+  };
 
   const getFormData = () => {
-    const formData = new FormData()
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "getFormData method starts here ",
+        undefined,
+        "getFormData()",
+        "AadharMaskWidgetOLD.js"
+      )
+    );
+    const formData = new FormData();
     for (const file of files) {
-      formData.append('file', file)
+      formData.append("file", file);
     }
-    return formData
-  }
+    return formData;
+  };
 
   useEffect(() => {
     if (maskedBack) {
-      uploadFileUsingRNFetchBlob(maskedBack, BACK_SIDE)
+      uploadFileUsingRNFetchBlob(maskedBack, BACK_SIDE);
     }
-  }, [maskedBack])
+  }, [maskedBack]);
 
   useEffect(() => {
     if (maskedFront) {
-      uploadFileUsingRNFetchBlob(maskedFront, FRONT_SIDE)
+      uploadFileUsingRNFetchBlob(maskedFront, FRONT_SIDE);
     }
-  }, [maskedFront])
+  }, [maskedFront]);
 
   useEffect(() => {
     if (uploadedIds && uploadedIds.length === 2 && !props.value) {
       props.onChange(
-        uploadedIds.join('::') + '::' + FRONT_SIDE + '::' + BACK_SIDE
-      )
-      toast.show(translations['Upload.successfully'], { type: 'success' })
-      setLoaderVisibility(false)
-      setIsUploadDone(true)
+        uploadedIds.join("::") + "::" + FRONT_SIDE + "::" + BACK_SIDE
+      );
+      toast.show(translations["Upload.successfully"], { type: "success" });
+      setLoaderVisibility(false);
+      setIsUploadDone(true);
     }
-  }, [uploadedIds])
+  }, [uploadedIds]);
   const onFileChange = (data) => {
     if (data.length !== 2) {
-      toast.show('Only two files are allowed', { type: 'danger' })
-      return
+      toast.show("Only two files are allowed", { type: "danger" });
+      return;
     }
-    setIsUploadDone(false)
-    setFiles(data)
-  }
+    setIsUploadDone(false);
+    setFiles(data);
+  };
 
   return (
     <>
       {props.value && (
         <>
-          <Text style={styles.text} status='success'>
+          <Text style={styles.text} status="success">
             Sussessfully Uploaded.
           </Text>
           {/* <TouchableOpacity onPress={saveFileIntoFileSystem}>
@@ -171,11 +243,11 @@ const AadharMaskWidget = (props) => {
         loading={loaderVisibility}
       />
     </>
-  )
-}
+  );
+};
 const styles = StyleService.create({
   text: {
-    margin: 4
-  }
-})
-export default AadharMaskWidget
+    margin: 4,
+  },
+});
+export default AadharMaskWidget;

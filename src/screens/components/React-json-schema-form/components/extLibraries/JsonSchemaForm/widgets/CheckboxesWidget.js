@@ -1,38 +1,72 @@
-import React from 'react'
+import React from "react";
 
-import { CheckBoxComponent } from './CheckboxWidget'
-import { View } from 'react-native'
+import { CheckBoxComponent } from "./CheckboxWidget";
+import { View } from "react-native";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
 const selectValue = (value, selected, all) => {
-  const at = all.indexOf(value)
-  const updated = selected.slice(0, at).concat(value, selected.slice(at))
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "selectValue method starts here ",
+      { value, selected, all },
+      "selectValue()",
+      "CheckboxesWidget.js"
+    )
+  );
+  const at = all.indexOf(value);
+  const updated = selected.slice(0, at).concat(value, selected.slice(at));
 
   // As inserting values at predefined index positions doesn't work with empty
   // arrays, we need to reorder the updated selection to match the initial order
-  return updated.sort((a, b) => all.indexOf(a) - all.indexOf(b))
-}
+  return updated.sort((a, b) => all.indexOf(a) - all.indexOf(b));
+};
 
-const deselectValue = (value, selected) => selected.filter(v => v !== value)
+const deselectValue = (value, selected) => selected.filter((v) => v !== value);
 
-const CheckboxesWidget = ({ disabled, options, value, readonly, onChange, required, rawErrors = [] }) => {
-  const { enumOptions, enumDisabled } = options
+const CheckboxesWidget = ({
+  disabled,
+  options,
+  value,
+  readonly,
+  onChange,
+  required,
+  rawErrors = [],
+}) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "CheckboxesWidget method starts here ",
+      { disabled, options, value, readonly, onChange, required, rawErrors },
+      "CheckboxesWidget()",
+      "CheckboxesWidget.js"
+    )
+  );
+  const { enumOptions, enumDisabled } = options;
 
-  const _onChange = option => checked => {
-    const all = enumOptions.map(({ value: v }) => v)
+  const _onChange = (option) => (checked) => {
+    crashlytics().log(
+      ErrorUtil.createLog(
+        "_onChange method starts here ",
+        { option },
+        "_onChange()",
+        "CheckboxesWidget.js"
+      )
+    );
+    const all = enumOptions.map(({ value: v }) => v);
 
     if (checked) {
-      onChange(selectValue(option.value, value, all))
+      onChange(selectValue(option.value, value, all));
     } else {
-      onChange(deselectValue(option.value, value))
+      onChange(deselectValue(option.value, value));
     }
-  }
+  };
 
   return (
     <View>
       {enumOptions.map((option, index) => {
-        const checked = value.indexOf(option.value) !== -1
+        const checked = value.indexOf(option.value) !== -1;
         const itemDisabled =
-          enumDisabled && enumDisabled.indexOf(option.value) !== -1
+          enumDisabled && enumDisabled.indexOf(option.value) !== -1;
         return (
           <CheckBoxComponent
             key={index}
@@ -43,10 +77,10 @@ const CheckboxesWidget = ({ disabled, options, value, readonly, onChange, requir
             rawErrors={rawErrors}
             required={required}
           />
-        )
+        );
       })}
     </View>
-  )
-}
+  );
+};
 
-export default CheckboxesWidget
+export default CheckboxesWidget;

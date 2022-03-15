@@ -1,18 +1,28 @@
-import React from 'react'
-import { StyleSheet, View } from 'react-native'
-import { Text, useTheme } from '@ui-kitten/components'
-import { rupeeFormatter } from '../../utils'
-import Slider from '@react-native-community/slider'
-import { heightPercentageToDP } from 'react-native-responsive-screen'
+import React from "react";
+import { StyleSheet, View } from "react-native";
+import { Text, useTheme } from "@ui-kitten/components";
+import { rupeeFormatter } from "../../utils";
+import Slider from "@react-native-community/slider";
+import { heightPercentageToDP } from "react-native-responsive-screen";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
 const AmountRangeSelector = ({
   value,
   disabled,
   onChange,
   step,
   minimumValue,
-  maximumValue
+  maximumValue,
 }) => {
-  const theme = useTheme()
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "AmountRangeSelector method starts here",
+      { value, disabled, onChange, step, minimumValue, maximumValue },
+      "AmountRangeSelector()",
+      "AmountRangeSelector.js"
+    )
+  );
+  const theme = useTheme();
   return (
     <>
       <View style={styles.container}>
@@ -24,55 +34,48 @@ const AmountRangeSelector = ({
           minimumValue={minimumValue}
           maximumValue={maximumValue}
           onValueChange={onChange}
-          thumbTintColor={theme['color-primary-500']}
-          minimumTrackTintColor={theme['color-primary-500']}
+          thumbTintColor={theme["color-primary-500"]}
+          minimumTrackTintColor={theme["color-primary-500"]}
         />
       </View>
       <View style={styles.textdisplayConatiner}>
-        <Text
-          status='primary'
-          category='s1'
-        >
-          <Text category='label' status='primary'>
-            {'₹ '}
+        <Text status="primary" category="s1">
+          <Text category="label" status="primary">
+            {"₹ "}
           </Text>
           {rupeeFormatter(minimumValue)}
         </Text>
-        <Text
-          status='primary'
-          category='s1'
-          appearence='hint'
-        >
-          <Text category='label' status='primary'>
-            {'₹ '}
+        <Text status="primary" category="s1" appearence="hint">
+          <Text category="label" status="primary">
+            {"₹ "}
           </Text>
           {rupeeFormatter(maximumValue)}
         </Text>
       </View>
     </>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   textdisplayConatiner: {
     flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   container: {
-    alignItems: 'center',
-    flexDirection: 'row'
+    alignItems: "center",
+    flexDirection: "row",
   },
   slider: {
     flex: 1,
-    width: '100%',
-    height: 30
+    width: "100%",
+    height: 30,
   },
   rangeContainer: {
-    marginBottom: heightPercentageToDP('5%')
-  }
-})
+    marginBottom: heightPercentageToDP("5%"),
+  },
+});
 
-export default AmountRangeSelector
+export default AmountRangeSelector;

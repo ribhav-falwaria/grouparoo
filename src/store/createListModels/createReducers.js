@@ -1,44 +1,53 @@
-import keyBy from 'lodash.keyby'
-import map from 'lodash.map'
-import get from 'lodash.get'
-import isArray from 'lodash.isarray'
-const DEFAULT_SORT_IDS = newIds => newIds
+import keyBy from "lodash.keyby";
+import map from "lodash.map";
+import get from "lodash.get";
+import isArray from "lodash.isarray";
+import ErrorUtil from "../../screens/Errors/ErrorUtil";
+const DEFAULT_SORT_IDS = (newIds) => newIds;
 
 export default (defaultListName, idKey, reducers) =>
-  Object.assign(
-    {},
-    {
-      write: (
-        state,
-        { data, listName = defaultListName, sortIds = DEFAULT_SORT_IDS }
-      ) => {
-        const list = get(data, 'list', data)
-        const pagination = get(data, 'pagination', null)
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "createReducers method starts here",
+      { defaultListName, idKey, reducers },
+      "createReducers()",
+      "createReducers.js"
+    )
+  );
+Object.assign(
+  {},
+  {
+    write: (
+      state,
+      { data, listName = defaultListName, sortIds = DEFAULT_SORT_IDS }
+    ) => {
+      const list = get(data, "list", data);
+      const pagination = get(data, "pagination", null);
 
-        if (!isArray(list)) {
-          throw new Error(
-            '[REMATCH_MODEL_LIST] Neither `data` nor `data.list` is as array.'
-          )
-        }
+      if (!isArray(list)) {
+        throw new Error(
+          "[REMATCH_MODEL_LIST] Neither `data` nor `data.list` is as array."
+        );
+      }
 
-        const newIds = map(list, idKey)
+      const newIds = map(list, idKey);
 
-        return Object.assign({}, state, {
-          byId: Object.assign({}, state.byId, keyBy(list, idKey)),
-          [listName]: sortIds(newIds, state[listName]),
-          pagination: Object.assign({}, state.pagination, {
-            [listName]: pagination
-          })
-        })
-      },
-
-      writeById: (state, { id, data } = {}) =>
-        Object.assign({}, state, {
-          byId: Object.assign({}, state.byId, { [id]: data })
+      return Object.assign({}, state, {
+        byId: Object.assign({}, state.byId, keyBy(list, idKey)),
+        [listName]: sortIds(newIds, state[listName]),
+        pagination: Object.assign({}, state.pagination, {
+          [listName]: pagination,
         }),
-
-      reset: (state, { listName = defaultListName } = {}) =>
-        Object.assign({}, state, { [listName]: [] })
+      });
     },
-    reducers
-  )
+
+    writeById: (state, { id, data } = {}) =>
+      Object.assign({}, state, {
+        byId: Object.assign({}, state.byId, { [id]: data }),
+      }),
+
+    reset: (state, { listName = defaultListName } = {}) =>
+      Object.assign({}, state, { [listName]: [] }),
+  },
+  reducers
+);

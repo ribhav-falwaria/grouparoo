@@ -1,30 +1,32 @@
-import appRoutes from './routes/app.json'
-import initialState from './data/initial-state.json'
+import appRoutes from "./routes/app.json";
+import initialState from "./data/initial-state.json";
 
 // @scripts
-import { capitalizeFirstLetter } from '../util'
+import { capitalizeFirstLetter } from "../util";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../screens/Errors/ErrorUtil";
 
 /**
  * @param {string} navigationFor
  */
-const buildNavigation = navigationFor =>
+const buildNavigation = (navigationFor) =>
   appRoutes
-    .filter(route => route.navigation.includes(navigationFor))
+    .filter((route) => route.navigation.includes(navigationFor))
     .map((route, index) => ({
       ...route,
       description: route.name,
       index,
       key: route.name,
-      name: capitalizeFirstLetter(route.name)
-    }))
+      name: capitalizeFirstLetter(route.name),
+    }));
 
-const root = buildNavigation('root')
-const tabs = buildNavigation('tabs')
+const root = buildNavigation("root");
+const tabs = buildNavigation("tabs");
 
 export const config = {
   initialState,
   routes: {
     root,
-    tabs
-  }
-}
+    tabs,
+  },
+};

@@ -1,35 +1,64 @@
-import React from 'react'
+import React from "react";
 import {
   TopNavigation,
   TopNavigationAction,
   useTheme,
   useStyleSheet,
-  StyleService
-} from '@ui-kitten/components'
-import styleConstants from '../styleConstants'
-import SafeAreaLayout from '../../components/SafeAreaLayout.component'
-import { MenuIcon, CallIcon, NotificationIcon } from '../../components/Icons.component'
-const ScreenWrapper = props => {
-  const { alternateScreen } = props
-  const theme = useTheme()
-  const styles = useStyleSheet(themedStyles)
+  StyleService,
+} from "@ui-kitten/components";
+import styleConstants from "../styleConstants";
+import SafeAreaLayout from "../../components/SafeAreaLayout.component";
+import {
+  MenuIcon,
+  CallIcon,
+  NotificationIcon,
+} from "../../components/Icons.component";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../Errors/ErrorUtil";
+
+const ScreenWrapper = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "ScreenWrapper method starts here",
+      { props },
+      "ScreenWrapper()",
+      "ScreenWrapper.js"
+    )
+  );
+  const { alternateScreen } = props;
+  const theme = useTheme();
+  const styles = useStyleSheet(themedStyles);
   const menuIconOnPress = () => {
-    props.navigation.toggleDrawer()
-  }
+    props.navigation.toggleDrawer();
+  };
   const renderDrawerAction = () => (
     <TopNavigationAction
-      icon={(imageProps) => <MenuIcon {...imageProps} fill={theme['color-primary-500']} />}
+      icon={(imageProps) => (
+        <MenuIcon {...imageProps} fill={theme["color-primary-500"]} />
+      )}
       onPress={menuIconOnPress}
     />
-  )
+  );
   const renderRightActions = () => (
     <>
-      <TopNavigationAction icon={(imageProps) => <CallIcon {...imageProps} fill={theme['color-primary-500']} />} />
-      <TopNavigationAction icon={(imageProps) => <NotificationIcon {...imageProps} fill={theme['color-primary-500']} />} />
+      <TopNavigationAction
+        icon={(imageProps) => (
+          <CallIcon {...imageProps} fill={theme["color-primary-500"]} />
+        )}
+      />
+      <TopNavigationAction
+        icon={(imageProps) => (
+          <NotificationIcon {...imageProps} fill={theme["color-primary-500"]} />
+        )}
+      />
     </>
-  )
+  );
   return (
-    <SafeAreaLayout style={alternateScreen ? styles.safeAreaAlternate : styles.safeArea} insets='top' level='2'>
+    <SafeAreaLayout
+      style={alternateScreen ? styles.safeAreaAlternate : styles.safeArea}
+      insets="top"
+      level="2"
+    >
       <TopNavigation
         style={alternateScreen ? styles.topNavigationStyle : {}}
         accessoryLeft={renderDrawerAction}
@@ -37,19 +66,19 @@ const ScreenWrapper = props => {
       />
       {props.children}
     </SafeAreaLayout>
-  )
-}
+  );
+};
 
 const themedStyles = StyleService.create({
   safeArea: {
-    ...styleConstants.screen
+    ...styleConstants.screen,
   },
   topNavigationStyle: {
-    backgroundColor: 'color-primary-transparent-200'
+    backgroundColor: "color-primary-transparent-200",
   },
   safeAreaAlternate: {
-    ...styleConstants.alternateScreen
-  }
-})
+    ...styleConstants.alternateScreen,
+  },
+});
 
-export default ScreenWrapper
+export default ScreenWrapper;

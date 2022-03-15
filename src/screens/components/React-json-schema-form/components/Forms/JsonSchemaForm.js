@@ -1,10 +1,20 @@
-import React, { useState } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-import { useStore } from 'react-redux'
+import React, { useState } from "react";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useStore } from "react-redux";
+import crashlytics from "@react-native-firebase/crashlytics";
+import ErrorUtil from "../../../../../../Errors/ErrorUtil";
 
-import { RNForm } from '../extLibraries/JsonSchemaForm'
-const JsonSchemaForm = props => {
-  const store = useStore()
+import { RNForm } from "../extLibraries/JsonSchemaForm";
+const JsonSchemaForm = (props) => {
+  crashlytics().log(
+    ErrorUtil.createLog(
+      "JsonSchemaForm method starts here",
+      { props },
+      "JsonSchemaForm()",
+      "JsonSchemaForm.js"
+    )
+  );
+  const store = useStore();
   const {
     formData,
     schema,
@@ -15,27 +25,27 @@ const JsonSchemaForm = props => {
     onError,
     setFormRef,
     validate,
-    onChange
-  } = props
-  const [rnFormData, setRnFormdata] = useState(formData || {})
-  const [cntxt, setContext] = useState()
+    onChange,
+  } = props;
+  const [rnFormData, setRnFormdata] = useState(formData || {});
+  const [cntxt, setContext] = useState();
   const onFormDataUpdateHandler = (event) => {
-    setRnFormdata(event.formData)
-    store.dispatch.formDetails.setFormData(event.formData)
-    onChange(event)
-  }
+    setRnFormdata(event.formData);
+    store.dispatch.formDetails.setFormData(event.formData);
+    onChange(event);
+  };
 
   return (
     <KeyboardAwareScrollView>
       <RNForm
-        ref={form => {
-          setFormRef(form)
-          setContext(form)
+        ref={(form) => {
+          setFormRef(form);
+          setContext(form);
         }}
         onError={onError}
         schema={schema}
         uiSchema={uiSchema}
-        onSubmit={form => onSubmit(form, stepIndex)}
+        onSubmit={(form) => onSubmit(form, stepIndex)}
         formData={rnFormData || {}}
         liveValidate={liveValidate}
         validate={validate}
@@ -46,7 +56,7 @@ const JsonSchemaForm = props => {
         {props.children}
       </RNForm>
     </KeyboardAwareScrollView>
-  )
-}
+  );
+};
 
-export default JsonSchemaForm
+export default JsonSchemaForm;
