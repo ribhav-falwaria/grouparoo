@@ -51,7 +51,7 @@ const themedStyles = StyleService.create({
   },
   buttonContainer: {
     width: widthPercentageToDP(90),
-    marginBottom: 16
+    margin: 16
   }
 })
 

@@ -1,7 +1,7 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import { useRequest } from 'ahooks'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Button,
   Input,
@@ -14,6 +14,8 @@ import ScreenTitle from '../components/ScreenTitle'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
+import Toast from 'react-native-toast-message'
+import isEmpty from 'lodash.isempty'
 
 const registerUser = async (dispatch, { password, formData }) => {
   const registerResoponse = await dispatch.authentication.registerOrUpdateUser({
@@ -22,7 +24,7 @@ const registerUser = async (dispatch, { password, formData }) => {
   })
   return registerResoponse
 }
-
+let isSignInBtnClicked = false
 const SetPassword = ({ navigation, route }) => {
   const { formData } = route.params
   const dispatch = useDispatch()
@@ -31,17 +33,50 @@ const SetPassword = ({ navigation, route }) => {
   })
   const [userPassword, setUserPassword] = React.useState()
   const [disabled, setDisabled] = React.useState(false)
+  const [isUserPasswordValid, setIsUserPasswordValid] = useState(true)
   const { translations } = useContext(LocalizationContext)
   const title = route.params?.title || translations['auth.Password']
-
+  const isAccountExists = useSelector(state => state.authentication.accountExists)
+  const isLoggedIn = useSelector(state => state.authentication.isLoggedIn)
   const styles = useStyleSheet(themedStyles)
+
+  useEffect(() => {
+    if (isSignInBtnClicked) {
+      if (userPassword && userPassword.length >= 8) {
+        setIsUserPasswordValid(true)
+      } else {
+        setIsUserPasswordValid(false)
+      }
+    }
+  }, [userPassword, isSignInBtnClicked])
+
+  useEffect(() => {
+    if (isAccountExists && !isLoggedIn) {
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        props: {
+          title: translations['app.set.password'],
+          description: translations['app.signUp.account.exists']
+        }
+      })
+      navigation.navigate('SignIn')
+    }
+  }, [isAccountExists, isLoggedIn])
+
   const onSignInButtonPress = async () => {
-    setDisabled(true)
-    await createAccount.run(dispatch, {
-      password: userPassword,
-      formData
-    })
-    setDisabled(false)
+    isSignInBtnClicked = true
+    console.log(userPassword)
+    if (isEmpty(userPassword) || userPassword.length < 8) {
+      setIsUserPasswordValid(false)
+    } else {
+      setDisabled(true)
+      await createAccount.run(dispatch, {
+        password: userPassword,
+        formData
+      })
+      setDisabled(false)
+    }
   }
   const loadingIndicator = props => {
     if (!createAccount.loading) {
@@ -64,7 +99,7 @@ const SetPassword = ({ navigation, route }) => {
             placeholder={translations['form.password']}
             label={translations['form.password']}
             value={userPassword}
-            caption={() => (<Text appearance='hint' style={styles.captionText}>{translations['auth.password.criteria']}</Text>)}
+            caption={() => (<Text appearance='hint' status={!isUserPasswordValid ? 'danger' : 'basic'} style={styles.captionText}>{translations['auth.password.criteria']}</Text>)}
             size='large'
             onChangeText={setUserPassword}
           />

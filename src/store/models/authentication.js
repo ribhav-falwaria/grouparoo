@@ -8,7 +8,8 @@ const authentication = {
     isLoggedIn: false, // FIXME: Made this true for things to work
     id: '',
     userName: '',
-    isFirstTime: true
+    isFirstTime: true,
+    accountExists: false
   },
   selectors: {
     isUserLoggedIn: select => (rootState) => {
@@ -30,6 +31,10 @@ const authentication = {
       state.isLoggedIn = false
       state.isFirstTime = isFirstTime
       state.accountExists = accountExists
+      return state
+    },
+    updateAccountExistsFlag: (state) => {
+      state.accountExists = false
       return state
     }
   },
@@ -145,6 +150,9 @@ const authentication = {
           throw new Error('CANNOT_CREATE_CUSTOMER_DETAILS')
         }
       }
+    },
+    async resetAccountExistsFlag () {
+      await dispatch.authentication.updateAccountExistsFlag()
     }
   })
 }
