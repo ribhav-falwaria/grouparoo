@@ -68,7 +68,7 @@ const UdyamAadharInputWidget = ({
   const [invalid, setInvalid] = useState(false)
   const { translations } = useContext(LocalizationContext)
   const udyamPrefix = 'UDYAM'
-  const [udyamAadhar, setUdyamAadhar] = useState(stripPrefix(value) || '')
+  const [udyamAadhar, setUdyamAadhar] = useState(stripPrefix(udyamPrefix, value) || '')
   const dispatch = useDispatch()
   const getTickMark = () => {
     if (!value) {

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { View, Linking } from 'react-native'
 import isEmpty from 'lodash.isempty'
 import isUndefined from 'lodash.isundefined'
@@ -22,6 +22,7 @@ import styleConstants from '../styleConstants'
 import ScreenTitle from '../components/ScreenTitle'
 import { validateFormData } from './validations'
 import { config } from '../../config'
+import { useDispatch } from 'react-redux'
 const MOBILE_MASK = '99999 99999'
 
 const SignUp = ({ navigation, route }) => {
@@ -37,6 +38,11 @@ const SignUp = ({ navigation, route }) => {
   const [error, setError] = useState({})
   const styles = useStyleSheet(themedStyles)
   const { loading, run } = useRequest(apiServices.sendOtp, { manual: true })
+  const dispatch = useDispatch()
+
+  // Reset the Account Exists Error
+  useEffect(async () => { await dispatch.authentication.resetAccountExistsFlag() }, [])
+
   const onDataChange = (key, value) => {
     formData[key] = value
     if (key === 'primaryPhone') {
@@ -154,7 +160,7 @@ const SignUp = ({ navigation, route }) => {
             status={error.email && 'danger'}
             value={formData.email}
             keyboardType='email-address'
-            onChangeText={(v) => onDataChange('email', v)}
+            onChangeText={(v) => onDataChange('email', v.trim())}
             accessoryRight={FormIcons.FormEmailIcon}
           />
           <Input

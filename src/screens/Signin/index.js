@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { View } from 'react-native'
 import {
   Button,
@@ -15,11 +15,12 @@ import { useRequest } from 'ahooks'
 import ScreenTitle from '../components/ScreenTitle'
 import { LocalizationContext } from '../../components/Translation'
 import styleConstants from '../styleConstants'
+import isEmpty from 'lodash.isempty'
 
 const loginUser = async (dispatch, { email, password }) => {
   await dispatch.authentication.signInUser({ email, password })
 }
-
+let isSignInBtnPressed = false
 const SignIn = ({ navigation, route }) => {
   const [email, setEmail] = React.useState()
   const [password, setPassword] = React.useState()
@@ -29,22 +30,62 @@ const SignIn = ({ navigation, route }) => {
   const dispatch = useDispatch()
   const state = useSelector(state => state)
   const styles = useStyleSheet(themedStyles)
+  const [isEmailValid, setIsEmailValid] = useState(true)
+  const [isPasswordValid, setIsPasswordValid] = useState(true)
   const loginUserRequest = useRequest(loginUser, {
     manual: true
   })
-  if (loginUserRequest.error) {
-    console.log('error')
-  }
   const selection = store.select(models => ({
     isLoggedIn: models.authentication.isUserLoggedIn,
     showLoginError: models.appStates.getSigninError
   }))
+  const validateEmail = (email) => {
+    return email.match(
+      /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    )
+  }
+  useEffect(() => {
+    if (isSignInBtnPressed && (isEmpty(email) || !validateEmail(email))) {
+      setIsEmailValid(false)
+    } else {
+      setIsEmailValid(true)
+    }
+  }, [isSignInBtnPressed, email])
+
+  useEffect(() => {
+    if (isSignInBtnPressed && (isEmpty(password) || password.length < 8)) {
+      setIsPasswordValid(false)
+    } else {
+      setIsPasswordValid(true)
+    }
+  }, [isSignInBtnPressed, password])
   const {
     isLoggedIn,
     showLoginError
   } = selection(state)
   const onSignInButtonPress = async () => {
-    await loginUserRequest.run(dispatch, { email, password })
+    isSignInBtnPressed = true
+    let errorFlg = false
+    if (isEmpty(email)) {
+      setIsEmailValid(false)
+      errorFlg = true
+    }
+    if (isEmpty(password) || password.length < 8) {
+      setIsPasswordValid(false)
+      errorFlg = true
+    }
+    if (errorFlg) {
+      return
+    }
+    const isValidMail = validateEmail(email.trim())
+    if (!isValidMail) {
+      setIsEmailValid(false)
+    } else {
+      await loginUserRequest.run(dispatch, { email: email.trim(), password: password.trim() })
+    }
+  }
+  const renderError = () => {
+    return (<Text status='danger' category='p1'>{translations['auth.invalid.email']}</Text>)
   }
   const onSignUpButtonPress = () => {
     navigation.navigate('SignUp', {})
@@ -66,21 +107,15 @@ const SignIn = ({ navigation, route }) => {
   return (
     <KeyboardAwareScrollView style={styles.container}>
       <ScreenTitle title={title} description={translations['auth.signInWithEmail']} />
-      {
-        showError === true && (
-          <Text style={styles.signinErrorLabel} category='p2' status='danger'>
-            {translations['auth.signIn.error']}
-          </Text>
-        )
-      }
       <View style={styles.formContainer}>
         <Input
           label={translations['form.email']}
           placeholder={translations['form.email']}
           value={email}
-          status={showError && 'danger'}
+          status={(showError || !isEmailValid) && 'danger'}
           onChangeText={setEmail}
           accessoryRight={FormIcons.FormEmailIcon}
+          caption={!isEmailValid ? renderError : <></>}
         />
         <Input
           style={styles.passwordInput}
@@ -88,10 +123,18 @@ const SignIn = ({ navigation, route }) => {
           placeholder={translations['form.password']}
           label={translations['form.password']}
           value={password}
-          status={showError && 'danger'}
+          status={(showError || !isPasswordValid) && 'danger'}
           onChangeText={setPassword}
+          caption={() => (<Text appearance='hint' status={!isPasswordValid ? 'danger' : 'basic'} style={styles.captionText}>{translations['auth.password.criteria']}</Text>)}
         />
       </View>
+      {
+        showError === true && (
+          <Text style={styles.signinErrorLabel} category='p2' status='danger'>
+            {translations['auth.signIn.error']}
+          </Text>
+        )
+      }
       <View style={styles.bottomButtonContainer}>
         <Button
           status='primary'
@@ -184,6 +227,10 @@ const themedStyles = StyleService.create({
   indicator: {
     justifyContent: 'center',
     alignItems: 'center'
+  },
+  captionText: {
+    fontSize: 12,
+    fontWeight: '400'
   }
 })
 

@@ -149,7 +149,7 @@ const AddressInputField = (props) => {
   })
   const [selectedStateIndex, setSelectedStateIndex] = useState()
   const [selectedCityIndex, setSelectedCityIndex] = useState()
-  const [isOwnAddress, setIsOwnAddress] = useState(false)
+  const [isOwnAddress, setIsOwnAddress] = useState(!isEmpty(props?.formData) ? (!props?.formData?.source) : false)
   let cities = []
   if (address.stateCode && address.stateCode.length > 0) {
     cities = allCities[address.stateCode] ? allCities[address.stateCode] : cities
@@ -213,6 +213,10 @@ const AddressInputField = (props) => {
   const updateAddress = (newData) => {
     const newAddress = Object.assign({}, address, newData)
     if (isValid(newAddress)) {
+      // checking if 'source' keyword is there or not
+      if (Object.prototype.hasOwnProperty.call(newAddress, 'source')) {
+        delete newAddress.source
+      }
       props.onChange(newAddress)
     } else {
       if (isRequired) {
@@ -268,6 +272,7 @@ const AddressInputField = (props) => {
                   key={`address-display-${ix}`}
                   {...ua}
                   onSelectAddress={setSelectedAddress}
+                  selected={props?.formData && props?.formData?.source === ua?.source}
                 />
               ))
             }

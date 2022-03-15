@@ -1,5 +1,5 @@
 {
-  "app.title": "Welcome to NovoLoans",
+  "app.title": "Welcome to Novopay Money",
   "home.title": "Home",
   "hello!": "Hello! {firstName}",
   "view.more": "View More",
@@ -137,6 +137,7 @@
   "auth.signInReminder": "Already Registered! Click to Sign In",
   "auth.signInButton": "Sign In",
   "auth.signUp": "Register",
+  "auth.invalid.email": "Please provide correct mail ID",
   "auth.signup.excited": "We are excited to have you here! To get started, please fill in your details below",
   "auth.signUpWithEmail": "Sign up with Email",
   "auth.signInWithEmail": "Welcome back! Signin to get started",
@@ -246,9 +247,13 @@
   "applicationFrom.exitConfirmation.subTitle" : "Are you sure you want to exit the application?",
   "applicationFrom.exitConfirmation.description" : "You can always come back and start from where you left off.",
   "error.tryagain":"Try Again", 
-  "error.something.went.wrong":"Something happened!", 
+  "error.something.went.wrong":"OOPS!", 
+  "error.something.went.wrong.description":"Something went wrong, Please try again.",
   "restriction.title": "Restrictions Detected",
   "restriction.battery.description": "To ensure notifications are delivered, please disable battery optimization for the app.",
   "restriction.power.description": "To ensure notifications are delivered, please adjust your settings to prevent the app from being killed",
-  "app.exit": "Exit"
+  "app.exit": "Exit",
+  "app.signUp.account.exists": "Account is already exists with this email",
+  "app.signUp.account.common.error": "Unexpected error occurred. Please try again after sometime",
+  "app.set.password": "Set Password"
 }

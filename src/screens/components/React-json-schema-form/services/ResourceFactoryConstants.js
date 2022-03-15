@@ -7,7 +7,7 @@ class ResourceFactoryConstants {
   platformApiGatewayURL = "/api-gateway/api/v1/";
   voyagerContext = "voyager/";
   apiGateWay = "https://dev-codeapp.novopay.in";
-  adapterServiceUrl = "https://novo-adapter-dev.novopay.in/";
+  adapterServiceUrl = "https://novo-adapter-qa.novopay.in/";
   appWriteUrl = "https://dev-appwrite.novopay.in/v1/";
   qaGateWay = "https://novo-adapter-qa.novopay.in/";
   REACT_APP_DMS_SERVER_URL = "https://asset-qa-platform.novopay.in";

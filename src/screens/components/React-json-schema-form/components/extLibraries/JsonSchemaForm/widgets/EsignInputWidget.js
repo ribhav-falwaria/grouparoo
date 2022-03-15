@@ -1,10 +1,9 @@
-import { Button, Text } from '@ui-kitten/components'
-import React, { Fragment, useContext, useEffect, useState } from 'react'
+import { Button } from '@ui-kitten/components'
+import React, { useContext, useEffect, useState } from 'react'
 import { Alert, Linking } from 'react-native'
 import Toast from 'react-native-toast-message'
 import DataService from '../../../../services/DataService'
 import ResourceFactoryConstants from '../../../../services/ResourceFactoryConstants'
-import IconUtil from '../../../common/IconUtil'
 import RNFetchBlob from 'rn-fetch-blob'
 import LoadingSpinner from '../../../../../../components/LoadingSpinner'
 import ReactJsonSchemaUtil from '../../../../services/ReactJsonSchemaFormUtil'
@@ -13,6 +12,7 @@ import crashlytics from '@react-native-firebase/crashlytics'
 import ErrorUtil from '../../../../../../Errors/ErrorUtil'
 import { useRequest } from 'ahooks'
 import isEmpty from 'lodash.isempty'
+import FormSuccess from '../../../Forms/FormSuccess'
 
 const uploadToAppWrite = async (file, url) => {
   try {
@@ -53,7 +53,7 @@ const EsignInputWidget = (props) => {
 
   const fileUrl =
     props?.schema?.url ||
-    'https://www.learningcontainer.com/wp-content/uploads/2019/09/sample-pdf-file.pdf'
+    'https://www.agstartups.org.br/uploads/2020/07/sample.pdf'
 
   useEffect(async () => {
     const initialUrl = await Linking.getInitialURL()
@@ -170,7 +170,8 @@ const EsignInputWidget = (props) => {
     } catch (error) {
       throw new Error('ERROR_REACHING_TO_ESIGN_UPLOAD_SERVER')
     }
-  }, { manual: true })
+  },
+  { manual: true })
 
   const useUploadToAppwrite = useRequest(uploadToAppWrite, {
     manual: true,
@@ -231,18 +232,7 @@ const EsignInputWidget = (props) => {
         </Button>
       )}
       {isEsignDone && (
-        <Text
-          appearance='default'
-          status='primary'
-          style={{ marginTop: 5, fontWeight: 'bold' }}
-        >
-          {translations['esign.successfull']}
-          <IconUtil.CheckIcon
-            size={20}
-            color='green'
-            style={{ marginLeft: 5, marginTop: 5 }}
-          />
-        </Text>
+        <FormSuccess description={translations['esign.successfull']} isButtonVisible={false} />
       )}
     </>
   )

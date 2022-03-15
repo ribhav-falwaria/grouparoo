@@ -42,9 +42,7 @@ const ReactJsonSchemaUtil = {
   },
   getQueryParams (textUrl) {
     const queryParamObject = {}
-    if (textUrl.indexOf('?') === -1) {
-      return queryParamObject
-    }
+    if (textUrl.indexOf('?') === -1) return queryParamObject
     const paramString = textUrl.split('?')[1]
     const paramsArr = paramString.split('&')
     for (let i = 0; i < paramsArr.length; i++) {
