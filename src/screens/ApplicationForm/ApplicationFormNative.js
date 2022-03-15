@@ -11,6 +11,14 @@ class ApplicationFormNative extends React.PureComponent {
     if (isUndefined(this.props.jwt)) {
       try {
         await this.props.getCustomerJwt()
+        if (this.props.isAgreement) {
+          try {
+            await this.props.generateLoanAgreementLink(this.props.currentLoanApplication.loanApplicationId)
+          } catch (e) {
+            console.log(e)
+            throw new Error('CANNOT_GENERATE_LOAN_AGREEMENT_LINK')
+          }
+        }
       } catch (err) {
         console.log(err)
         console.log('CANNOT_GET_JWT')
@@ -19,14 +27,16 @@ class ApplicationFormNative extends React.PureComponent {
   }
 
   render () {
-    const { currentLoanApplication, borrowingEntity, jwt } = this.props
+    const { currentLoanApplication, borrowingEntity, jwt, isAgreement } = this.props
     const { eva: { style } } = this.props
+    const formId = isAgreement ? borrowingEntity.loanAggrementFormId : borrowingEntity.loanAssessmentFormId
+    const stepSchemaName = isAgreement ? borrowingEntity.stepsAgreementMobile : borrowingEntity.stepsAssessmentMobile
     return (
       <View style={style.container}>
         <JsonSchemaForm
           currentFormData={currentLoanApplication}
-          formId={borrowingEntity.loanAssessmentFormId}
-          stepSchemaName={borrowingEntity.stepsAssessmentMobile}
+          formId={formId}
+          stepSchemaName={stepSchemaName}
           token={jwt}
         />
       </View>
@@ -46,8 +56,8 @@ const mapStateToProps = (state) => {
   }
 }
 const mapDispatchToProps = (dispatch) => ({
-  getCustomerJwt: () => dispatch.customer.getCustomerJwt()
-
+  getCustomerJwt: () => dispatch.customer.getCustomerJwt(),
+  generateLoanAgreementLink: (loanApplicationId) => dispatch.loanApplications.generateLoanAgreement({ loanApplicationId })
 })
 const Component = connect(mapStateToProps, mapDispatchToProps)(ApplicationFormNative)
 export default withStyles(Component, themes => ({

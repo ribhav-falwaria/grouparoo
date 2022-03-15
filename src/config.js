@@ -21,7 +21,8 @@ export const config = {
     addressCollectionId: '61fc93bfae7d80de1ae2',
     cashFreeTokenFunctionId: '621f9d2f51d07eca5f6b',
     appStateEventsCollectionId: '6223228537efd99c9714',
-    cashfreeSignatureFunctionId: '6225db949e947cf7e996'
+    cashfreeSignatureFunctionId: '6225db949e947cf7e996',
+    loanAgreementFunctionId: '622748ba485820ecd386'
   },
   DEFAULT_PASSWORD: 'welcome',
   otp: {
@@ -56,7 +57,7 @@ export const config = {
   loanApplicationWebView: 'https://dev-codeapp.novopay.in/?formName=onboarding_test&stepSchemaName=onboarding_test_mob&isHeaderRequired=false',
   // loanApplicationWebView: 'https://92da-111-125-218-187.ngrok.io/?formName=onboarding_test&stepSchemaName=onboarding_test_mob&isHeaderRequired=false'
   LOAN_APPLICATION_TYPE: 'loanapp',
-  FINBOX_CLIENT_API_KEY: '',
+  FINBOX_CLIENT_API_KEY: 'AKIAZUHCZC3Y56ERFIAQ',
   LOAN_DISBURSED_STATUS: 'DISBURSED',
   LOAN_CLOSED_STATUS: 'CLOSED',
   REPAYMENT_PENDIND_STATUS: 'PEN',
@@ -89,6 +90,9 @@ export const config = {
   EVENT_DROPOFF: 'EVENT_DROPOFF',
   EVENT_PAYMENT_DROP: 'EVENT_PAYMENT_DROP',
   EVENT_PAYMENT_SUCCESS: 'EVENT_PAYMENT_SUCCESS',
-  EVENT_PAYMENT_FAILED: 'EVENT_PAYMENT_FAILED'
-
+  EVENT_PAYMENT_FAILED: 'EVENT_PAYMENT_FAILED',
+  APP_STAGE_CPV_COMPLETE: 'cpvCompleted',
+  APP_STAGE_CPV_INITIATED: 'cpvInitiated',
+  LOAN_APP_PROGRESS_COMPLETE: 'COMPLETE',
+  LOAN_APP_PROGRESS_INCOMPLETE: 'INCOMPLETE'
 }

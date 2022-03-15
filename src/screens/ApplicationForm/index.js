@@ -1,4 +1,4 @@
-import React, { memo, useContext } from 'react'
+import React, { useContext } from 'react'
 import { useSelector, useDispatch, useStore } from 'react-redux'
 import {
   TopNavigation,
@@ -10,45 +10,34 @@ import {
 import { BackHandler } from 'react-native'
 import isUndefined from 'lodash.isundefined'
 import ApplicationFormNative from './ApplicationFormNative'
-import { useRequest } from 'ahooks'
-import apiService from '../../apiService'
-import LoadingSpinner from '../components/LoadingSpinner'
 import { WarningIcon } from '../components/ThemedIcons'
 import { LocalizationContext } from '../../components/Translation'
 import SimpleModal from '../components/SimpleModal'
 import LoanApplicationHelp from './LoanApplicationHelp'
-const createLoanApplication = async (dispatch, activeLoanApplications, currentLoanApplication) => {
-  if (activeLoanApplications.length === 1) {
-    await dispatch.loanApplications.setCurrentLoanApplication(activeLoanApplications[0].loanApplicationId)
-  } else {
-    const executionId = await apiService.appApi.loanApplication.createLoanApplicationId.execute()
-    const loanApplicationId = await apiService.appApi.loanApplication.createLoanApplicationId.get(executionId)
-    return dispatch.loanApplications.createLoanApplication({ loanApplicationId })
-  }
-}
-
+import ApplicationStage from './ApplicationStage'
+import { config } from '../../config'
 const ApplicationForm = ({ navigation, route }) => {
+  let loanApplicationId = route.params?.loanApplicationId
   const dispatch = useDispatch()
   const store = useStore()
   const styles = useStyleSheet(themedStyles)
   const state = useSelector(state => state)
   const [visible, setVisible] = React.useState(false)
   const { translations } = useContext(LocalizationContext)
-
-  const currentLoanApplication = store.select.loanApplications.getCurrentLoanApplication(state)
-  const activeLoanApplications = store.select.loanApplications.getActiveLoanApplications(state)
+  let currentLoanApplication
+  if (loanApplicationId) {
+    currentLoanApplication = store.select.loanApplications.getApplicationById(state, loanApplicationId)
+  } else {
+    currentLoanApplication = store.select.loanApplications.getCurrentLoanApplication(state)
+    loanApplicationId = currentLoanApplication.loanApplicationId
+  }
+  const loanApplicationStage = store.select.loanApplications.getLoanApplicationStage(state, { loanApplicationId })
+  const isCpv = loanApplicationStage.progress === config.LOAN_APP_PROGRESS_COMPLETE && loanApplicationStage.processState === config.APP_STAGE_CPV_INITIATED
+  const isAgreement = loanApplicationStage.progress === config.LOAN_APP_PROGRESS_COMPLETE && loanApplicationStage.processState === config.APP_STAGE_CPV_COMPLETE
   const isHelpShown = store.select.settings.getIsApplicationHelpShown(state)
-  const createLoanApplicationRequest = useRequest(() => createLoanApplication(dispatch, activeLoanApplications, currentLoanApplication), {
-    ready: isUndefined(currentLoanApplication)
-  })
-  if (createLoanApplicationRequest.loading) {
-    return (
-      <LoadingSpinner />
-    )
-  }
-  if (createLoanApplicationRequest.error) {
-    throw createLoanApplicationRequest.error
-  }
+  const isAgreementHelpShown = store.select.settings.getIsAgreementHelpShown(state)
+  const showApplicationForm = (isHelpShown && !isAgreement) || (isAgreement && isAgreementHelpShown)
+
   const BackIcon = (props) => (
     <Icon {...props} name='arrow-back' />
   )
@@ -64,6 +53,18 @@ const ApplicationForm = ({ navigation, route }) => {
   const onPress = () => {
     dispatch.settings.setApplicationHelpShown(true)
   }
+  const onPressAgeement = () => {
+    dispatch.settings.setAgreementHelpShown(true)
+  }
+  if ((isCpv || isAgreement) && !isAgreementHelpShown) {
+    return (
+      <ApplicationStage
+        loanApplicationId={loanApplicationId}
+        enable={isAgreement}
+        onPress={onPressAgeement}
+      />
+    )
+  }
   if (!isUndefined(currentLoanApplication)) {
     return (
       <>
@@ -73,9 +74,10 @@ const ApplicationForm = ({ navigation, route }) => {
           accessoryLeft={BackAction}
         />
         {!isHelpShown && (<LoanApplicationHelp onPress={onPress} />)}
-        {isHelpShown && (
+        {showApplicationForm && (
           <ApplicationFormNative
             currentLoanApplication={currentLoanApplication}
+            isAgreement={isAgreement}
           />
         )}
         <SimpleModal

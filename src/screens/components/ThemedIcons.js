@@ -25,7 +25,25 @@ const buildEvaIcon = (name, fill, width, height) => {
     <Icon name={name} style={{ marginRight: 4 }} fill={fill || theme['color-warning-500']} width={width || 26} height={height || 26} />
   )
 }
-
+const buildPulseAnumatedEvaIcon = (name, fill, width, height) => {
+  const theme = useTheme()
+  const iconRef = React.useRef()
+  React.useEffect(() => {
+    iconRef.current.startAnimation()
+  }, [])
+  return (
+    <Icon
+      ref={iconRef}
+      name={name}
+      style={{ marginRight: 4 }}
+      fill={fill || theme['color-warning-500']}
+      width={width || 26}
+      height={height || 26}
+      animationConfig={{ cycles: Infinity }}
+      animation='pulse'
+    />
+  )
+}
 export const NoInternetIcon = () => buildEvaIcon('wifi-off-outline', undefined, 36, 36)
 export const SmsIcon = () => buildEvaIcon('message-circle-outline')
 export const DeviceIcon = () => buildEvaIcon('smartphone-outline')
@@ -76,6 +94,10 @@ export const InfoIcon = () => {
 export const CheckIconGreen = () => {
   const theme = useTheme()
   return buildEvaIcon('checkmark-outline', theme['color-success-default'])
+}
+export const CheckIconCircleGreen = () => {
+  const theme = useTheme()
+  return buildEvaIcon('checkmark-circle-2-outline', theme['color-success-default'])
 }
 export const SuccessIcon = CheckIconGreen
 
@@ -133,12 +155,20 @@ export const DocumentsIcon = () => buildEvaIcon('grid-outline')
 export const SalesAgentIcon = () => buildEvaIcon('people-outline')
 export const AcceptOfferIcon = () => buildEvaIcon('done-all-outline')
 const CheckedItemIcon = () => buildEvaIcon('checkmark-circle-2-outline', undefined, 16, 16)
+const InProgressIcon = () => buildPulseAnumatedEvaIcon('minus-circle-outline')
+const AcceptOfferIconGrey = () => {
+  const theme = useTheme()
+  return buildEvaIcon('done-all-outline', theme['color-basic-600'])
+}
 export const LoanApplicationHelpIcons = {
   CreditCheckIcon,
   DocumentsIcon,
   SalesAgentIcon,
   AcceptOfferIcon,
-  CheckedItemIcon
+  CheckedItemIcon,
+  DoneIcon: CheckIconCircleGreen,
+  InProgressIcon,
+  AcceptOfferIconGrey
 }
 
 const IconUnselected = () => {

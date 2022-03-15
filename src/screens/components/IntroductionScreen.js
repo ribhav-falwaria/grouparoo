@@ -15,7 +15,8 @@ const IntroductionScreenComponent = ({
   content,
   items,
   confirmText,
-  onPress
+  onPress,
+  disabled = false
 }) => {
   const styles = useStyleSheet(themedStyles)
   const renderHeader = () => {
@@ -72,7 +73,7 @@ const IntroductionScreenComponent = ({
   const renderFooter = () => {
     return (
       <View>
-        <Button onPress={onPress}>
+        <Button onPress={onPress} disabled={disabled}>
           {confirmText}
         </Button>
       </View>
